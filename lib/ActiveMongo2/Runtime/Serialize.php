@@ -5,6 +5,24 @@ use Notoj\ReflectionClass;
 
 class Serialize
 {
+    public static function getCollection($class)
+    {
+        $refl = new ReflectionClass($class);
+        $ann  = $refl->getAnnotations();
+        if (!$ann->has('Persist')) {
+            throw new \RuntimeException("Class " . get_class($object) . ' cannot persist. @Persist annotation is missing');
+        }
+
+        $persist = $ann->getOne('Persist');
+
+        if (empty($persist)) {
+            $parts = implode("\\", $class);
+            return end($parts);
+        }
+
+        return current($persist);
+    }
+
     public static function setDocument($object, $document)
     {
         $refl = new ReflectionClass($object);

@@ -4,7 +4,14 @@ namespace ActiveMongo2;
 class Connection
 {
     protected $conn;
+    /** 
+     *  Collections to Classes mapping
+     */
     protected $collections;
+    /**
+     *  Classes to Collections mapping
+     */
+    protected $classes;
     protected $mapping = array();
     protected $docs = array();
 
@@ -28,15 +35,16 @@ class Connection
             return $this->collections[$collection];
         }
 
-        $mongoCol = $this->conn->selectCollection($collection);
 
         if (class_exists($collection)) {
+            $mongoCol = $this->conn->selectCollection(Runtime\Serialize::getCollection($collection));
             $this->collections[$collection] = new Collection($this, $collection, $mongoCol);
             return $this->collections[$collection];
         } else {
             foreach ($this->mapping as $map) {
                 $class = str_replace('{{collection}}', $collection, $map);
                 if (class_exists($class)) {
+                    $mongoCol = $this->conn->selectCollection(Runtime\Serialize::getCollection($class));
                     $this->collections[$collection] = new Collection($this, $class, $mongoCol);
                     return $this->collections[$collection];
                 }
@@ -62,6 +70,12 @@ class Connection
 
     public function save($obj)
     {
+        $class = get_class($obj);
+        if (empty($this->classes[$class])) {
+            $collection =  Runtime\Serialize::getCollection($obj);
+            $this->classes[$class] = $this->conn->selectCollection($collection);
+        }
+
         $document = Runtime\Serialize::getDocument($obj);
         $hash = spl_object_hash($obj);
         if (!empty($this->docs[spl_object_hash($obj)])) {
@@ -78,6 +92,7 @@ class Connection
         }
 
         Runtime\Events::run('preCreate', $obj, array(&$document, $this));
+        $this->classes[$class]->save($document);
         Runtime\Events::run('postCreate', $obj);
 
         $this->setObjectDocument($obj, $document);
