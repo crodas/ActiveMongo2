@@ -1,0 +1,6 @@
+name: ActiveMongo
+version: 2.0.0-dev
+files: 
+    - lib/
+dependencies:
+    - github:crodas/Notoj
