@@ -25,4 +25,9 @@ class Collection
 
         return $this->conn->registerDocument($this->class, $response);
     }
+
+    public function find($query = array(), $fields = array())
+    {
+        return new Cursor($query, $fields, $this->conn, $this->col, $this->class);
+    }
 }

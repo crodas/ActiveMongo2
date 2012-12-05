@@ -1,6 +1,8 @@
 <?php
 namespace ActiveMongo2;
 
+use MongoClient;
+
 class Connection
 {
     protected $conn;
@@ -15,9 +17,15 @@ class Connection
     protected $mapping = array();
     protected $docs = array();
 
-    public function __construct($conn)
+    public function __construct(MongoClient $conn, $db)
     {
         $this->conn = $conn;
+        $this->db   = $conn->selectDB($db);
+    }
+
+    public function getConnection()
+    {
+        return $this->conn;
     }
 
     public function registerNamespace($regex)
@@ -37,14 +45,14 @@ class Connection
 
 
         if (class_exists($collection)) {
-            $mongoCol = $this->conn->selectCollection(Runtime\Serialize::getCollection($collection));
+            $mongoCol = $this->db->selectCollection(Runtime\Serialize::getCollection($collection));
             $this->collections[$collection] = new Collection($this, $collection, $mongoCol);
             return $this->collections[$collection];
         } else {
             foreach ($this->mapping as $map) {
                 $class = str_replace('{{collection}}', $collection, $map);
                 if (class_exists($class)) {
-                    $mongoCol = $this->conn->selectCollection(Runtime\Serialize::getCollection($class));
+                    $mongoCol = $this->db->selectCollection(Runtime\Serialize::getCollection($class));
                     $this->collections[$collection] = new Collection($this, $class, $mongoCol);
                     return $this->collections[$collection];
                 }
@@ -73,20 +81,26 @@ class Connection
         $class = get_class($obj);
         if (empty($this->classes[$class])) {
             $collection =  Runtime\Serialize::getCollection($obj);
-            $this->classes[$class] = $this->conn->selectCollection($collection);
+            $this->classes[$class] = $this->db->selectCollection($collection);
         }
 
         $document = Runtime\Serialize::getDocument($obj);
         $hash = spl_object_hash($obj);
         if (!empty($this->docs[spl_object_hash($obj)])) {
-            $oldDoc  = $this->docs[$hash];
-            $updated = array_diff($document, $oldDoc);
-            if (empty($updated)) {
+            $oldDoc = $this->docs[$hash];
+            $set    = array_diff($document, $oldDoc);
+            if (empty($set)) {
                 // nothing to do!
                 return $this;
             }
-            
-            Runtime\Events::run('preUpdate', $obj, array(&$document, $this));
+
+            $update = array();
+            if (!empty($set)) {
+                $update['$set'] = $set;
+            }
+
+            Runtime\Events::run('preUpdate', $obj, array(&$update, $this));
+            $this->classes[$class]->update(array('_id' => $oldDoc['_id']), $update);
             Runtime\Events::run('postUpdate', $obj);
             return $this;
         }
