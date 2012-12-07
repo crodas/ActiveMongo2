@@ -1,8 +1,6 @@
 <?php
 namespace ActiveMongo2\Runtime;
 
-use ActiveMongo2\Runtime\Utils;
-
 class Events
 {
     private static function dispatch($action, $class, $object, Array $args)

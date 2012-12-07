@@ -1,12 +1,11 @@
 <?php
 namespace ActiveMongo2\Runtime;
 
-use ActiveMongo2\Runtime\Utils;
-
 class Serialize
 {
     public static function getCollection($class)
     {
+        throw new \Exception;
         $refl = Utils::getReflectionClass($class);
         $ann  = $refl->getAnnotations();
         if (!$ann->has('Persist')) {
@@ -17,7 +16,7 @@ class Serialize
 
         if (empty($persist)) {
             $parts = implode("\\", $class);
-            return end($parts);
+            return strtolower(end($parts));
         }
 
         return current($persist);
@@ -34,24 +33,29 @@ class Serialize
         foreach ($refl->getProperties() as $property) {
             $property->setAccessible(true);
             $ann  = $property->getAnnotations();
+            if (!$ann) {
+                continue;
+            }
             $name = $property->name;
             if ($ann->has('Id')) {
                 $name = '_id';
             }
 
-            $property->setValue($object, $document[$name]);
+            if (array_key_exists($name, $document)) {
+                $property->setValue($object, $document[$name]);
+            }
         }
 
         return $object;
 
     }
 
-    public static function getDocument($object) 
+    public static function getDocument($object, $connection) 
     {
         $refl = Utils::getReflectionClass($object);
         $ann  = $refl->getAnnotations();
 
-        if (!$ann->has('Persist')) {
+        if (!$ann->has('Persist') && !$ann->has('Embeddable')) {
             throw new \RuntimeException("Class " . get_class($object) . ' cannot persist. @Persist annotation is missing');
         }
 
@@ -62,7 +66,7 @@ class Serialize
             $ann   = $property->getAnnotations();
             foreach ($ann as $annotation) {
                 $class = __NAMESPACE__ .  '\\Validator\\' . ucfirst($annotation['method']);
-                if (Utils::class_exists($class) && !$class::validator($value)) {
+                if (Utils::class_exists($class) && !$class::validator($value, $annotation, $connection)) {
                     throw new \RuntimeException("{$class} validation for  \"{$value}\" failed");
                 }
             }

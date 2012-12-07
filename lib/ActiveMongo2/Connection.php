@@ -40,6 +40,17 @@ class Connection
         return $this;
     }
 
+    public function getDocumentClass($collection)
+    {
+        foreach ($this->mapping as $map) {
+            $class = str_replace('{{collection}}', $collection, $map);
+            if (Utils::class_exists($class)) {
+                return $class;
+            }
+        }
+        return null;
+    }
+
     public function getCollection($collection)
     {
         if (!empty($this->collections[$collection])) {
@@ -52,13 +63,11 @@ class Connection
             $this->collections[$collection] = new Collection($this, $collection, $mongoCol);
             return $this->collections[$collection];
         } else {
-            foreach ($this->mapping as $map) {
-                $class = str_replace('{{collection}}', $collection, $map);
-                if (Utils::class_exists($class)) {
-                    $mongoCol = $this->db->selectCollection(Runtime\Serialize::getCollection($class));
-                    $this->collections[$collection] = new Collection($this, $class, $mongoCol);
-                    return $this->collections[$collection];
-                }
+            $class = $this->getDocumentClass($collection);
+            if ($class) {
+                $mongoCol = $this->db->selectCollection(Runtime\Serialize::getCollection($class));
+                $this->collections[$collection] = new Collection($this, $class, $mongoCol);
+                return $this->collections[$collection];
             }
         }
 
@@ -87,7 +96,7 @@ class Connection
             $this->classes[$class] = $this->db->selectCollection($collection);
         }
 
-        $document = Runtime\Serialize::getDocument($obj);
+        $document = Runtime\Serialize::getDocument($obj, $this);
         $hash = spl_object_hash($obj);
         if (!empty($this->docs[spl_object_hash($obj)])) {
             $oldDoc = $this->docs[$hash][0];
