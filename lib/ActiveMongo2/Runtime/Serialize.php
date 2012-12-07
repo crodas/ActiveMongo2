@@ -1,14 +1,13 @@
 <?php
 namespace ActiveMongo2\Runtime;
 
-use Notoj\ReflectionClass;
 use ActiveMongo2\Runtime\Utils;
 
 class Serialize
 {
     public static function getCollection($class)
     {
-        $refl = new ReflectionClass($class);
+        $refl = Utils::getReflectionClass($class);
         $ann  = $refl->getAnnotations();
         if (!$ann->has('Persist')) {
             throw new \RuntimeException("Class " . get_class($object) . ' cannot persist. @Persist annotation is missing');
@@ -26,7 +25,7 @@ class Serialize
 
     public static function setDocument($object, $document)
     {
-        $refl = new ReflectionClass($object);
+        $refl = Utils::getReflectionClass($object);
         $ann  = $refl->getAnnotations();
         if (!$ann->has('Persist')) {
             throw new \RuntimeException("Class " . get_class($object) . ' cannot persist. @Persist annotation is missing');
@@ -49,7 +48,7 @@ class Serialize
 
     public static function getDocument($object) 
     {
-        $refl = new ReflectionClass($object);
+        $refl = Utils::getReflectionClass($object);
         $ann  = $refl->getAnnotations();
 
         if (!$ann->has('Persist')) {

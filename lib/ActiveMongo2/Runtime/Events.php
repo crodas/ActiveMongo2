@@ -1,12 +1,11 @@
 <?php
 namespace ActiveMongo2\Runtime;
 
-use Notoj\ReflectionClass;
 use ActiveMongo2\Runtime\Utils;
 
 class Events
 {
-    private static function dispatch($action, ReflectionClass $class, $object, Array $args)
+    private static function dispatch($action, $class, $object, Array $args)
     {
         /** run events defined in plugins */
         $classAnn = $class->getAnnotations();
@@ -17,7 +16,7 @@ class Events
                 : '\\ActiveMongo2\\Plugin\\' . $annotation['method'];
 
             if (Utils::class_exists($pclass)) {
-                $plugin = new ReflectionClass($pclass);
+                $plugin = Utils::getReflectionClass($pclass);
                 foreach ($plugin->getMethods() as $method) {
                     $ann = $method->getAnnotations();
                     if (!$method->isStatic() || !$ann->has($action)) {
@@ -42,7 +41,7 @@ class Events
 
     public static function run($action, $object, $args = array())
     {
-        $class = new ReflectionClass($object);
+        $class = Utils::getReflectionClass($object);
         self::dispatch($action, $class, $object, $args);
 
         while ($class = $class->getParentClass()) {
