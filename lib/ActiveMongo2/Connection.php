@@ -75,10 +75,10 @@ class Connection
     protected function setObjectDocument($object, Array $document)
     {
         Runtime\Serialize::setDocument($object, $document);
-        $this->docs[spl_object_hash($object)] = $document;
+        $this->docs[spl_object_hash($object)] = array($document, $object);
     }
 
-    public function save($obj)
+    public function save($obj, $safe = true)
     {
         $class = get_class($obj);
         if (empty($this->classes[$class])) {
@@ -89,7 +89,7 @@ class Connection
         $document = Runtime\Serialize::getDocument($obj);
         $hash = spl_object_hash($obj);
         if (!empty($this->docs[spl_object_hash($obj)])) {
-            $oldDoc = $this->docs[$hash];
+            $oldDoc = $this->docs[$hash][0];
             $set    = array_diff($document, $oldDoc);
             if (empty($set)) {
                 // nothing to do!
@@ -105,14 +105,14 @@ class Connection
             $this->classes[$class]->update(
                 array('_id' => $oldDoc['_id']), 
                 $update,
-                array('safe' => true)
+                array('safe' => $safe)
             );
             Runtime\Events::run('postUpdate', $obj);
             return $this;
         }
 
         Runtime\Events::run('preCreate', $obj, array(&$document, $this));
-        $this->classes[$class]->save($document);
+        $this->classes[$class]->save($document, array('safe' => $safe));
         Runtime\Events::run('postCreate', $obj);
 
         $this->setObjectDocument($obj, $document);
