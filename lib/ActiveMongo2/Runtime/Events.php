@@ -31,9 +31,11 @@ class Events
         /** run events defined in the class */
         foreach ($class->getMethods() as $method) {
             $ann = $method->getAnnotations();
-            if ($ann->has($action)) {
-                call_user_func_array(array($object, $method->getName()), $args);
+            if ($method->isStatic() || !$ann->has($action)) {
+                continue;
             }
+
+            call_user_func_array(array($object, $method->getName()), $args);
         }
     }
 

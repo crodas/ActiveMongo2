@@ -5,7 +5,7 @@ namespace ActiveMongo2\Plugin;
 use Notoj\Annotation;
 
 /** @Persist(table="_autoincrement") */
-class Autoincrement implements IPlugin
+class Autoincrement
 {
     /** @Id */
     protected $collection;
