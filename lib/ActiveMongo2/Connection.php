@@ -2,6 +2,7 @@
 namespace ActiveMongo2;
 
 use MongoClient;
+use ActiveMongo2\Runtime\Utils;
 
 class Connection
 {
@@ -46,14 +47,14 @@ class Connection
         }
 
 
-        if (class_exists($collection)) {
+        if (Utils::class_exists($collection)) {
             $mongoCol = $this->db->selectCollection(Runtime\Serialize::getCollection($collection));
             $this->collections[$collection] = new Collection($this, $collection, $mongoCol);
             return $this->collections[$collection];
         } else {
             foreach ($this->mapping as $map) {
                 $class = str_replace('{{collection}}', $collection, $map);
-                if (class_exists($class)) {
+                if (Utils::class_exists($class)) {
                     $mongoCol = $this->db->selectCollection(Runtime\Serialize::getCollection($class));
                     $this->collections[$collection] = new Collection($this, $class, $mongoCol);
                     return $this->collections[$collection];

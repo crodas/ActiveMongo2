@@ -2,6 +2,7 @@
 namespace ActiveMongo2\Runtime;
 
 use Notoj\ReflectionClass;
+use ActiveMongo2\Runtime\Utils;
 
 class Events
 {
@@ -15,7 +16,7 @@ class Events
                 ? $annotation['method']
                 : '\\ActiveMongo2\\Plugin\\' . $annotation['method'];
 
-            if (class_exists($pclass)) {
+            if (Utils::class_exists($pclass)) {
                 $plugin = new ReflectionClass($pclass);
                 foreach ($plugin->getMethods() as $method) {
                     $ann = $method->getAnnotations();

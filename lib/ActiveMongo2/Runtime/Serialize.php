@@ -2,6 +2,7 @@
 namespace ActiveMongo2\Runtime;
 
 use Notoj\ReflectionClass;
+use ActiveMongo2\Runtime\Utils;
 
 class Serialize
 {
@@ -62,7 +63,7 @@ class Serialize
             $ann   = $property->getAnnotations();
             foreach ($ann as $annotation) {
                 $class = __NAMESPACE__ .  '\\Validator\\' . ucfirst($annotation['method']);
-                if (class_exists($class) && !$class::validator($value)) {
+                if (Utils::class_exists($class) && !$class::validator($value)) {
                     throw new \RuntimeException("{$class} validation for  \"{$value}\" failed");
                 }
             }

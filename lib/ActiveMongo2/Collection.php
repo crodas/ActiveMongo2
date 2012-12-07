@@ -2,6 +2,7 @@
 namespace ActiveMongo2;
 
 use MongoCollection;
+use ActiveMongo2\Runtime\Utils;
 
 class Collection
 {
@@ -11,7 +12,7 @@ class Collection
 
     public function __construct(Connection $conn, $class, MongoCollection $col)
     {
-        if (!class_exists($class)) {
+        if (!Utils::class_exists($class)) {
             throw new \RuntimeException("Cannot find {$class} class");
         }
         $this->conn  = $conn;
