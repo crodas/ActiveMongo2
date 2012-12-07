@@ -6,10 +6,12 @@ use MongoClient;
 class Connection
 {
     protected $conn;
+
     /** 
      *  Collections to Classes mapping
      */
     protected $collections;
+
     /**
      *  Classes to Collections mapping
      */
@@ -100,7 +102,11 @@ class Connection
             }
 
             Runtime\Events::run('preUpdate', $obj, array(&$update, $this));
-            $this->classes[$class]->update(array('_id' => $oldDoc['_id']), $update);
+            $this->classes[$class]->update(
+                array('_id' => $oldDoc['_id']), 
+                $update,
+                array('safe' => true)
+            );
             Runtime\Events::run('postUpdate', $obj);
             return $this;
         }

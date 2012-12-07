@@ -7,6 +7,28 @@ class Events
 {
     private static function dispatch($action, ReflectionClass $class, $object, Array $args)
     {
+        /** run events defined in plugins */
+        $classAnn = $class->getAnnotations();
+        $plugargs = array_merge(array(null, $object), $args);
+        foreach ($classAnn as $annotation) {
+            $pclass = $annotation['method'][0] == '/' 
+                ? $annotation['method']
+                : '\\ActiveMongo2\\Plugin\\' . $annotation['method'];
+
+            if (class_exists($pclass)) {
+                $plugin = new ReflectionClass($pclass);
+                foreach ($plugin->getMethods() as $method) {
+                    $ann = $method->getAnnotations();
+                    if (!$method->isStatic() || !$ann->has($action)) {
+                        continue;
+                    }
+                    $plugargs[0] = $ann->getOne($action) ?: array();
+                    call_user_func_array(array($pclass, $method->getName()), $plugargs);
+                }
+            }
+        }
+
+        /** run events defined in the class */
         foreach ($class->getMethods() as $method) {
             $ann = $method->getAnnotations();
             if ($ann->has($action)) {
@@ -23,6 +45,5 @@ class Events
         while ($class = $class->getParentClass()) {
             self::dispatch($action, $class, $object, $args);
         }
-
     }
 }
