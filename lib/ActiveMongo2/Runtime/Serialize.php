@@ -5,7 +5,6 @@ class Serialize
 {
     public static function getCollection($class)
     {
-        throw new \Exception;
         $refl = Utils::getReflectionClass($class);
         $ann  = $refl->getAnnotations();
         if (!$ann->has('Persist')) {
@@ -26,7 +25,7 @@ class Serialize
     {
         $refl = Utils::getReflectionClass($object);
         $ann  = $refl->getAnnotations();
-        if (!$ann->has('Persist')) {
+        if (!$ann->has('Persist') && !$ann->has('Embeddable')) {
             throw new \RuntimeException("Class " . get_class($object) . ' cannot persist. @Persist annotation is missing');
         }
 
