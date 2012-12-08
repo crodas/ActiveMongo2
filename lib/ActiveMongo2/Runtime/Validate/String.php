@@ -1,10 +1,10 @@
 <?php
 
-namespace ActiveMongo2\Runtime\Validator;
+namespace ActiveMongo2\Runtime\Validate;
 
 class String
 {
-    public static function validator($string)
+    public static function validate($string)
     {
         return empty($string) || is_string($string);
     }

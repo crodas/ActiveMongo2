@@ -1,10 +1,10 @@
 <?php
 
-namespace ActiveMongo2\Runtime\Validator;
+namespace ActiveMongo2\Runtime\Validate;
 
 class Email
 {
-    public static function validator($string)
+    public static function validate($string)
     {
         return empty($string) || filter_var($string, FILTER_VALIDATE_EMAIL);
     }

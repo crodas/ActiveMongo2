@@ -1,12 +1,12 @@
 <?php
 
-namespace ActiveMongo2\Runtime\Validator;
+namespace ActiveMongo2\Runtime\Validate;
 
 use ActiveMongo2\Runtime\Serialize;
 
 class EmbedMany
 {
-    public static function validator(&$value, $ann, $connection)
+    public static function validate(&$value, $ann, $connection)
     {
         if (!is_array($value)) {
             return false;

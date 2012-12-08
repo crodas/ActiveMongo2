@@ -73,8 +73,8 @@ class Serialize
             $value = $property->getValue($object); 
             $ann   = $property->getAnnotations();
             foreach ($ann as $annotation) {
-                $class = __NAMESPACE__ .  '\\Validator\\' . ucfirst($annotation['method']);
-                if (Utils::class_exists($class) && !$class::validator($value, $annotation, $connection)) {
+                $class = __NAMESPACE__ .  '\\Validate\\' . ucfirst($annotation['method']);
+                if (Utils::class_exists($class) && !$class::validate($value, $annotation, $connection)) {
                     throw new \RuntimeException("{$class} validation for  \"{$value}\" failed");
                 }
             }
