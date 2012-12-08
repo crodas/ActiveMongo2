@@ -77,14 +77,19 @@ class Connection
 
     public function registerDocument($class, Array $document)
     {
-        $doc = new $class;
+        $refl = new \ReflectionClass($class);
+        if (PHP_MAJOR_VERSION >= 5 && PHP_MINOR_VERSION >= 5) {
+            $doc = $refl->newInstanceWithoutConstructor();
+        } else {
+            $doc = $refl->newInstance();
+        }
         $this->setObjectDocument($doc, $document);
         return $doc;
     }
 
     protected function setObjectDocument($object, Array $document)
     {
-        Runtime\Serialize::setDocument($object, $document);
+        Runtime\Serialize::setDocument($object, $document, $this);
         $this->docs[spl_object_hash($object)] = array($document, $object);
     }
 

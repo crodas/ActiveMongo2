@@ -21,7 +21,7 @@ class Serialize
         return current($persist);
     }
 
-    public static function setDocument($object, $document)
+    public static function setDocument($object, $document, $connection)
     {
         $refl = Utils::getReflectionClass($object);
         $ann  = $refl->getAnnotations();
@@ -35,14 +35,23 @@ class Serialize
             if (!$ann) {
                 continue;
             }
-            $name = $property->name;
+            $name  = $property->name;
             if ($ann->has('Id')) {
                 $name = '_id';
             }
 
-            if (array_key_exists($name, $document)) {
-                $property->setValue($object, $document[$name]);
+            if (!array_key_exists($name, $document)) {
+                continue;
             }
+            $value = $document[$name];
+            foreach ($ann as $annotation) {
+                $class = __NAMESPACE__ .  '\\Hydrate\\' . ucfirst($annotation['method']);
+                if (Utils::class_exists($class)) {
+                    $value = $class::Hydrate($value, $annotation, $connection);
+                }
+            }
+
+            $property->setValue($object, $value);
         }
 
         return $object;
