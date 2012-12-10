@@ -31,4 +31,11 @@ class Collection
     {
         return new Cursor($query, $fields, $this->conn, $this->col, $this->class);
     }
+
+    public function findOne($query = array(), $fields = array())
+    {
+        $doc =  $this->col->findOne($query, $fields);
+
+        return $this->conn->registerDocument($this->class, $doc);
+    }
 }

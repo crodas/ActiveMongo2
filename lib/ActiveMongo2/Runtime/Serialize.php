@@ -14,7 +14,7 @@ class Serialize
         $persist = $ann->getOne('Persist');
 
         if (empty($persist)) {
-            $parts = implode("\\", $class);
+            $parts = explode("\\", get_class($class));
             return strtolower(end($parts));
         }
 
@@ -75,7 +75,11 @@ class Serialize
             foreach ($ann as $annotation) {
                 $class = __NAMESPACE__ .  '\\Validate\\' . ucfirst($annotation['method']);
                 if (Utils::class_exists($class) && !$class::validate($value, $annotation, $connection)) {
-                    throw new \RuntimeException("{$class} validation for  \"{$value}\" failed");
+                    throw new \RuntimeException("{$class} validation for  \"{$class}\" failed");
+                }
+
+                if (is_callable(array($class, 'transformate'))) {
+                    $value = $class::transformate($value, $annotation, $connection);
                 }
             }
 

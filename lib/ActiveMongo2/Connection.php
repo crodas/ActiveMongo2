@@ -93,6 +93,17 @@ class Connection
         $this->docs[spl_object_hash($object)] = array($document, $object);
     }
 
+    public function getRawDocument($object)
+    {
+        $docid = spl_object_hash($object);
+        if (empty($this->docs[$docid])) {
+            throw new \RuntimeException("Cannot find document");
+        }
+
+        $doc = $this->docs[$docid];
+        return $doc[0];
+    }
+
     public function save($obj, $safe = true)
     {
         $class = get_class($obj);
