@@ -3,6 +3,7 @@ namespace ActiveMongo2;
 
 use MongoClient;
 use ActiveMongo2\Runtime\Utils;
+use MongoId;
 
 class Connection
 {
@@ -137,8 +138,9 @@ class Connection
 
         Runtime\Events::run('preCreate', $obj, array(&$document, $this));
         if (empty($document['_id'])) {
-            $document['_id'] = new \MongoId;
+            $document['_id'] = new MongoId;
         }
+
         $this->classes[$class]->save($document, array('safe' => $safe));
         Runtime\Events::run('postCreate', $obj);
 

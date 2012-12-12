@@ -20,7 +20,8 @@ class Events
                     if (!$method->isStatic() || !$ann->has($action)) {
                         continue;
                     }
-                    $plugargs[0] = $ann->getOne($action) ?: array();
+
+                    $plugargs[0] = $annotation['args'] ?: array();
                     call_user_func_array(array($pclass, $method->getName()), $plugargs);
                 }
             }
