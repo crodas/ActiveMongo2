@@ -58,17 +58,15 @@ class Connection
         }
 
 
-        if (Utils::class_exists($collection)) {
+        $class = $this->getDocumentClass($collection);
+        if ($class) {
+            $mongoCol = $this->db->selectCollection(Runtime\Serialize::getCollection($class));
+            $this->collections[$collection] = new Collection($this, $class, $mongoCol);
+            return $this->collections[$collection];
+        } else if (Utils::class_exists($collection)) {
             $mongoCol = $this->db->selectCollection(Runtime\Serialize::getCollection($collection));
             $this->collections[$collection] = new Collection($this, $collection, $mongoCol);
             return $this->collections[$collection];
-        } else {
-            $class = $this->getDocumentClass($collection);
-            if ($class) {
-                $mongoCol = $this->db->selectCollection(Runtime\Serialize::getCollection($class));
-                $this->collections[$collection] = new Collection($this, $class, $mongoCol);
-                return $this->collections[$collection];
-            }
         }
 
 
@@ -138,6 +136,9 @@ class Connection
         }
 
         Runtime\Events::run('preCreate', $obj, array(&$document, $this));
+        if (empty($document['_id'])) {
+            $document['_id'] = new \MongoId;
+        }
         $this->classes[$class]->save($document, array('safe' => $safe));
         Runtime\Events::run('postCreate', $obj);
 
