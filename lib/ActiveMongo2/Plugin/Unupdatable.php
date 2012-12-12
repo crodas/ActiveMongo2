@@ -4,7 +4,7 @@ namespace ActiveMongo2\Plugin;
 
 use Notoj\Annotation;
 
-class unUpdatable
+class Unupdatable
 {
     /**
      *  @preUpdate

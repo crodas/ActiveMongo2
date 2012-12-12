@@ -58,7 +58,6 @@ class Connection
             return $this->collections[$collection];
         }
 
-
         $class = $this->getDocumentClass($collection);
         if ($class) {
             $mongoCol = $this->db->selectCollection(Runtime\Serialize::getCollection($class));
@@ -101,6 +100,26 @@ class Connection
 
         $doc = $this->docs[$docid];
         return $doc[0];
+    }
+
+    public function delete($obj, $safe = true)
+    {
+        $class = get_class($obj);
+        if (empty($this->classes[$class])) {
+            $collection =  Runtime\Serialize::getCollection($obj);
+            $this->classes[$class] = $this->db->selectCollection($collection);
+        }
+
+        $document = Runtime\Serialize::getDocument($obj, $this);
+        $hash = spl_object_hash($obj);
+
+        unset($this->docs[$hash]);
+
+        if (empty($document['_id'])) {
+            throw new \RuntimeException("Cannot delete without an id");
+        }
+
+        $this->classes[$class]->remove(array('_id' => $document['_id']));
     }
 
     public function save($obj, $safe = true)

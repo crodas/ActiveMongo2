@@ -13,7 +13,7 @@ class Cursor extends MongoCursor
     {
         $this->conn  = $conn;
         $this->class = $class;
-        parent::__construct($conn->getConnection(), $col, $query, $fields);
+        parent::__construct($conn->getConnection(), (string)$col, $query, $fields);
     }
 
     public function current()

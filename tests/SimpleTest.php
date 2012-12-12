@@ -36,6 +36,11 @@ class SimpleTest extends \phpunit_framework_testcase
             $this->assertEquals($u->username, $user->username);
         }
 
+        $conn->delete($u);
+        
+        $find = $conn->getCollection('user')
+            ->find(array('_id' => $user->userid));
 
+        $this->assertEquals(0, $find->count());
     }
 }
