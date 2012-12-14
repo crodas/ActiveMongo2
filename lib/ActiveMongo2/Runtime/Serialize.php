@@ -21,6 +21,28 @@ class Serialize
         return current($persist);
     }
 
+    public static function getDocummentMapping($class)
+    {
+        $refl = Utils::getReflectionClass($class);
+        $ann  = $refl->getAnnotations();
+
+        $map  = array();
+        foreach ($refl->getProperties() as $property) {
+            $property->setAccessible(true);
+            $ann  = $property->getAnnotations();
+            if (!$ann) {
+                continue;
+            }
+            $name  = $property->name;
+            if ($ann->has('Id')) {
+                $name = '_id';
+            }
+            $map[$property->name] = $name;
+        }
+
+        return $map;
+    }
+
     public static function setDocument($object, $document, $connection)
     {
         $refl = Utils::getReflectionClass($object);

@@ -1,17 +1,23 @@
 <?php
 
-namespace ActiveMongo2;
+namespace ActiveMongo2\Runtime;
 
 class Reference
 {
     protected $class;
     protected $doc;
     protected $ref;
+    protected $values;
+    protected $map;
 
-    public function __construct(Array $info, $class, $conn)
+    public function __construct(Array $info, $class, $conn, $map)
     {
-        $this->ref   = $info;
-        $this->class = $conn->getCollection($class);
+        $this->ref    = $info;
+        $this->class  = $conn->getCollection($class);
+        $this->values = !empty($info['_extra']) ? $info['_extra'] : array();
+        $this->map    = $map;
+
+        $this->values['_id'] = $info['$id'];
     }
 
     public function getObject()
@@ -45,6 +51,13 @@ class Reference
 
     public function __get($name)
     {
+        if (!empty($this->map[$name])) {
+            $zname = $this->map[$name];
+            if (array_key_exists($zname, $this->values)) {
+                return $this->values[$zname];
+            }
+        }
+
         $this->_loadDocument();
         return $this->doc->$name;
     }

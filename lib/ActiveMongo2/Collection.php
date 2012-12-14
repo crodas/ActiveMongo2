@@ -4,7 +4,7 @@ namespace ActiveMongo2;
 use MongoCollection;
 use ActiveMongo2\Runtime\Utils;
 
-class Collection
+class Collection 
 {
     protected $zconn;
     protected $class;
@@ -18,6 +18,16 @@ class Collection
         $this->zconn  = $conn;
         $this->zcol   = $col;
         $this->class = $class;
+    }
+
+    public function count($filter = array(), $skip = 0, $limit = 0)
+    {
+        return $this->zcol->count($filter, $skip, $limit);
+    }
+
+    public function drop()
+    {
+        $this->zcol->drop();
     }
 
     public function findAndModify($query, $update, $options)

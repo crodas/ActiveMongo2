@@ -2,7 +2,8 @@
 
 namespace ActiveMongo2\Runtime\Hydrate;
 
-use ActiveMongo2\Reference as zReference;
+use ActiveMongo2\Runtime\Reference as zReference;
+use ActiveMongo2\Runtime\Serialize;
 
 class Reference
 {
@@ -14,7 +15,9 @@ class Reference
 
         $class = current($ann['args']);
         $class = $connection->getDocumentClass($class);
-    
-        return new zReference($value, $class, $connection);
+
+        $map = Serialize::getDocummentMapping($class);
+
+        return new zReference($value, $class, $connection, $map);
     }
 }

@@ -18,7 +18,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $conn->getCollection('foobardasda');
     }
 
-    public function testCreateAndUpdate()
+    public function testCreateUpdateDelete()
     {
         $conn = getConnection();
         $user = new ActiveMongo2\Tests\Document\UserDocument;
@@ -42,5 +42,19 @@ class SimpleTest extends \phpunit_framework_testcase
             ->find(array('_id' => $user->userid));
 
         $this->assertEquals(0, $find->count());
+    }
+
+    /** @dependsOn testCreateUpdateDelete */
+    public function testDrop()
+    {
+        $conn = getConnection();
+        $user = new ActiveMongo2\Tests\Document\UserDocument;
+        $user->username = "crodas-" . rand(0, 0xfffff);
+        $conn->save($user);
+
+        $userCol = $conn->getCollection('user');
+        $this->assertTrue($userCol->count() > 0);
+        $userCol->drop();
+        $this->assertTrue($userCol->count() == 0);
     }
 }
