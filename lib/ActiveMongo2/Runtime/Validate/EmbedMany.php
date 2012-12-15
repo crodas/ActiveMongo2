@@ -8,6 +8,9 @@ class EmbedMany
 {
     public static function validate(&$value, $ann, $connection)
     {
+        if (empty($value)) {
+            return true;
+        }
         if (!is_array($value)) {
             return false;
         }

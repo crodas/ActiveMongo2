@@ -45,6 +45,9 @@ class Collection
     public function findOne($query = array(), $fields = array())
     {
         $doc =  $this->zcol->findOne($query, $fields);
+        if (empty($doc)) {
+            return $doc;
+        }
 
         return $this->zconn->registerDocument($this->class, $doc);
     }

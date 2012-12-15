@@ -66,6 +66,7 @@ class Serialize
                 continue;
             }
             $value = $document[$name];
+
             foreach ($ann as $annotation) {
                 $class = __NAMESPACE__ .  '\\Hydrate\\' . ucfirst($annotation['method']);
                 if (Utils::class_exists($class)) {
@@ -97,7 +98,7 @@ class Serialize
             foreach ($ann as $annotation) {
                 $class = __NAMESPACE__ .  '\\Validate\\' . ucfirst($annotation['method']);
                 if (Utils::class_exists($class) && !$class::validate($value, $annotation, $connection)) {
-                    throw new \RuntimeException("{$class} validation for  \"{$class}\" failed");
+                    throw new \RuntimeException("validation for  \"{$class}\" failed for {$property}");
                 }
 
                 if (is_callable(array($class, 'transformate'))) {
