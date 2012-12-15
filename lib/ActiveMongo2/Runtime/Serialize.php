@@ -14,7 +14,7 @@ class Serialize
         $persist = $ann->getOne('Persist');
 
         if (empty($persist)) {
-            $parts = explode("\\", get_class($class));
+            $parts = explode("\\", $refl->getName());
             return strtolower(end($parts));
         }
 
