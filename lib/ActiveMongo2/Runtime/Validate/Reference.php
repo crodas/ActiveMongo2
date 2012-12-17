@@ -3,19 +3,24 @@ namespace ActiveMongo2\Runtime\Validate;
 
 use ActiveMongo2\Runtime\Utils;
 use ActiveMongo2\Runtime\Serialize;
+use ActiveMongo2\Runtime\Reference as ref;
 
 class Reference
 {
     public static function validate($value, $ann, $connection)
     {
+        if (empty($value)) {
+            return true;
+        }
+
         $class = current($ann['args']);
         $class = $connection->getDocumentClass($class);
 
-        if (is_a($value, 'ActiveMongo2\\Reference')) {
+        if ($value instanceof ref) {
             return true;
         }
         
-        if (!is_a($value, $class)) {
+        if (!($value instanceof $class)) {
             return false;
         }
 
@@ -30,7 +35,7 @@ class Reference
 
     public static function transformate($value, $ann, $connection)
     {
-        if (is_a($value, 'ActiveMongo2\Reference')) {
+        if ($value instanceof ref) {
             if (!$value->getObject()) {
                 return $value->getReference();
             }
@@ -41,7 +46,7 @@ class Reference
         $class = $connection->getDocumentClass($class);
         
         if (!is_a($value, $class)) {
-            return false;
+            return NULL;
         }
 
         $ref = Utils::getReflectionClass($class);

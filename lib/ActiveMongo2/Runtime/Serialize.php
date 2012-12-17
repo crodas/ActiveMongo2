@@ -103,6 +103,10 @@ class Serialize
 
                 if (is_callable(array($class, 'transformate'))) {
                     $value = $class::transformate($value, $annotation, $connection);
+                    if ($value === NULL) {
+                        // means no value
+                        continue;
+                    }
                 }
             }
 
