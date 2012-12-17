@@ -142,17 +142,16 @@ class Connection
 
             $update = Runtime\Serialize::changes($obj, $changes, $oldDoc);
 
-            if (!empty($changes)) {
-                $update['$set'] = $changes;
-            }
-
             Runtime\Events::run('preUpdate', $obj, array(&$update, $this));
+
             $this->classes[$class]->update(
                 array('_id' => $oldDoc['_id']), 
                 $update,
                 array('safe' => $safe)
             );
             Runtime\Events::run('postUpdate', $obj);
+            $this->setObjectDocument($obj, $document);
+
             return $this;
         }
 
