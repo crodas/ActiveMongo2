@@ -133,16 +133,17 @@ class Connection
         $document = Runtime\Serialize::getDocument($obj, $this);
         $hash = spl_object_hash($obj);
         if (!empty($this->docs[spl_object_hash($obj)])) {
-            $oldDoc = $this->docs[$hash][0];
-            $set    = array_diff($document, $oldDoc);
-            if (empty($set)) {
+            $oldDoc   = $this->docs[$hash][0];
+            $changes  = array_diff($document, $oldDoc);
+            if (empty($changes)) {
                 // nothing to do!
                 return $this;
             }
 
-            $update = array();
-            if (!empty($set)) {
-                $update['$set'] = $set;
+            $update = Runtime\Serialize::changes($obj, $changes, $oldDoc);
+
+            if (!empty($changes)) {
+                $update['$set'] = $changes;
             }
 
             Runtime\Events::run('preUpdate', $obj, array(&$update, $this));

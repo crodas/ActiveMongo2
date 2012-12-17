@@ -19,7 +19,7 @@ class ReferenceMany
         $docs = array();
         $map  = Serialize::getDocummentMapping($class);
         foreach ($values as $id => $value) {
-            $doc[$id] = new zReference($value, $class, $connection, $map);
+            $docs[$id] = new zReference($value, $class, $connection, $map);
         }
 
         return $docs;

@@ -121,6 +121,39 @@ class Serialize
         return $document;
     }
 
+    public static function changes($object, $changes, $oldDoc)
+    {
+        $refl = Utils::getReflectionClass($object);
+        $ann  = $refl->getAnnotations();
+
+        if (!$ann->has('Persist') && !$ann->has('Embeddable')) {
+            throw new \RuntimeException("Class " . get_class($object) . ' cannot persist. @Persist annotation is missing');
+        }
+
+        $document = array();
+        foreach ($refl->getProperties() as $property) {
+            $name = $property->name;
+            $ann  = $property->getAnnotations();
+            if ($ann->has('Id')) {
+                continue;
+            }
+
+            if (array_key_exists($name, $changes)) {
+                if ($ann->has('Int')) {
+                    if (empty($oldDoc[$name])) {
+                        $oldDoc[$name] = 0;
+                    }
+
+                    $document['$inc'][$name] = $changes[$name] - $oldDoc[$name];
+                } else {
+                    $document['$set'][$name] = $changes[$name];
+                }
+            }
+        }
+
+        return $document;
+    }
+
     public function main()
     {
         /**$obj = (array)new \foobar\User;
