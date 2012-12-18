@@ -124,6 +124,12 @@ class Connection
 
     public function save($obj, $safe = true)
     {
+        if ($obj instanceof DocumentProxy) {
+            $obj = $obj->getObject();
+            if (empty($obj)) {
+                return $this;
+            }
+        }
         $class = get_class($obj);
         if (empty($this->classes[$class])) {
             $collection =  Runtime\Serialize::getCollection($obj);

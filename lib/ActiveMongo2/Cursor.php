@@ -21,4 +21,9 @@ class Cursor extends MongoCursor
         $current = parent::current();
         return $this->conn->registerDocument($this->class, $current);
     }
+
+    public function toArrary()
+    {
+        return iterator_to_array($this);
+    }
 }

@@ -2,13 +2,17 @@
 
 namespace ActiveMongo2\Runtime;
 
-class Reference
+use ActiveMongo2\DocumentProxy;
+
+class Reference implements DocumentProxy
 {
     protected $class;
     protected $doc;
     protected $ref;
     protected $values;
     protected $map;
+
+    protected static $all_objects = array();
 
     public function __construct(Array $info, $class, $conn, $map)
     {
@@ -33,7 +37,11 @@ class Reference
     private function _loadDocument()
     {
         if (!$this->doc) {
-            $this->doc = $this->class->findOne(array('_id' => $this->ref['$id']));
+            $id = sha1(serialize($this->ref));
+            if (empty(self::$all_objects[$id])) {
+                self::$all_objects[$id] = $this->class->findOne(array('_id' => $this->ref['$id']));
+            }
+            $this->doc = self::$all_objects[$id];
         }
     }
 
