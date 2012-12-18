@@ -22,7 +22,7 @@ class Cursor extends MongoCursor
         return $this->conn->registerDocument($this->class, $current);
     }
 
-    public function toArrary()
+    public function toArray()
     {
         return iterator_to_array($this);
     }
