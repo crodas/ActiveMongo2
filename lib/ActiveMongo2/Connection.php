@@ -20,11 +20,13 @@ class Connection
     protected $classes;
     protected $mapping = array();
     protected $docs = array();
+    protected $uniq = null;
 
     public function __construct(MongoClient $conn, $db)
     {
         $this->conn = $conn;
         $this->db   = $conn->selectDB($db);
+        $this->uniq = "__status_" . uniqid(true);
     }
 
     public function getConnection()
@@ -88,17 +90,39 @@ class Connection
     protected function setObjectDocument($object, Array $document)
     {
         Runtime\Serialize::setDocument($object, $document, $this);
-        $this->docs[spl_object_hash($object)] = array($document, $object);
+        $hash  = spl_object_hash($object);
+        $prop  = $this->uniq;
+
+        if (empty($object->$prop)) {
+            $value = uniqid(true);
+            $object->$prop = $value;
+        } else {
+            $value = $object->$prop;
+        }
+
+        $this->docs[$hash] = array($document, $value);
     }
 
-    public function getRawDocument($object)
+    public function getRawDocument($object, $default = NULL)
     {
         $docid = spl_object_hash($object);
         if (empty($this->docs[$docid])) {
-            throw new \RuntimeException("Cannot find document");
+            if ($default === NULL) {
+                throw new \RuntimeException("Cannot find document");
+            } 
+            return $default;
         }
 
-        $doc = $this->docs[$docid];
+        $doc  = $this->docs[$docid];
+        $prop = $this->uniq;
+
+        if (empty($object->$prop) || $object->$prop != $doc[1]) {
+            if ($default === NULL) {
+                throw new \RuntimeException("Cannot find document");
+            } 
+            return $default;
+        }
+
         return $doc[0];
     }
 
@@ -137,9 +161,8 @@ class Connection
         }
 
         $document = Runtime\Serialize::getDocument($obj, $this);
-        $hash = spl_object_hash($obj);
-        if (!empty($this->docs[spl_object_hash($obj)])) {
-            $oldDoc   = $this->docs[$hash][0];
+        $oldDoc   = $this->getRawDocument($obj, false);
+        if ($oldDoc) {
             $changes  = array_diff($document, $oldDoc);
             if (empty($changes)) {
                 // nothing to do!
