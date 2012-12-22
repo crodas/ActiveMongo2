@@ -147,6 +147,17 @@ class Connection
         $this->classes[$class]->remove(array('_id' => $document['_id']));
     }
 
+    protected function array_diff_ex($arr1, $arr2)
+    {
+        $diff = array();
+        foreach ($arr1 as $key => $value) {
+            if ($arr2[$key] !== $arr1[$key]) {
+                $diff[$key] = $value;
+            }
+        }
+        return $diff;
+    }
+
     public function save($obj, $safe = true)
     {
         if ($obj instanceof DocumentProxy) {
@@ -164,7 +175,8 @@ class Connection
         $document = Runtime\Serialize::getDocument($obj, $this);
         $oldDoc   = $this->getRawDocument($obj, false);
         if ($oldDoc) {
-            $changes  = array_diff($document, $oldDoc);
+            $changes  = $this->array_diff_ex($document, $oldDoc);
+
             if (empty($changes)) {
                 // nothing to do!
                 return $this;
