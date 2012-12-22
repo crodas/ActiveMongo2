@@ -84,6 +84,7 @@ class Connection
             $doc = $refl->newInstance();
         }
         $this->setObjectDocument($doc, $document);
+        Runtime\Events::run('onHydratation', $doc);
         return $doc;
     }
 
