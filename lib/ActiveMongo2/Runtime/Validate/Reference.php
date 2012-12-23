@@ -12,16 +12,20 @@ class Reference
         if (empty($value)) {
             return true;
         }
-
-        $class = current($ann['args']);
-        $class = $connection->getDocumentClass($class);
-
         if ($value instanceof ref) {
             return true;
         }
         
-        if (!($value instanceof $class)) {
-            return false;
+
+        if ($ann['args']) {
+            $class = current($ann['args']);
+            $class = $connection->getDocumentClass($class);
+
+            if (!($value instanceof $class)) {
+                return false;
+            }
+        } else {
+            $class = get_class($value);
         }
 
         $ref = Utils::getReflectionClass($class);
@@ -42,18 +46,19 @@ class Reference
             $value = $value->getObject();
         }
 
-        $class = current($ann['args']);
-        $class = $connection->getDocumentClass($class);
+        if ($ann['args']) {
+            $class = current($ann['args']);
+            $class = $connection->getDocumentClass($class);
         
-        if (!is_a($value, $class)) {
-            return NULL;
+            if (!is_a($value, $class)) {
+                return NULL;
+            }
+        } else {
+            $class = get_class($value);
         }
 
         $ref = Utils::getReflectionClass($class);
         $ann = $ref->getAnnotations();
-        if (!$ann->get('Referenceable')) {
-            throw new \RuntimeException("$class can not be referenced");
-        }
 
         $connection->save($value);
 
@@ -63,11 +68,16 @@ class Reference
             '$ref' => Serialize::getCollection($value),
             '$id'  => $doc['_id'],
         );
+
         if ($ann->getOne('Referenceable')) {
             $keys = $ann->getOne('Referenceable');
             $keys = array_combine($keys, $keys);
 
             $ref['_extra'] = array_intersect_key($doc, $keys);
+        }
+
+        if (!$ann['args']) {
+            $ref['_class'] = $class;
         }
 
         return $ref;

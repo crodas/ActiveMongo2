@@ -13,8 +13,12 @@ class Reference
             return NULL;
         }
 
-        $class = current($ann['args']);
-        $class = $connection->getDocumentClass($class);
+        if ($ann['args']) {
+            $class = current($ann['args']);
+            $class = $connection->getDocumentClass($class);
+        } else {
+            $class = $value['_class'];
+        }
 
         $map = Serialize::getDocummentMapping($class);
 
