@@ -175,14 +175,11 @@ class Connection
         $document = Runtime\Serialize::getDocument($obj, $this);
         $oldDoc   = $this->getRawDocument($obj, false);
         if ($oldDoc) {
-            $changes  = $this->array_diff_ex($document, $oldDoc);
+            $update = Runtime\Serialize::changes($obj, $document, $oldDoc, $this);
 
-            if (empty($changes)) {
-                // nothing to do!
+            if (empty($update)) {
                 return $this;
             }
-
-            $update = Runtime\Serialize::changes($obj, $changes, $oldDoc);
 
             Runtime\Events::run('preUpdate', $obj, array(&$update, $this));
 

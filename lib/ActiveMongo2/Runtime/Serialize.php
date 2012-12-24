@@ -121,7 +121,7 @@ class Serialize
         return $document;
     }
 
-    public static function changes($object, $changes, $oldDoc)
+    public static function changes($object, $current, $oldDoc)
     {
         $refl = Utils::getReflectionClass($object);
         $ann  = $refl->getAnnotations();
@@ -138,15 +138,38 @@ class Serialize
                 continue;
             }
 
-            if (array_key_exists($name, $changes)) {
-                if ($ann->has('Int')) {
+            if (array_key_exists($name, $current) && array_key_exists($name, $oldDoc) && $current[$name] === $oldDoc[$name]) {
+                continue;
+            }
+
+            if (array_key_exists($name, $current)) {
+                if ($ann->has('Inc')) {
                     if (empty($oldDoc[$name])) {
                         $oldDoc[$name] = 0;
                     }
-
-                    $document['$inc'][$name] = $changes[$name] - $oldDoc[$name];
+                    $document['$inc'][$name] = $current[$name] - $oldDoc[$name];
+                } else if ($ann->has('Embed') && array_key_exists($name, $oldDoc)) {
+                    $doc = self::changes($object->{$name}[$index], $current[$name][$index], $oldDoc[$name][$index]);
+                    foreach ($doc as $op => $update) {
+                        foreach ($update as $key => $val) {
+                            $document[$op][$name . ".$index." . $key] = $val;
+                        }
+                    }
+                } else if ($ann->has('EmbedMany') && array_key_exists($name, $oldDoc)) {
+                    foreach ($current[$name] as $index => $value) {
+                        if (!array_key_exists($index, $oldDoc[$name])) {
+                            $document['$push'][$name] = $value;
+                            continue;
+                        }
+                        $doc = self::changes($object->{$name}[$index], $current[$name][$index], $oldDoc[$name][$index]);
+                        foreach ($doc as $op => $update) {
+                            foreach ($update as $key => $val) {
+                                $document[$op][$name . ".$index." . $key] = $val;
+                            }
+                        }
+                    }
                 } else {
-                    $document['$set'][$name] = $changes[$name];
+                    $document['$set'][$name] = $current[$name];
                 }
             }
         }
