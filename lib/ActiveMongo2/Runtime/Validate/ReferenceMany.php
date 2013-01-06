@@ -40,6 +40,10 @@ class ReferenceMany
 
     public static function transformate($value, $ann, $connection)
     {
+        if (empty($value)) {
+            return NULL;
+        }
+
         $values = array();
         $class  = current($ann['args']);
         $class  = $connection->getDocumentClass($class);

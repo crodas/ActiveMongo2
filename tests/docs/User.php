@@ -14,4 +14,13 @@ class UserDocument
     /** @String @Required */
     public $username;
 
+    /** @Inc */
+    public $visits = 0;
+
+
+    /** @Embed(class="Address") */
+    public $address;
+
+    /** @EmbedMany(class="Address") */
+    public $addresses;
 }

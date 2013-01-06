@@ -3,6 +3,7 @@
 use ActiveMongo2\Tests\Document\AutoincrementDocument;
 use ActiveMongo2\Tests\Document\UserDocument;
 use ActiveMongo2\Tests\Document\PostDocument;
+use ActiveMongo2\Tests\Document\AddressDocument;
 
 class SimpleTest extends \phpunit_framework_testcase
 {
@@ -107,5 +108,45 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($savedPost->author->userid, $user->userid);
         $this->assertEquals($savedPost->author->username, $user->username);
 
+    }
+
+    public function testComplexUpdate()
+    {
+        $addr = new AddressDocument;
+        $addr->city = "Asuncion";
+
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "foobar";
+        $user->address  = $addr;
+        $user->addresses[] = $addr;
+        $user->addresses[] = $addr;
+        $user->addresses[] = $addr;
+
+        $conn->save($user);
+        $user->visits += 10;
+        $conn->save($user);
+
+
+        $user2 = $conn->getCollection('user')->findOne(array('_id' => $user->userid));
+        $user2->visits += 10;
+        $user2->address->city = "Luque";
+        $user2->addresses[2]->city = "CDE";
+        $conn->save($user);
+
+        $user->visits  += 10;
+        $user2->visits += 10;
+        $user2->username = "barfoo";
+
+        $conn->save($user);
+        $conn->save($user2);
+
+        
+        $fromDB  = $conn->getCollection('user')->findOne(array('_id' => $user->userid));
+        $this->assertTrue($fromDB->address instanceof AddressDocument);
+        $this->assertEquals($fromDB->address->city, "Luque");
+        $this->assertEquals($fromDB->addresses[2]->city, "CDE");
+        $this->assertEquals($fromDB->visits, 40);
+        $this->assertEquals($fromDB->username, "barfoo");
     }
 }

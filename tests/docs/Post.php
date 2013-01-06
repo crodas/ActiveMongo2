@@ -11,7 +11,6 @@ class PostDocument
     /** @Id */
     public $id;
 
-    /** @Reference("user") */
+    /** @Reference("user") @Required */
     public $author;
-
 }

@@ -149,10 +149,10 @@ class Serialize
                     }
                     $document['$inc'][$name] = $current[$name] - $oldDoc[$name];
                 } else if ($ann->has('Embed') && array_key_exists($name, $oldDoc)) {
-                    $doc = self::changes($object->{$name}[$index], $current[$name][$index], $oldDoc[$name][$index]);
+                    $doc = self::changes($object->{$name}, $current[$name], $oldDoc[$name]);
                     foreach ($doc as $op => $update) {
                         foreach ($update as $key => $val) {
-                            $document[$op][$name . ".$index." . $key] = $val;
+                            $document[$op][$name . "." . $key] = $val;
                         }
                     }
                 } else if ($ann->has('EmbedMany') && array_key_exists($name, $oldDoc)) {
