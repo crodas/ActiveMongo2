@@ -2,7 +2,10 @@
 
 namespace ActiveMongo2\Tests\Document;
 
-/** @Persist(collection="users") */
+/** 
+ * @Persist(collection="users") 
+ * @Referenceable
+ */
 class UserDocument
 {
     /** @Id */

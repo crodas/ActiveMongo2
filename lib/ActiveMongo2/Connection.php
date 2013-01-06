@@ -8,6 +8,7 @@ use MongoId;
 class Connection
 {
     protected $conn;
+    protected $db;
 
     /** 
      *  Collections to Classes mapping
@@ -27,6 +28,11 @@ class Connection
         $this->conn = $conn;
         $this->db   = $conn->selectDB($db);
         $this->uniq = "__status_" . uniqid(true);
+    }
+
+    public function command($command, $args = array())
+    {
+        return $this->db->command($command, $args);
     }
 
     public function getConnection()
@@ -205,5 +211,10 @@ class Connection
         $this->setObjectDocument($obj, $document);
 
         return $this;
+    }
+
+    public function dropDatabase()
+    {
+        return $this->db->drop();
     }
 }
