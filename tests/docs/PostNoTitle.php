@@ -7,20 +7,14 @@ namespace ActiveMongo2\Tests\Document;
  * @Sluggable("title", "uri")
  * @Autoincrement
  */
-class PostDocument
+class PostNoTitleDocument
 {
     /** @Id */
     public $id;
 
-    /** @Reference("user") @Required */
-    public $author;
-
-    /** @Required @String */
+    /** @String */
     public $title;
 
     /** @String @Unique */
     public $uri;
-
-    /** @ReferenceMany("user") */
-    public $readers;
 }

@@ -5,6 +5,7 @@ namespace ActiveMongo2\Tests\Document;
 /** 
  * @Persist(collection="users") 
  * @Referenceable
+ * @Unupdatable("email")
  */
 class UserDocument
 {
@@ -23,4 +24,7 @@ class UserDocument
 
     /** @EmbedMany(class="Address") */
     public $addresses;
+
+    /** @Email */
+    public $email;
 }

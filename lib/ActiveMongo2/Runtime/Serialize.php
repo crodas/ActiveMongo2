@@ -8,7 +8,7 @@ class Serialize
         $refl = Utils::getReflectionClass($class);
         $ann  = $refl->getAnnotations();
         if (!$ann->has('Persist')) {
-            throw new \RuntimeException("Class $class cannot persist. @Persist annotation is missing");
+            throw new \RuntimeException("Class " . $refl->getName() . " cannot persist. @Persist annotation is missing");
         }
 
         $persist = $ann->getOne('Persist');

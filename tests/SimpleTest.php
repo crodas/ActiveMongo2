@@ -102,12 +102,42 @@ class SimpleTest extends \phpunit_framework_testcase
 
         $post = new PostDocument;
         $post->author = $user;
+        $post->title  = "foobar post";
+        $post->readers[] = $user;
         $conn->save($post);
 
         $savedPost = $conn->getCollection('post')->findOne();
         $this->assertEquals($savedPost->author->userid, $user->userid);
         $this->assertEquals($savedPost->author->username, $user->username);
+        $this->assertEquals($savedPost->uri, "foobar-post");
 
+    }
+
+    /** 
+     * @expectedException RuntimeException
+     */
+    public function testValidateEmail()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "foobar";
+        $user->email = "dasd";
+        $conn->save($user);
+    }
+
+    /** 
+     * @expectedException RuntimeException
+     */
+    public function testUnupdatable()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "foobar";
+        $user->email = "saddor@gmail.com";
+        $conn->save($user);
+
+        $user->email = "foobar@gmail.com";
+        $conn->save($user);
     }
 
     public function testComplexUpdate()

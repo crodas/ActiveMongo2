@@ -41,6 +41,12 @@ class Sluggable
             throw new \RuntimeException("@Sluggable expects two arguments");
         }
 
+        if (!empty($document[$args[1]])) {
+            /* If the slug already exists, and it is different than
+               empty, then use just exit gracefully */
+            return;
+        }
+
         $source = self::sluggify($document[$args[0]]);
         $col = $conn->getCollection(get_class($object));
 
