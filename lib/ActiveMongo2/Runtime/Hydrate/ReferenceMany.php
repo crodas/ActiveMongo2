@@ -37,21 +37,26 @@
 
 namespace ActiveMongo2\Runtime\Hydrate;
 
-class EmbedMany
-{
+use ActiveMongo2\Runtime\Reference as zReference;
+use ActiveMongo2\Runtime\Serialize;
 
-    public static function Hydrate($value, $ann, $connection)
+class ReferenceMany
+{
+    public static function Hydrate($values, $ann, $connection)
     {
-        if (!is_array($value)) {
+        if (!is_array($values)) {
             return NULL;
         }
+
         $class = current($ann['args']);
         $class = $connection->getDocumentClass($class);
 
-        foreach ($value as $id => $doc) {
-            $value[$id] = $connection->registerDocument($class, $doc);
+        $docs = array();
+        $map  = Serialize::getDocummentMapping($class);
+        foreach ($values as $id => $value) {
+            $docs[$id] = new zReference($value, $class, $connection, $map);
         }
 
-        return $value;
+        return $docs;
     }
 }
