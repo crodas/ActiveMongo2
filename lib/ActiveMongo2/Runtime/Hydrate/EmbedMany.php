@@ -45,11 +45,16 @@ class EmbedMany
         if (!is_array($value)) {
             return NULL;
         }
-        $class = current($ann['args']);
-        $class = $connection->getDocumentClass($class);
+
+        $class = NULL; /* guess each type at run time */
+        if ($ann['args']) {
+            /* The fixed type, better for all of us */
+            $class = current($ann['args']);
+            $class = $connection->getDocumentClass($class);
+        }
 
         foreach ($value as $id => $doc) {
-            $value[$id] = $connection->registerDocument($class, $doc);
+            $value[$id] = $connection->registerDocument($class ?: $doc['@object_class'], $doc);
         }
 
         return $value;

@@ -149,6 +149,9 @@ class SimpleTest extends \phpunit_framework_testcase
         $user = new UserDocument;
         $user->username = "foobar";
         $user->address  = $addr;
+        $user->something = $addr;
+        $user->something_else[] = $addr;
+        $user->something_else[] = $addr;
         $user->addresses[] = $addr;
         $user->addresses[] = $addr;
         $user->addresses[] = $addr;
@@ -173,7 +176,11 @@ class SimpleTest extends \phpunit_framework_testcase
 
         
         $fromDB  = $conn->getCollection('user')->findOne(array('_id' => $user->userid));
+        $this->assertTrue($fromDB->something instanceof AddressDocument);
         $this->assertTrue($fromDB->address instanceof AddressDocument);
+        foreach ($fromDB->something_else  as $doc) {
+            $this->assertTrue($doc instanceof AddressDocument);
+        }
         $this->assertEquals($fromDB->address->city, "Luque");
         $this->assertEquals($fromDB->addresses[2]->city, "CDE");
         $this->assertEquals($fromDB->visits, 40);

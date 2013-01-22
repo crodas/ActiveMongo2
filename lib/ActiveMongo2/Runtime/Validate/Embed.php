@@ -47,13 +47,21 @@ class Embed
             return true;
         }
 
-        $class = current($ann['args']);
-        $class = $connection->getDocumentClass($class);
-        if (!is_a($value, $class)) {
-            throw new \RuntimeException("Element {$id} is not an object of {$class}");
+        if ($ann['args']) {
+            $class = current($ann['args']);
+            $class = $connection->getDocumentClass($class);
+            if (!is_a($value, $class)) {
+                throw new \RuntimeException("Element {$id} is not an object of {$class}");
+            }
+        } else {
+            $class = get_class($value);
         }
 
         $value = Serialize::getDocument($value, $connection);
+
+        if (!$ann['args']) {
+            $value['@object_class'] = $class;
+        }
 
         return true;
     }

@@ -45,8 +45,13 @@ class Embed
         if (!is_array($value)) {
             return NULL;
         }
-        $class = current($ann['args']);
-        $class = $connection->getDocumentClass($class);
+
+        if ($ann['args']) {
+            $class = current($ann['args']);
+            $class = $connection->getDocumentClass($class);
+        } else {
+            $class = $value['@object_class'];
+        }
 
         return $connection->registerDocument($class, $value);
     }

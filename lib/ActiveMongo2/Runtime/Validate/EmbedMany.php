@@ -49,13 +49,22 @@ class EmbedMany
         if (!is_array($value)) {
             return false;
         }
-        $class = current($ann['args']);
-        $class = $connection->getDocumentClass($class);
+
+        $class = NULL; /* guess each type at run time */
+        if ($ann['args']) {
+            /* The fixed type, better for all of us */
+            $class = current($ann['args']);
+            $class = $connection->getDocumentClass($class);
+        }
+
         foreach ($value as $id => $doc) {
-            if (!is_a($doc, $class)) {
+            if ($class && !is_a($doc, $class)) {
                 throw new \RuntimeException("Element {$id} is not an object of {$class}");
             }
             $value[$id] = Serialize::getDocument($doc, $connection);
+            if (!$class) {
+                $value[$id]['@object_class'] = get_class($doc);
+            }
         }
 
         return true;

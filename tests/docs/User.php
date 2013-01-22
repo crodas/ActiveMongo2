@@ -25,6 +25,14 @@ class UserDocument
     /** @EmbedMany(class="Address") */
     public $addresses;
 
+    // guess the type at run time
+    /** @Embed */
+    public $something;
+
+    // Guess the type at run time
+    /** @EmbedMany */
+    public $something_else;
+
     /** @Email */
     public $email;
 }
