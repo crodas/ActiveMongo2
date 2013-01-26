@@ -65,7 +65,7 @@ class Serialize
         foreach ($refl->getProperties() as $property) {
             $property->setAccessible(true);
             $ann  = $property->getAnnotations();
-            if (!$ann) {
+            if (!$ann || count($ann) == 0) {
                 continue;
             }
             $name  = $property->name;
@@ -89,7 +89,7 @@ class Serialize
         foreach ($refl->getProperties() as $property) {
             $property->setAccessible(true);
             $ann  = $property->getAnnotations();
-            if (!$ann) {
+            if (!$ann || count($ann) == 0) {
                 continue;
             }
             $name  = $property->name;

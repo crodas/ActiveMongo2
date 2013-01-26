@@ -35,4 +35,12 @@ class UserDocument
 
     /** @Email */
     public $email;
+
+    public $runEvent = false;
+
+    /** @preCreate */
+    public function preUpdateEvent()
+    {
+        $this->runEvent = true; 
+    }
 }

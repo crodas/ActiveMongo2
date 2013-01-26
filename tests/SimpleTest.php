@@ -28,7 +28,9 @@ class SimpleTest extends \phpunit_framework_testcase
         $conn = getConnection();
         $user = new UserDocument;
         $user->username = "crodas-" . rand(0, 0xfffff);
+        $this->assertFalse($user->runEvent);
         $conn->save($user);
+        $this->assertTrue($user->runEvent);
         $this->assertTrue($user->userid instanceof \MongoId);
 
         $find = $conn->getCollection('user')
