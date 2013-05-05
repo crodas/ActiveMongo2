@@ -11,5 +11,5 @@ services: mongodb
 before_script:
     - curl -s http://getcomposer.org/installer | php
     - php composer.phar install
-    - pecl install mongo
+    - ./travis/mongo.sh
     - phpenv config-add travis/php.ini
