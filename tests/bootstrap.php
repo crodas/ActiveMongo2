@@ -1,6 +1,6 @@
 <?php
 
-require __DIR__ . "/../packages/autoload.php";
+require __DIR__ . "/../vendor/autoload.php";
 
 foreach (glob(__DIR__ . "/docs/*.php") as $php) {
     require $php;
