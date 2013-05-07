@@ -223,6 +223,22 @@ class FluentQuery implements \IteratorAggregate
         return $this->genericUpdate('$rename', $name);
     }
 
+    public function addToSet($value)
+    {
+        if (is_array($value)) {
+            $value = array('$each' => array_values($value));
+        }
+        return $this->genericUpdate('$addToSet', $value);
+    }
+
+    public function push($value)
+    {
+        if (is_array($value)) {
+            $value = array('$each' => array_values($value));
+        }
+        return $this->genericUpdate('$push', $value);
+    }
+
     public function unsetField()
     {
         return $this->genericUpdate('$unset', 1);
@@ -246,5 +262,10 @@ class FluentQuery implements \IteratorAggregate
         }
 
         return $this->col->find($this->query);
+    }
+
+    public function count()
+    {
+        return $this->col->count($this->query);
     }
 }

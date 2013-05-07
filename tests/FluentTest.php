@@ -1,4 +1,5 @@
 <?php
+use ActiveMongo2\Tests\Document\UserDocument;
 
 class FluentTest extends \phpunit_framework_testcase
 {
@@ -31,6 +32,9 @@ class FluentTest extends \phpunit_framework_testcase
             ->field('foobar')->greaterthan(99)
             ->field('visits')->inc()
             ->field('xxx')->set(1)
+            ->field('zzy')->push(1)
+            ->field('zzz')->push(array(1,2,3))
+            ->field('www')->addToSet(array(1,2,3))
             ->field('yyy')->unsetField();
 
         $expects = array(
@@ -43,6 +47,8 @@ class FluentTest extends \phpunit_framework_testcase
             '$inc' => array('visits' => 1),
             '$set' => array('xxx' => 1),
             '$unset' => array('yyy' => 1),
+            '$push'  => array('zzy' => 1, 'zzz' => array('$each' => array(1,2,3))),
+            '$addToSet'  => array('www' => array('$each' => array(1,2,3))),
         );
 
 
@@ -53,45 +59,50 @@ class FluentTest extends \phpunit_framework_testcase
     public function testOr()
     {
         $conn  = getconnection();
+        $user = new UserDocument;
+        $user->username = "5";
+        $conn->save($user);
+
         $users = $conn->getcollection('user');
         $query = $users->query()
-            ->field('username')->equals( 5 )
+            ->field('username')->equals( "5" )
             ->addOr()
-                ->field('xx')->equals(99)
+                ->field('username')->equals("99")
                 ->End()
             ->addOr()
-                ->field('zxx')->equals(99)
+                ->field('visits')->equals(0)
                 ->End()
             ->addAnd()
-                ->field('yyy')->equals(38)
+                ->field('username')->equals("5")
                 ->end()
             ->addAnd()
-                ->field('xxxx')->equals(210)
+                ->field('visits')->equals(0)
                 ->end()
             ;
 
         $expected = array (
-          'username' => 5,
+          'username' => "5",
           '$or' => 
           array (
             array (
-              'xx' => 99,
+              'username' => "99",
             ),
             array (
-              'zxx' => 99,
+              'visits' => 0,
             ),
           ),
           '$and' => 
           array (
             array (
-              'yyy' => 38,
+              'username' => "5",
             ),
             array (
-              'xxxx' => 210,
+              'visits' => 0,
             ),
           ),
         );
 
+        $this->assertEquals($query->count(), 1);
         $this->assertEquals($query->getQuery(), $expected);
     }
 }
