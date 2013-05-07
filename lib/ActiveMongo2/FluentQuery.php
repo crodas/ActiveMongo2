@@ -39,6 +39,7 @@ namespace ActiveMongo2;
 class FluentQuery implements \IteratorAggregate
 {
     protected $parent;
+    protected $operator;
     protected $col;
     protected $query = array();
     protected $update;
@@ -51,22 +52,26 @@ class FluentQuery implements \IteratorAggregate
 
     protected function finalizeChild($child)
     {
-        if (empty($this->query[$this->field])) {
-            $this->query[$this->field] = array();
+        $op = $child->operator;
+        if ($op == '$not') {
+            $this->genericQuery('$not', $child->query['$not']);
+            return $this;
         }
-        if ($this->field == '$not') {
-            $this->query[$this->field] = $child->query;
-        } else {
-            $this->query[$this->field][] = $child->query;
+        if (empty($this->query[$op])) {
+            $this->query[$op] = array();
         }
+        $this->query[$op][] = $child->query;
         return $this;
     }
     
     protected function createChild($op)
     {
+        if ($this->operator == '$not') {
+            return $this->end()->createChild($op);
+        }
         $expr = new self($this->col);
-        $expr->parent = $this;
-        $this->field = $op;
+        $expr->parent   = $this;
+        $expr->operator = $op;
         return $expr;
     }
 
@@ -91,6 +96,13 @@ class FluentQuery implements \IteratorAggregate
     public function addOr()
     {
         return $this->createchild('$or');
+    }
+
+    public function not()
+    {
+        $not = $this->createChild('$not');
+        $not->field = '$not';
+        return $not;
     }
 
     public function getQuery()
@@ -152,6 +164,9 @@ class FluentQuery implements \IteratorAggregate
     public function equals($value)
     {
         $this->assertField();
+        if ($this->operator == '$not') {
+            throw new \Exception("Invalid call, please use ->notEquals(\$value) instead");
+        }
         $this->query[$this->field] = $value;
         return $this;
     }
@@ -246,17 +261,26 @@ class FluentQuery implements \IteratorAggregate
 
     public function field($name)
     {
+        if ($this->operator == '$not') {
+            return $this->end()->field($name);
+        }
         $this->field = $name;
         return $this;
     }
 
     public function getIterator()
     {
+        if ($this->parent) {
+            return $this->end()->getIterator();
+        }
         return $this->col->find($this->query);
     }
 
     public function execute()
     {
+        if ($this->parent) {
+            return $this->end()->execute();
+        }
         if (!empty($this->update)) {
             return $this->col->update($this->query, $this->update);
         }
@@ -266,6 +290,17 @@ class FluentQuery implements \IteratorAggregate
 
     public function count()
     {
+        if ($this->parent) {
+            return $this->end()->count();
+        }
         return $this->col->count($this->query);
+    }
+
+    public function delete()
+    {
+        if ($this->parent) {
+            return $this->end()->delete();
+        }
+        return $this->col->delete($this->query);
     }
 }

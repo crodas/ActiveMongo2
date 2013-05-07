@@ -65,7 +65,7 @@ class FluentTest extends \phpunit_framework_testcase
 
         $users = $conn->getcollection('user');
         $query = $users->query()
-            ->field('username')->equals( "5" )
+            ->field('username')->not()->greaterThan( "54" )
             ->addOr()
                 ->field('username')->equals("99")
                 ->End()
@@ -81,7 +81,7 @@ class FluentTest extends \phpunit_framework_testcase
             ;
 
         $expected = array (
-          'username' => "5",
+          'username' => array('$not' => array('$gt' => "54")),
           '$or' => 
           array (
             array (
