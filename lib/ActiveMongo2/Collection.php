@@ -52,7 +52,23 @@ class Collection
         }
         $this->zconn  = $conn;
         $this->zcol   = $col;
-        $this->class = $class;
+        $this->class  = $class;
+    }
+
+    protected function analizeUpdate($query)
+    {
+        $ref = Utils::getReflectionClass($this->class);
+    }
+
+    public function query()
+    {
+        return new FluentQuery($this);
+    }
+
+    public function update($filter, $update, $multi = true)
+    {
+        $this->analizeUpdate($update);
+        var_dump($filter, $update);exit;
     }
 
     public function ensureIndex()
@@ -92,23 +108,11 @@ class Collection
 
     public function find($query = array(), $fields = array())
     {
-        /** 
-        var_dump(array(
-            'collection' => (string)$this->zcol,
-            'query' => $query
-        ));
-        **/
         return new Cursor($query, $fields, $this->zconn, $this->zcol, $this->class);
     }
 
     public function findOne($query = array(), $fields = array())
     {
-        /**
-        var_dump(array(
-            'collection' => (string)$this->zcol,
-            'query' => $query
-        ));
-        **/
         $doc =  $this->zcol->findOne($query, $fields);
         if (empty($doc)) {
             return $doc;

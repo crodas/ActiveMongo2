@@ -26,6 +26,7 @@ class SimpleTest extends \phpunit_framework_testcase
     public function testCreateUpdateDelete()
     {
         $conn = getConnection();
+        $conn->getCollection('user')->drop();
         $user = new UserDocument;
         $user->username = "crodas-" . rand(0, 0xfffff);
         $this->assertFalse($user->runEvent);
@@ -44,6 +45,7 @@ class SimpleTest extends \phpunit_framework_testcase
         }
 
         $conn->delete($u);
+
         
         $find = $conn->getCollection('user')
             ->find(array('_id' => $user->userid));

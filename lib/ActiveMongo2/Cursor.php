@@ -51,6 +51,11 @@ class Cursor extends MongoCursor
         parent::__construct($conn->getConnection(), (string)$col, $query, $fields);
     }
 
+    public function first()
+    {
+        return $this->current();
+    }
+
     public function current()
     {
         $current = parent::current();
