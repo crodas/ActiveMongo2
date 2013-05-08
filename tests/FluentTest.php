@@ -105,5 +105,80 @@ class FluentTest extends \phpunit_framework_testcase
         $this->assertEquals($query->count(), 1);
         $this->assertEquals($query->getQuery(), $expected);
     }
+
+    public function testMissingEndOnCount()
+    {
+        $conn  = getconnection();
+        $users = $conn->getcollection('user');
+        $query = $users->query()
+            ->field('username')->not()->greaterThan( "54" )
+            ->addOr()
+                ->field('username')->equals("99")
+                ->End()
+            ->addOr()
+                ->field('visits')->equals(0)
+                ->End()
+            ->addAnd()
+                ->field('username')->equals("5")
+                ->end()
+            ->addAnd()
+                ->field('visits')->equals(0)
+            ;
+
+        $expected = array (
+          'username' => array('$not' => array('$gt' => "54")),
+          '$or' => 
+          array (
+            array (
+              'username' => "99",
+            ),
+            array (
+              'visits' => 0,
+            ),
+          ),
+          '$and' => 
+          array (
+            array (
+              'username' => "5",
+            ),
+            array (
+              'visits' => 0,
+            ),
+          ),
+        );
+
+        $this->assertEquals($query->count(), 1);
+        $this->assertEquals($query->getQuery(), $expected);
+    }
+
+    public function testPull()
+    {
+        $conn  = getconnection();
+        $users = $conn->getcollection('user');
+        $query = $users->query()
+            ->field('foobar')->pullExpr()->greaterThan(5);
+        $update = array('$pull' => array (
+            'foobar' => array (
+                '$gt' => 5,
+            ),
+        ));
+
+        $this->assertEquals($query->getUpdate(), $update);
+        $query = $users->query()
+            ->field('foobar')->pull(5);
+        $update = array('$pull' => array (
+            'foobar' => 5
+        ));
+        $this->assertEquals($query->getUpdate(), $update);
+
+        $this->assertEquals($query->getUpdate(), $update);
+
+        $query = $users->query()
+            ->field('foobar')->pull(array(5, 6));
+        $update = array('$pullAll' => array (
+            'foobar' => array(5, 6)
+        ));
+        $this->assertEquals($query->getUpdate(), $update);
+    }
 }
 

@@ -39,7 +39,9 @@ namespace ActiveMongo2;
 class FluentQuery implements \IteratorAggregate
 {
     protected $parent;
+    protected $exprValue;
     protected $operator;
+    protected $finalized;
     protected $col;
     protected $query = array();
     protected $update;
@@ -52,9 +54,17 @@ class FluentQuery implements \IteratorAggregate
 
     protected function finalizeChild($child)
     {
+        if ($child->finalized) {
+            return $this;
+        }
+        $child->finalized = true;
         $op = $child->operator;
-        if ($op == '$not') {
-            $this->genericQuery('$not', $child->query['$not']);
+        if ($child->exprValue) {
+            if ($op == '$pull') {
+                $this->genericUpdate($op, $child->query['$expr']);
+            } else {
+                $this->genericQuery($op, $child->query['$expr']);
+            }
             return $this;
         }
         if (empty($this->query[$op])) {
@@ -66,7 +76,7 @@ class FluentQuery implements \IteratorAggregate
     
     protected function createChild($op)
     {
-        if ($this->operator == '$not') {
+        if ($this->exprValue) {
             return $this->end()->createChild($op);
         }
         $expr = new self($this->col);
@@ -101,17 +111,24 @@ class FluentQuery implements \IteratorAggregate
     public function not()
     {
         $not = $this->createChild('$not');
-        $not->field = '$not';
+        $not->exprValue = true;
+        $not->field = '$expr';
         return $not;
     }
 
     public function getQuery()
     {
+        if ($this->parent) {
+            return $this->end()->getQuery();
+        }
         return $this->query;
     }
 
     public function getUpdate()
     {
+        if ($this->parent) {
+            return $this->end()->getUpdate();
+        }
         return $this->update;
     }
 
@@ -164,7 +181,7 @@ class FluentQuery implements \IteratorAggregate
     public function equals($value)
     {
         $this->assertField();
-        if ($this->operator == '$not') {
+        if ($this->exprValue) {
             throw new \Exception("Invalid call, please use ->notEquals(\$value) instead");
         }
         $this->query[$this->field] = $value;
@@ -254,6 +271,24 @@ class FluentQuery implements \IteratorAggregate
         return $this->genericUpdate('$push', $value);
     }
 
+    public function pull($value)
+    {
+        return $this->genericUpdate(is_array($value) ? '$pullAll' : '$pull', $value);
+    }
+
+    public function pullExpr()
+    {
+        $not = $this->createChild('$pull');
+        $not->exprValue = true;
+        $not->field = '$expr';
+        return $not;
+    }
+
+    public function pop($end = true)
+    {
+        return $this->genericUpdate('$pop', $end ? 1 : -1);
+    }
+
     public function unsetField()
     {
         return $this->genericUpdate('$unset', 1);
@@ -261,7 +296,7 @@ class FluentQuery implements \IteratorAggregate
 
     public function field($name)
     {
-        if ($this->operator == '$not') {
+        if ($this->exprValue) {
             return $this->end()->field($name);
         }
         $this->field = $name;
