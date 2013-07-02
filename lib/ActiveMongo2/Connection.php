@@ -229,7 +229,7 @@ class Connection
                 $update,
                 array('safe' => $safe)
             );
-            Runtime\Events::run('postUpdate', $obj);
+            Runtime\Events::run('postUpdate', $obj, array($this));
             $this->setObjectDocument($obj, $document);
 
             return $this;
@@ -240,10 +240,10 @@ class Connection
             $document['_id'] = new MongoId;
         }
 
-        $this->classes[$class]->save($document, array('safe' => $safe));
-        Runtime\Events::run('postCreate', $obj);
-
         $this->setObjectDocument($obj, $document);
+
+        $this->classes[$class]->save($document, array('safe' => $safe));
+        Runtime\Events::run('postCreate', $obj, array($this));
 
         return $this;
     }

@@ -34,88 +34,31 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2\Runtime\Validate;
+namespace ActiveMongo2\Plugin;
 
-use ActiveMongo2\Runtime\Utils;
-use ActiveMongo2\Runtime\Serialize;
-use ActiveMongo2\Runtime\Reference as ref;
+use Notoj\Annotation;
 
-class Reference
+/** @Persist(table="universal") */
+class UniversalDocument
 {
-    public static function validate($value, $ann, $connection)
-    {
-        if (empty($value)) {
-            return true;
-        }
-        if ($value instanceof ref) {
-            return true;
-        }
-        
+    /** @Id */
+    public $id;
 
-        if ($ann['args']) {
-            $class = current($ann['args']);
-            $class = $connection->getDocumentClass($class);
-
-            if (!($value instanceof $class)) {
-                return false;
-            }
-        } else {
-            $class = get_class($value);
-        }
-
-        $ref = Utils::getReflectionClass($class);
-        $ann = $ref->getAnnotations();
-        if (!$ann->get('Referenceable') && !$ann->get('Universal')) {
-            throw new \RuntimeException("$class can not be referenced");
-        }
-
-        return true;
-    }
-
-    public static function transformate($value, $ann, $connection)
-    {
-        if ($value instanceof ref) {
-            if (!$value->getObject()) {
-                return $value->getReference();
-            }
-            $value = $value->getObject();
-        }
-
-        if ($ann['args']) {
-            $class = current($ann['args']);
-            $class = $connection->getDocumentClass($class);
-        
-            if (!is_a($value, $class)) {
-                return NULL;
-            }
-        } else {
-            $class = get_class($value);
-        }
-
-        $ref = Utils::getReflectionClass($class);
-        $ann = $ref->getAnnotations();
-
-        $connection->save($value);
-
-        $doc = $connection->getRawDocument($value);
-
-        $ref = array(
-            '$ref' => Serialize::getCollection($value),
-            '$id'  => $doc['_id'],
-        );
-
-        if ($ann->getOne('Referenceable')) {
-            $keys = $ann->getOne('Referenceable');
-            $keys = array_combine($keys, $keys);
-
-            $ref['_extra'] = array_intersect_key($doc, $keys);
-        }
-
-        if (!$ann['args']) {
-            $ref['_class'] = $class;
-        }
-
-        return $ref;
-    }
+    /** @Reference */
+    public $object;
 
 }
+
+class Universal
+{
+    /**
+     *  @postCreate
+     */
+    public static function setCollectionId($doc, $object, $conn)
+    {
+        $uuid = new UniversalDocument;
+        $uuid->object = $object;
+        $conn->save($uuid);
+    }
+}
+
