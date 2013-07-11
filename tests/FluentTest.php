@@ -54,6 +54,24 @@ class FluentTest extends \phpunit_framework_testcase
 
         $this->assertEquals($query->GetQuery(), $expects);
         $this->assertEquals($query->getUpdate(), $update);
+
+        $result = $query->execute();
+        $this->assertFalse($result['updatedExisting']);
+        $this->assertEquals(0, $result['n']);
+
+        for ($i=0; $i < 50; $i++) {
+            $u = new UserDocument;
+            $u->username = uniqid();
+            $conn->save($u);
+        }
+
+        $result = $conn->getcollection('user')
+            ->query()
+            ->field('foobar')->set(5)
+            ->execute();
+
+        $this->assertTrue($result['updatedExisting']);
+        $this->assertEquals($i, $result['n']);
     }
 
     public function testOr()

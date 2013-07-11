@@ -45,6 +45,11 @@ class Collection
     protected $class;
     protected $zcol;
 
+    protected static $defaultOpts = array(
+        'w' => 1,
+        'multiple' => true,
+    );
+
     public function __construct(Connection $conn, $class, MongoCollection $col)
     {
         if (!Utils::class_exists($class)) {
@@ -65,10 +70,11 @@ class Collection
         return new FluentQuery($this);
     }
 
-    public function update($filter, $update, $multi = true)
+    public function update($filter, $update, $opts = array())
     {
         $this->analizeUpdate($update);
-        var_dump($filter, $update);exit;
+        $opts = array_merge(self::$defaultOpts, $opts);
+        return $this->zcol->update($filter, $update, $opts);
     }
 
     public function ensureIndex()
