@@ -37,6 +37,7 @@
 namespace ActiveMongo2\Plugin;
 
 use Notoj\Annotation;
+use ActiveMongo2\Runtime\Utils;
 
 /** @Persist(table="universal") */
 class UniversalDocument
@@ -56,9 +57,22 @@ class Universal
      */
     public static function setCollectionId($doc, $object, $conn)
     {
+        $reflection = Utils::getReflectionClass($object);
         $uuid = new UniversalDocument;
         $uuid->object = $object;
         $conn->save($uuid);
+
+        $has = false;
+        foreach ($reflection->getProperties() as $prop) {
+            if ($prop->getAnnotations()->has('Universal')) {
+                $prop->setValue($object, $uuid->id);
+                $has = true;
+            }
+        }
+
+        if ($has) {
+            $conn->save($object);
+        }
     }
 }
 
