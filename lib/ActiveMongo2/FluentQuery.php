@@ -323,6 +323,18 @@ class FluentQuery implements \IteratorAggregate
         return $this->col->find($this->query);
     }
 
+    public function first()
+    {
+        if ($this->parent) {
+            return $this->end()->execute();
+        }
+        if (!empty($this->update)) {
+            throw new \RuntimeException("You cannot use first() with updates");
+        }
+
+        return $this->col->findOne($this->query);
+    }
+
     public function count()
     {
         if ($this->parent) {
