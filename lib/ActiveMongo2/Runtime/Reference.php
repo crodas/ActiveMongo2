@@ -82,7 +82,19 @@ class Reference implements DocumentProxy
 
     public function __call($name, $args)
     {
+        if (!empty($this->map[$name])) {
+            $zname = $this->map[$name];
+            if (array_key_exists($zname, $this->values)) {
+                return $this->values[$zname];
+            }
+        }
+
         $this->_loadDocument();
+
+        if (!empty($this->doc->$name)) {
+            return $this->doc->$name;
+        }
+
         return call_user_func_array(array($this->doc, $name), $args);
     }
 
