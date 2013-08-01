@@ -326,7 +326,7 @@ class FluentQuery implements \IteratorAggregate
     public function first()
     {
         if ($this->parent) {
-            return $this->end()->execute();
+            return $this->end()->first();
         }
         if (!empty($this->update)) {
             throw new \RuntimeException("You cannot use first() with updates");
