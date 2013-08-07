@@ -43,6 +43,7 @@ class Mapper
     public function validate_{{sha1($doc['class'])}}(\{{$doc['class']}} $object)
     {
         @foreach ($doc['annotation']->getProperties() as $prop)
+            /** {{$prop['property']}} */
             @if (in_array('public', $prop['visibility']))
             $data = $object->{{$prop['property']}};
             @else
@@ -50,6 +51,15 @@ class Mapper
             $property->setAccessible(true);
             $data = $property->getValue($object);
             @end
+
+            @foreach($validators as $name => $callback)
+            @if ($prop->has($name))
+            if (!{{$callback}}($data)) {
+                throw new \RuntimeException("Validation failed for {{$name}}");
+            }
+            @end
+            @end
+
         @end
     }
 

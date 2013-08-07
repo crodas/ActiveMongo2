@@ -34,90 +34,15 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2;
+namespace ActiveMongo2\Filter;
 
-use Notoj;
-use WatchFiles\Watch;
 
-class Generate
+/** @Validate(String) */
+function _validate_string(&$value)
 {
-    protected $files = array();
-
-    public function __construct(Configuration $config, Watch $watcher)
-    {
-        $annotations = new Notoj\Annotations;
-        $this->files = array();
-        foreach ($config->getModelPath() as $path) {
-            $dir = new Notoj\Dir($path);
-            $dir->getAnnotations($annotations);
-            $this->files = array_merge($this->files, $dir->getFiles());
-        }
-
-        $dir = new Notoj\Dir(__DIR__ . '/Filter');
-        $dir->getAnnotations($annotations);
-
-        $docs = array();
-        foreach ($annotations->get('Persist') as $object) {
-            if (!$object->isClass()) continue;
-            $data = array(
-               'class' => $object['class'], 
-               'file' => $object['file'],
-               'annotation' => $object,
-            );
-
-            foreach ($object->get('Persist') as $ann) {
-                $data['name'] = current($ann['args']);
-                if (empty($data['name'])) continue;
-
-                $docs[ $data['name'] ] = $data;
-            }
-        }
-
-        $validators = array();
-        foreach ($annotations->get('Validate') as $validator) {
-            foreach ($validator->get('Validate') as $val) {
-                $type = current($val['args']);
-                if (empty($type)) continue;
-                if ($validator->isMethod()) {
-                    $validators[$type] = "\\" . $validator['class'] . "::" . $validator['function'];
-                } else if ($validator->isFunction()) {
-                    $validators[$type] = "\\" . $validator['function'];
-                }
-            }
-        }
-
-        $namespace    = sha1($config->getLoader());
-        $class_mapper = $this->getClassMapper($docs);
-        $events       = ['preSave', 'postSave', 'preCreate', 'postCreate'];
-
-        $code = Templates::get('documents')
-            ->render(compact(
-                'docs', 'namespace', 'class_mapper', 'events',
-                'validators'
-            ), true);
-
-        if (file_put_contents($config->getLoader(), $code, LOCK_EX) === false) {
-            throw new \RuntimeException("Cannot write file " . $config->GetLoader());
-        }
-
-        $this->files = array_unique($this->files);
-
-        foreach ($this->files as $file) {
-            $watcher->watchDir(dirname($file));
-            $watcher->watchFile($file);
-        }
-
-        //
-        // $watcher->watch();
+    if (!is_scalar($value)) {
+        return false;
     }
-
-    public function getClassMapper(Array $map)
-    {
-        $docs = array();
-        foreach ($map as $doc) {
-            $docs[$doc['class']] = $doc;
-        }
-
-        return $docs;
-    }
+    $value = "" . $value;
+    return true;
 }

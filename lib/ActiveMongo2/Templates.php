@@ -73,12 +73,20 @@ namespace {
             foreach($docs as $doc) {
                 echo "\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function validate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
+                    echo "            /** " . ($prop['property']) . " */\n";
                     if (in_array('public', $prop['visibility'])) {
                         echo "            \$data = \$object->" . ($prop['property']) . ";\n";
                     }
                     else {
                         echo "            \$property = new \\ReflectionProperty(\$object, \"" . ( $prop['property'] ) . "\");\n            \$property->setAccessible(true);\n            \$data = \$property->getValue(\$object);\n";
                     }
+                    echo "\n";
+                    foreach($validators as $name => $callback) {
+                        if ($prop->has($name)) {
+                            echo "            if (!" . ($callback) . "(\$data)) {\n                throw new \\RuntimeException(\"Validation failed for " . ($name) . "\");\n            }\n";
+                        }
+                    }
+                    echo "\n";
                 }
                 echo "    }\n\n";
                 foreach($events as $ev) {
