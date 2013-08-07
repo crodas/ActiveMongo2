@@ -58,13 +58,14 @@ class Connection
     protected $docs = array();
     protected $uniq = null;
 
-    public function __construct(MongoClient $conn, $db)
+    public function __construct(Configuration $config, MongoClient $conn, $db)
     {
+        $config->initialize();
         $this->conn = $conn;
         $this->db   = $conn->selectDB($db);
         $this->uniq = "__status_" . uniqid(true);
     }
-
+    
     public function command($command, $args = array())
     {
         return $this->db->command($command, $args);

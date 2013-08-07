@@ -16,5 +16,5 @@ class PostNoTitleDocument
     public $title;
 
     /** @String @Unique */
-    public $uri;
+    protected $uri;
 }
