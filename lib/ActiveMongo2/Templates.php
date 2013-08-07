@@ -75,15 +75,25 @@ namespace {
                 foreach($doc['annotation']->getProperties() as $prop) {
                     echo "            /** " . ($prop['property']) . " */\n";
                     if (in_array('public', $prop['visibility'])) {
-                        echo "            \$data = \$object->" . ($prop['property']) . ";\n";
+                        echo "            if (\$object->" . ($prop['property']) . ") {\n                \$data = \$object->" . ($prop['property']) . ";\n            } else {\n";
+                        if ($prop->has('Required')) {
+                            echo "                throw new \\RuntimeException(\"{\$prop['property']} cannot be empty\");\n";
+                        }
+                        else {
+                            echo "                \$data = NULL;\n";
+                        }
+                        echo "            }\n";
                     }
                     else {
                         echo "            \$property = new \\ReflectionProperty(\$object, \"" . ( $prop['property'] ) . "\");\n            \$property->setAccessible(true);\n            \$data = \$property->getValue(\$object);\n";
+                        if ($prop->has('Required')) {
+                            echo "            if (empty(\$data)) {\n                throw new \\RuntimeException(\"{\$prop['property']} cannot be empty\");\n            }\n";
+                        }
                     }
                     echo "\n";
                     foreach($validators as $name => $callback) {
                         if ($prop->has($name)) {
-                            echo "            if (!" . ($callback) . "(\$data)) {\n                throw new \\RuntimeException(\"Validation failed for " . ($name) . "\");\n            }\n";
+                            echo "            if (\$data && !" . ($callback) . "(\$data)) {\n                throw new \\RuntimeException(\"Validation failed for " . ($name) . "\");\n            }\n";
                         }
                     }
                     echo "\n";

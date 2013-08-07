@@ -88,7 +88,7 @@ class Generate
 
         $namespace    = sha1($config->getLoader());
         $class_mapper = $this->getClassMapper($docs);
-        $events       = ['preSave', 'postSave', 'preCreate', 'postCreate'];
+        $events       = array('preSave', 'postSave', 'preCreate', 'postCreate');
 
         $code = Templates::get('documents')
             ->render(compact(

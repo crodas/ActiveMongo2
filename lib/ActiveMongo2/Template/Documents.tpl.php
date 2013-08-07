@@ -45,16 +45,29 @@ class Mapper
         @foreach ($doc['annotation']->getProperties() as $prop)
             /** {{$prop['property']}} */
             @if (in_array('public', $prop['visibility']))
-            $data = $object->{{$prop['property']}};
+            if ($object->{{$prop['property']}}) {
+                $data = $object->{{$prop['property']}};
+            } else {
+                @if ($prop->has('Required'))
+                throw new \RuntimeException("{$prop['property']} cannot be empty");
+                @else
+                $data = NULL;
+                @end
+            }
             @else
             $property = new \ReflectionProperty($object, "{{ $prop['property'] }}");
             $property->setAccessible(true);
             $data = $property->getValue($object);
+            @if ($prop->has('Required'))
+            if (empty($data)) {
+                throw new \RuntimeException("{$prop['property']} cannot be empty");
+            }
+            @end
             @end
 
             @foreach($validators as $name => $callback)
             @if ($prop->has($name))
-            if (!{{$callback}}($data)) {
+            if ($data && !{{$callback}}($data)) {
                 throw new \RuntimeException("Validation failed for {{$name}}");
             }
             @end

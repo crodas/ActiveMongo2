@@ -46,3 +46,16 @@ function _validate_string(&$value)
     $value = "" . $value;
     return true;
 }
+
+/** 
+ * @Validate(Integer) 
+ * @Validate(Int) 
+ */
+function _validate_integer(&$value)
+{
+    if (!is_numeric($value))
+        return false;
+    }
+    $value = (int)$value;
+    return true;
+}
