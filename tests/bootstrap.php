@@ -15,7 +15,6 @@ function getConnection()
 
     $mongo = new MongoClient;
     $conn  = new \ActiveMongo2\Connection($conf, $mongo, 'activemongo2_tests');
-    $conn->registerNamespace("ActiveMongo2\\Tests\\Document\\{{collection}}Document");
 
     return $conn;
 }

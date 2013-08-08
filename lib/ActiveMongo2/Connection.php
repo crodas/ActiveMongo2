@@ -54,16 +54,16 @@ class Connection
      *  Classes to Collections mapping
      */
     protected $classes;
-    protected $mapping = array();
+    protected $mapper;
     protected $docs = array();
     protected $uniq = null;
 
     public function __construct(Configuration $config, MongoClient $conn, $db)
     {
-        $config->initialize();
-        $this->conn = $conn;
-        $this->db   = $conn->selectDB($db);
-        $this->uniq = "__status_" . uniqid(true);
+        $this->mapper = $config->initialize($this);
+        $this->conn   = $conn;
+        $this->db     = $conn->selectDB($db);
+        $this->uniq   = "__status_" . uniqid(true);
     }
     
     public function command($command, $args = array())
@@ -76,24 +76,9 @@ class Connection
         return $this->conn;
     }
 
-    public function registerNamespace($regex)
-    {
-        if (strpos($regex, '{{collection}}') === false) {
-            throw new \RuntimeException("The namespace must have a {{collection}} placeholder");
-        }
-        $this->mapping[] = $regex;
-        return $this;
-    }
-
     public function getDocumentClass($collection)
     {
-        foreach ($this->mapping as $map) {
-            $class = str_replace('{{collection}}', $collection, $map);
-            if (Utils::class_exists($class)) {
-                return $class;
-            }
-        }
-        return null;
+        return $this->mapper->mapCollection($collection)['class'];
     }
 
     public function getCollection($collection)

@@ -66,7 +66,7 @@ class Configuration
         return $this;
     }
 
-    public function initialize()
+    public function initialize(Connection $conn)
     {
         Notoj::enableCache($this->loader . ".tmp");
 
@@ -74,11 +74,15 @@ class Configuration
             $watcher = new Watch($this->loader . ".lock");
             if (!$watcher->isWatching() || $watcher->hasChanged()) {
                 new Generate($this, $watcher);
-                die('rebuild');
             }
         }
-
-        return $this;
+        
+        
+        $class = "\\ActiveMongo2\\Generated" . sha1($this->GetLoader()) . "\\Mapper";
+        if (!class_exists($class, false)) {
+            require $this->getLoader();
+        }
+        return new $class($conn);
     }
 
     public function development()

@@ -53,8 +53,10 @@ class Generate
             $this->files = array_merge($this->files, $dir->getFiles());
         }
 
-        $dir = new Notoj\Dir(__DIR__ . '/Filter');
-        $dir->getAnnotations($annotations);
+        foreach (array('Filter', 'Plugin') as $d) {
+            $dir = new Notoj\Dir(__DIR__ . "/$d");
+            $dir->getAnnotations($annotations);
+        }
 
         $docs = array();
         foreach ($annotations->get('Persist') as $object) {
@@ -87,13 +89,14 @@ class Generate
         }
 
         $namespace    = sha1($config->getLoader());
+        $mapper       = $this->getDocumentMapper($docs);
         $class_mapper = $this->getClassMapper($docs);
         $events       = array('preSave', 'postSave', 'preCreate', 'postCreate');
 
         $code = Templates::get('documents')
             ->render(compact(
                 'docs', 'namespace', 'class_mapper', 'events',
-                'validators'
+                'validators', 'mapper'
             ), true);
 
         if (file_put_contents($config->getLoader(), $code, LOCK_EX) === false) {
@@ -107,14 +110,25 @@ class Generate
             $watcher->watchFile($file);
         }
 
-        //
-        // $watcher->watch();
+        //$watcher->watch();
+    }
+
+    public function getDocumentMapper(Array $map)
+    {
+        $docs = array();
+        foreach ($map as $key => $doc) {
+            unset($doc['annotation']);
+            $docs[$key] = $doc;
+        }
+
+        return $docs;
     }
 
     public function getClassMapper(Array $map)
     {
         $docs = array();
         foreach ($map as $doc) {
+            unset($doc['annotation']);
             $docs[$doc['class']] = $doc;
         }
 

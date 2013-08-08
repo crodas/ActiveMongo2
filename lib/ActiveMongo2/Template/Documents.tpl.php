@@ -2,37 +2,45 @@
 
 namespace ActiveMongo2\Generated{{$namespace}};
 
+use ActiveMongo2\Connection;
+
 class Mapper
 {
-    protected $mapper = {{ var_export($docs, true) }};
+    protected $mapper = {{ var_export($mapper, true) }};
     protected $class_mapper = {{ var_export($class_mapper, true) }};
+    protected $connection;
+
+    public function __construct(Connection $conn)
+    {
+        $this->connection = $conn;
+    }
 
     public function mapCollection($col)
     {
-        if (empty(self::$mapper[$col])) {
-            throw new \RuntimeException("Cannot collection {$col} to its collection");
+        if (empty($this->mapper[$col])) {
+            throw new \RuntimeException("Cannot map {$col} collection to its class");
         }
 
-        return self::$mapper[$col];
+        return $this->mapper[$col];
     }
 
     public function mapClass($class)
     {
-        if (empty(self::$class_mapper[$class])) {
+        if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
 
-        return self::$class_mapper[$class];
+        return $this->class_mapper[$class];
     }
 
     public function mapObject($object)
     {
         $class = get_class($object);
-        if (empty(self::$class_mapper[$class])) {
+        if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
 
-        return self::$class_mapper[$class];
+        return $this->class_mapper[$class];
     }
 
     @foreach($docs as $doc)
@@ -67,7 +75,7 @@ class Mapper
 
             @foreach($validators as $name => $callback)
             @if ($prop->has($name))
-            if ($data && !{{$callback}}($data)) {
+            if ($data !== NULL && !{{$callback}}($data)) {
                 throw new \RuntimeException("Validation failed for {{$name}}");
             }
             @end
@@ -80,8 +88,21 @@ class Mapper
     /**
      *  Code for {{$ev}} events for objects {{$doc['class']}}
      */
-    public function trigger_{{$ev}}_{{sha1($doc['class'])}}($args)
+    public function trigger_{{$ev}}_{{sha1($doc['class'])}}(\{{$doc['class']}} $document, Array $args)
     {
+        @foreach($doc['annotation']->getMethods() as $method)
+            @if ($method->has($ev)) 
+                @if (in_array('public', $method['visibility']))
+            $return = $document->{{$method['function']}}($document, $array, $this->conn, {{var_export($method[0]['args'], true)}});
+                @else
+            $reflection = new ReflectionMethod("\\{{addslashes($doc['class'])}}", "{{$method['function']}}");
+            $return = $reflection->invoke($document, $document, $array, $this->conn, {{var_export($method[0]['args'], true)}});
+                @end
+            if ($return === FALSE) {
+                throw new \RuntimeException("{{addslashes($doc['class']) . "::" . $method['function']}} returned false");
+            }
+            @end
+        @end
     }
 
         @end

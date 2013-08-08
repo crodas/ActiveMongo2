@@ -3,7 +3,7 @@
 namespace ActiveMongo2\Tests\Document;
 
 /** 
- * @Persist(collection="posts")
+ * @Persist(collection="post")
  * @Sluggable("title", "uri")
  * @Autoincrement
  * @Universal
@@ -30,4 +30,12 @@ class PostDocument
 
     /** @Integer */
     public $xxxyyy;
+
+
+    /**
+     *  @preSave
+     */
+    public function __do_something()
+    {
+    }
 }

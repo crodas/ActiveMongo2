@@ -3,7 +3,7 @@
 namespace ActiveMongo2\Tests\Document;
 
 /** 
- * @Persist(collection="users") 
+ * @Persist(collection="user") 
  * @Referenceable
  * @Unupdatable("email")
  */
