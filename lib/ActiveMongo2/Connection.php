@@ -109,9 +109,7 @@ class Connection
 
     protected function setObjectDocument($object, Array $document)
     {
-        var_dump($object, $document);
         $this->mapper->populate($object, $document);
-        var_dump($object, $document);exit;
         $hash  = spl_object_hash($object);
         $prop  = $this->uniq;
 

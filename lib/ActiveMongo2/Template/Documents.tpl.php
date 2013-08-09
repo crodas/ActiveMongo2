@@ -43,6 +43,16 @@ class Mapper
         return $this->class_mapper[$class];
     }
 
+    public function validate($object)
+    {
+        $class = get_class($object);
+        if (empty($this->class_mapper[$class])) {
+            throw new \RuntimeException("Cannot map class {$class} to its document");
+        }
+
+        return $this->{"validate_" . sha1($class)}($object, $data);
+    }
+
     public function populate($object, Array $data)
     {
         $class = get_class($object);
@@ -59,9 +69,7 @@ class Mapper
         @end
     }
 
-
     @foreach($docs as $doc)
-
     /**
      *  Populate objects {{$doc['class']}} 
      */
