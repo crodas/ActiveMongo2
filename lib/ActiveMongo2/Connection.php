@@ -88,18 +88,10 @@ class Connection
         }
 
         $class = $this->getDocumentClass($collection);
-        if ($class) {
-            $mongoCol = $this->db->selectCollection(Runtime\Serialize::getCollection($class));
-            $this->collections[$collection] = new Collection($this, $class, $mongoCol);
-            return $this->collections[$collection];
-        } else if (Utils::class_exists($collection)) {
-            $mongoCol = $this->db->selectCollection(Runtime\Serialize::getCollection($collection));
-            $this->collections[$collection] = new Collection($this, $collection, $mongoCol);
-            return $this->collections[$collection];
-        }
 
-
-        throw new \RuntimeException("Cannot find mapping object for {$collection}");
+        $mongoCol = $this->db->selectCollection($collection);
+        $this->collections[$collection] = new Collection($this, $class, $mongoCol);
+        return $this->collections[$collection];
     }
 
     public function registerDocument($class, Array $document)
@@ -117,7 +109,9 @@ class Connection
 
     protected function setObjectDocument($object, Array $document)
     {
-        Runtime\Serialize::setDocument($object, $document, $this);
+        var_dump($object, $document);
+        $this->mapper->populate($object, $document);
+        var_dump($object, $document);exit;
         $hash  = spl_object_hash($object);
         $prop  = $this->uniq;
 

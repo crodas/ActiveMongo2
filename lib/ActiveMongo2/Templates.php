@@ -69,9 +69,27 @@ namespace {
             if ($return) {
                 ob_start();
             }
-            echo "<?php\n\nnamespace ActiveMongo2\\Generated" . ($namespace) . ";\n\nuse ActiveMongo2\\Connection;\n\nclass Mapper\n{\n    protected \$mapper = " . ( var_export($mapper, true) ) . ";\n    protected \$class_mapper = " . ( var_export($class_mapper, true) ) . ";\n    protected \$connection;\n\n    public function __construct(Connection \$conn)\n    {\n        \$this->connection = \$conn;\n    }\n\n    public function mapCollection(\$col)\n    {\n        if (empty(\$this->mapper[\$col])) {\n            throw new \\RuntimeException(\"Cannot map {\$col} collection to its class\");\n        }\n\n        return \$this->mapper[\$col];\n    }\n\n    public function mapClass(\$class)\n    {\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->class_mapper[\$class];\n    }\n\n    public function mapObject(\$object)\n    {\n        \$class = get_class(\$object);\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->class_mapper[\$class];\n    }\n\n";
+            echo "<?php\n\nnamespace ActiveMongo2\\Generated" . ($namespace) . ";\n\nuse ActiveMongo2\\Connection;\n\nclass Mapper\n{\n    protected \$mapper = " . ( var_export($mapper, true) ) . ";\n    protected \$class_mapper = " . ( var_export($class_mapper, true) ) . ";\n    protected \$connection;\n\n    public function __construct(Connection \$conn)\n    {\n        \$this->connection = \$conn;\n    }\n\n    public function mapCollection(\$col)\n    {\n        if (empty(\$this->mapper[\$col])) {\n            throw new \\RuntimeException(\"Cannot map {\$col} collection to its class\");\n        }\n\n        return \$this->mapper[\$col];\n    }\n\n    public function mapClass(\$class)\n    {\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->class_mapper[\$class];\n    }\n\n    public function mapObject(\$object)\n    {\n        \$class = get_class(\$object);\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->class_mapper[\$class];\n    }\n\n    public function populate(\$object, Array \$data)\n    {\n        \$class = get_class(\$object);\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"populate_\" . sha1(\$class)}(\$object, \$data);\n    }\n\n    public function ensureIndex()\n    {\n";
             foreach($docs as $doc) {
-                echo "\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function validate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n";
+            }
+            echo "    }\n\n\n";
+            foreach($docs as $doc) {
+                echo "\n    /**\n     *  Populate objects " . ($doc['class']) . " \n     */\n    public function populate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, Array \$data)\n    {\n";
+                foreach($doc['annotation']->getProperties() as $prop) {
+                    $name = $prop['property'];
+                    if ($prop->has('Id')) {
+                        $name = '_id';
+                    }
+                    echo "            if (array_key_exists(\"" . ($name) . "\", \$data)) {\n";
+                    if (in_array('public', $prop['visibility'])) {
+                        echo "                \$object->" . ($prop['property']) . " = \$data['" . ($name) . "'];\n";
+                    }
+                    else {
+                        echo "                \$property = new \\ReflectionProperty(\$object, \"" . ( $prop['property'] ) . "\");\n                \$property->setAccessible(true);\n                \$property->setValue(\$object, \$data['" . ($name) . "']);\n";
+                    }
+                    echo "            }\n";
+                }
+                echo "    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function validate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
                     echo "            /** " . ($prop['property']) . " */\n";
                     if (in_array('public', $prop['visibility'])) {

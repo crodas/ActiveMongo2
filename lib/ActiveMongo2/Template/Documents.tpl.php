@@ -43,7 +43,46 @@ class Mapper
         return $this->class_mapper[$class];
     }
 
+    public function populate($object, Array $data)
+    {
+        $class = get_class($object);
+        if (empty($this->class_mapper[$class])) {
+            throw new \RuntimeException("Cannot map class {$class} to its document");
+        }
+
+        return $this->{"populate_" . sha1($class)}($object, $data);
+    }
+
+    public function ensureIndex()
+    {
+        @foreach($docs as $doc)
+        @end
+    }
+
+
     @foreach($docs as $doc)
+
+    /**
+     *  Populate objects {{$doc['class']}} 
+     */
+    public function populate_{{sha1($doc['class'])}}(\{{$doc['class']}} $object, Array $data)
+    {
+        @foreach ($doc['annotation']->getProperties() as $prop)
+            @set($name, $prop['property'])
+            @if ($prop->has('Id'))
+                @set($name, '_id')
+            @end
+            if (array_key_exists("{{$name}}", $data)) {
+            @if (in_array('public', $prop['visibility']))
+                $object->{{$prop['property']}} = $data['{{$name}}'];
+            @else
+                $property = new \ReflectionProperty($object, "{{ $prop['property'] }}");
+                $property->setAccessible(true);
+                $property->setValue($object, $data['{{$name}}']);
+            @end
+            }
+        @end
+    }
 
     /**
      *  Validate {{$doc['class']}} object
