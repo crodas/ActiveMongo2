@@ -38,6 +38,7 @@ namespace ActiveMongo2;
 
 use Notoj;
 use WatchFiles\Watch;
+use crodas\SimpleView\FixCode;
 
 class Generate
 {
@@ -100,6 +101,8 @@ class Generate
                 'docs', 'namespace', 'class_mapper', 'events',
                 'validators', 'mapper', 'files'
             ), true);
+
+        $code = FixCode::fix($code);
 
         if (file_put_contents($config->getLoader(), $code, LOCK_EX) === false) {
             throw new \RuntimeException("Cannot write file " . $config->GetLoader());
