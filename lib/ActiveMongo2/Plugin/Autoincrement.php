@@ -53,7 +53,7 @@ class Autoincrement
     public static function setCollectionId(Array $args, $object, Array &$document, $conn)
     {
         if (empty($document['_id'])) {
-            $doc = $doc = $doc = $doc = $conn->getCollection(__CLASS__)->findAndModify(
+            $doc = $conn->getCollection("_autoincrement")->findAndModify(
                 array('_id' => get_class($object)),
                 array('$inc' => array('lastId' => 1)),
                 array('upsert' => true, 'new' => true)
