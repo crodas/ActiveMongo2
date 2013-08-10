@@ -70,7 +70,7 @@ namespace {
                 ob_start();
             }
             echo "<?php\n\nnamespace ActiveMongo2\\Generated" . ($namespace) . ";\n\nuse ActiveMongo2\\Connection;\n\nclass Mapper\n{\n    protected \$mapper = " . ( var_export($mapper, true) ) . ";\n    protected \$class_mapper = " . ( var_export($class_mapper, true) ) . ";\n    protected \$loaded = array();\n    protected \$connection;\n\n    public function __construct(Connection \$conn)\n    {\n        \$this->connection = \$conn;\n    }\n\n    public function mapCollection(\$col)\n    {\n        if (empty(\$this->mapper[\$col])) {\n            throw new \\RuntimeException(\"Cannot map {\$col} collection to its class\");\n        }\n\n        \$data = \$this->mapper[\$col];\n\n        if (empty(\$this->loaded[\$data['file']])) {\n            require_once \$data['file'];\n            \$this->loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    public function mapClass(\$class)\n    {\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        \$data = \$this->class_mapper[\$class];\n\n        if (empty(\$this->loaded[\$data['file']])) {\n            require_once \$data['file'];\n            \$this->loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    public function mapObject(\$object)\n    {\n        \$class = get_class(\$object);\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->class_mapper[\$class];\n    }\n\n    public function validate(\$object)\n    {\n        \$class = get_class(\$object);\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"validate_\" . sha1(\$class)}(\$object);\n    }\n\n    public function populate(\$object, Array \$data)\n    {\n        \$class = get_class(\$object);\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"populate_\" . sha1(\$class)}(\$object, \$data);\n    }\n\n    public function ensureIndex()\n    {\n";
-            foreach($docs as $doc) {
+            foreach($indexes as $index) {
             }
             echo "    }\n\n";
             foreach($docs as $doc) {
@@ -121,20 +121,21 @@ namespace {
                 }
                 echo "\n        return \$doc;\n    }\n\n";
                 foreach($events as $ev) {
-                    echo "    /**\n     *  Code for " . ($ev) . " events for objects " . ($doc['class']) . "\n     */\n    public function trigger_" . ($ev) . "_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$document, Array \$args)\n    {\n";
+                    echo "    /**\n     *  Code for " . ($ev) . " events for objects " . ($doc['class']) . "\n     */\n        public function trigger_" . ($ev) . "_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$document, Array \$args)\n        {\n";
                     foreach($doc['annotation']->getMethods() as $method) {
                         if ($method->has($ev)) {
                             if (in_array('public', $method['visibility'])) {
-                                echo "                    \$return = \$document->" . ($method['function']) . "(\$document, \$array, \$this->conn, " . (var_export($method[0]['args'], true)) . ");\n";
+                                echo "                        \$return = \$document->" . ($method['function']) . "(\$document, \$array, \$this->conn, " . (var_export($method[0]['args'], true)) . ");\n";
                             }
                             else {
-                                echo "                    \$reflection = new ReflectionMethod(\"\\\\" . (addslashes($doc['class'])) . "\", \"" . ($method['function']) . "\");\n                    \$return = \$reflection->invoke(\$document, \$document, \$array, \$this->conn, " . (var_export($method[0]['args'], true)) . ");\n";
+                                echo "                        \$reflection = new ReflectionMethod(\"\\\\" . (addslashes($doc['class'])) . "\", \"" . ($method['function']) . "\");\n                        \$return = \$reflection->invoke(\$document, \$document, \$array, \$this->conn, " . (var_export($method[0]['args'], true)) . ");\n";
                             }
-                            echo "                if (\$return === FALSE) {\n                    throw new \\RuntimeException(\"" . (addslashes($doc['class']) . "::" . $method['function']) . " returned false\");\n                }\n";
+                            echo "                    if (\$return === FALSE) {\n                        throw new \\RuntimeException(\"" . (addslashes($doc['class']) . "::" . $method['function']) . " returned false\");\n                    }\n";
                         }
                     }
-                    echo "    }\n\n";
+                    echo "        }\n    \n";
                 }
+                echo "\n";
             }
             echo "}\n";
 

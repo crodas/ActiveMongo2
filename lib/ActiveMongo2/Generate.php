@@ -95,11 +95,22 @@ class Generate
         $mapper       = $this->getDocumentMapper($docs);
         $class_mapper = $this->getClassMapper($docs);
         $events       = array('preSave', 'postSave', 'preCreate', 'postCreate');
+        $indexes      = array();
+
+        foreach ($annotations->get('Unique') as $prop) {
+            if (!$prop->isProperty()) continue;
+            $collection = $class_mapper[$prop['class']]['name'];
+            foreach ($prop->get('Unique') as $anno) {
+                $indexes[] = array($collection,  array($anno['property'] => 1), array('unique' => 1));
+            }
+        }
+
+        var_dump($indexes);exit;
 
         $code = Templates::get('documents')
             ->render(compact(
                 'docs', 'namespace', 'class_mapper', 'events',
-                'validators', 'mapper', 'files'
+                'validators', 'mapper', 'files', 'indexes'
             ), true);
 
         $code = FixCode::fix($code);

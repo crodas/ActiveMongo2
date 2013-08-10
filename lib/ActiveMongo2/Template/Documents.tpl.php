@@ -80,7 +80,7 @@ class Mapper
 
     public function ensureIndex()
     {
-        @foreach($docs as $doc)
+        @foreach($indexes as $index)
         @end
     }
 
@@ -156,27 +156,28 @@ class Mapper
         return $doc;
     }
 
-    @foreach ($events as $ev)
+        @foreach ($events as $ev)
     /**
      *  Code for {{$ev}} events for objects {{$doc['class']}}
      */
-    public function trigger_{{$ev}}_{{sha1($doc['class'])}}(\{{$doc['class']}} $document, Array $args)
-    {
-        @foreach($doc['annotation']->getMethods() as $method)
-            @if ($method->has($ev)) 
-                @if (in_array('public', $method['visibility']))
-                    $return = $document->{{$method['function']}}($document, $array, $this->conn, {{var_export($method[0]['args'], true)}});
-                @else
-                    $reflection = new ReflectionMethod("\\{{addslashes($doc['class'])}}", "{{$method['function']}}");
-                    $return = $reflection->invoke($document, $document, $array, $this->conn, {{var_export($method[0]['args'], true)}});
+        public function trigger_{{$ev}}_{{sha1($doc['class'])}}(\{{$doc['class']}} $document, Array $args)
+        {
+            @foreach($doc['annotation']->getMethods() as $method)
+                @if ($method->has($ev)) 
+                    @if (in_array('public', $method['visibility']))
+                        $return = $document->{{$method['function']}}($document, $array, $this->conn, {{var_export($method[0]['args'], true)}});
+                    @else
+                        $reflection = new ReflectionMethod("\\{{addslashes($doc['class'])}}", "{{$method['function']}}");
+                        $return = $reflection->invoke($document, $document, $array, $this->conn, {{var_export($method[0]['args'], true)}});
+                    @end
+                    if ($return === FALSE) {
+                        throw new \RuntimeException("{{addslashes($doc['class']) . "::" . $method['function']}} returned false");
+                    }
                 @end
-                if ($return === FALSE) {
-                    throw new \RuntimeException("{{addslashes($doc['class']) . "::" . $method['function']}} returned false");
-                }
             @end
+        }
+    
         @end
-    }
 
-    @end
     @end
 }
