@@ -120,7 +120,7 @@ class Mapper
                 @set($propname, '_id')
             @end
             @if (in_array('public', $prop['visibility']))
-            if ($object->{{$prop['property']}}) {
+            if ($object->{{$prop['property']}} !== NULL) {
                 $data = $doc["{{$propname}}"] = $object->{{$prop['property']}};
             } else {
                 @if ($prop->has('Required'))
@@ -134,7 +134,7 @@ class Mapper
             $property->setAccessible(true);
             $data = $doc["{{$propname}}"] = $property->getValue($object);
             @if ($prop->has('Required'))
-            if (empty($data)) {
+            if ($data === NULL) {
                 throw new \RuntimeException("{$prop['property']} cannot be empty");
             }
             @end

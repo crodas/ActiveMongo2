@@ -120,8 +120,8 @@ class FluentTest extends \phpunit_framework_testcase
           ),
         );
 
-        $this->assertEquals($query->count(), 1);
         $this->assertEquals($query->getQuery(), $expected);
+        $this->assertEquals($query->count(), 1);
     }
 
     public function testMissingEndOnCount()

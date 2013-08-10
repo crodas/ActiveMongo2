@@ -220,7 +220,7 @@ class Connection
 
         $this->setObjectDocument($obj, $document);
 
-        $this->classes[$class]->save($document, array('safe' => $safe));
+        $ret = $this->classes[$class]->save($document, array('w' => 1));
         Runtime\Events::run('postCreate', $obj, array($this));
 
         return $this;

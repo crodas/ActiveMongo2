@@ -97,7 +97,7 @@ namespace {
                         $propname = '_id';
                     }
                     if (in_array('public', $prop['visibility'])) {
-                        echo "            if (\$object->" . ($prop['property']) . ") {\n                \$data = \$doc[\"" . ($propname) . "\"] = \$object->" . ($prop['property']) . ";\n            } else {\n";
+                        echo "            if (\$object->" . ($prop['property']) . " !== NULL) {\n                \$data = \$doc[\"" . ($propname) . "\"] = \$object->" . ($prop['property']) . ";\n            } else {\n";
                         if ($prop->has('Required')) {
                             echo "                throw new \\RuntimeException(\"{\$prop['property']} cannot be empty\");\n";
                         }
@@ -109,7 +109,7 @@ namespace {
                     else {
                         echo "            \$property = new \\ReflectionProperty(\$object, \"" . ( $prop['property'] ) . "\");\n            \$property->setAccessible(true);\n            \$data = \$doc[\"" . ($propname) . "\"] = \$property->getValue(\$object);\n";
                         if ($prop->has('Required')) {
-                            echo "            if (empty(\$data)) {\n                throw new \\RuntimeException(\"{\$prop['property']} cannot be empty\");\n            }\n";
+                            echo "            if (\$data === NULL) {\n                throw new \\RuntimeException(\"{\$prop['property']} cannot be empty\");\n            }\n";
                         }
                     }
                     echo "\n";
