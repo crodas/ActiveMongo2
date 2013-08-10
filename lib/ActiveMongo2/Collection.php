@@ -77,24 +77,6 @@ class Collection
         return $this->zcol->update($filter, $update, $opts);
     }
 
-    public function ensureIndex()
-    {
-        $map = Runtime\Serialize::getDocummentMapping($this->class);
-        $ref = Utils::getReflectionClass($this->class);
-        
-        foreach ($map as $property => $doc) {
-            $prop = $ref->getProperty($property)->getAnnotations();
-            if ($prop->has('Index')) {
-                $this->zcol->ensureIndex(array($doc => 1));
-            }
-            if ($prop->has('Unique')) {
-                $this->zcol->ensureIndex(array($doc => 1), array('unique' => true));
-            }
-        }
-
-        return $this;
-    }
-
     public function count($filter = array(), $skip = 0, $limit = 0)
     {
         return $this->zcol->count($filter, $skip, $limit);

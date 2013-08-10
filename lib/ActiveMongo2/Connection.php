@@ -226,6 +226,11 @@ class Connection
         return $this;
     }
 
+    public function ensureIndex()
+    {
+        $this->mapper->ensureIndex($this->db);
+    }
+
     public function dropDatabase()
     {
         return $this->db->drop();

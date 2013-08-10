@@ -78,9 +78,10 @@ class Mapper
         return $this->{"populate_" . sha1($class)}($object, $data);
     }
 
-    public function ensureIndex()
+    public function ensureIndex($db)
     {
         @foreach($indexes as $index)
+            $db->{{$index[0]}}->ensureIndex({{var_export($index[1], true)}}, {{var_export($index[2], true)}});
         @end
     }
 

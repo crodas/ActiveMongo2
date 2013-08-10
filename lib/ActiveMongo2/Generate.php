@@ -101,11 +101,9 @@ class Generate
             if (!$prop->isProperty()) continue;
             $collection = $class_mapper[$prop['class']]['name'];
             foreach ($prop->get('Unique') as $anno) {
-                $indexes[] = array($collection,  array($anno['property'] => 1), array('unique' => 1));
+                $indexes[] = array($collection,  array($prop['property'] => 1), array('unique' => 1));
             }
         }
-
-        var_dump($indexes);exit;
 
         $code = Templates::get('documents')
             ->render(compact(
