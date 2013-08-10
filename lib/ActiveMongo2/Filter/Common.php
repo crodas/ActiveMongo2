@@ -53,7 +53,7 @@ function _validate_string(&$value)
  */
 function _validate_integer(&$value)
 {
-    if (!is_numeric($value))
+    if (!is_numeric($value)) {
         return false;
     }
     $value = (int)$value;

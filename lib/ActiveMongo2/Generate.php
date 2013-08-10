@@ -76,6 +76,7 @@ class Generate
         }
 
         $validators = array();
+        $files      = array();
         foreach ($annotations->get('Validate') as $validator) {
             foreach ($validator->get('Validate') as $val) {
                 $type = current($val['args']);
@@ -85,6 +86,7 @@ class Generate
                 } else if ($validator->isFunction()) {
                     $validators[$type] = "\\" . $validator['function'];
                 }
+                $files[$type] = $validator['file'];
             }
         }
 
@@ -96,7 +98,7 @@ class Generate
         $code = Templates::get('documents')
             ->render(compact(
                 'docs', 'namespace', 'class_mapper', 'events',
-                'validators', 'mapper'
+                'validators', 'mapper', 'files'
             ), true);
 
         if (file_put_contents($config->getLoader(), $code, LOCK_EX) === false) {

@@ -8,6 +8,7 @@ class Mapper
 {
     protected $mapper = {{ var_export($mapper, true) }};
     protected $class_mapper = {{ var_export($class_mapper, true) }};
+    protected $loaded = array();
     protected $connection;
 
     public function __construct(Connection $conn)
@@ -21,7 +22,14 @@ class Mapper
             throw new \RuntimeException("Cannot map {$col} collection to its class");
         }
 
-        return $this->mapper[$col];
+        $data = $this->mapper[$col];
+
+        if (empty($this->loaded[$data['file']])) {
+            require_once $data['file'];
+            $this->loaded[$data['file']] = true;
+        }
+
+        return $data;
     }
 
     public function mapClass($class)
@@ -30,7 +38,14 @@ class Mapper
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
 
-        return $this->class_mapper[$class];
+        $data = $this->class_mapper[$class];
+
+        if (empty($this->loaded[$data['file']])) {
+            require_once $data['file'];
+            $this->loaded[$data['file']] = true;
+        }
+
+        return $data;
     }
 
     public function mapObject($object)
@@ -50,7 +65,7 @@ class Mapper
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
 
-        return $this->{"validate_" . sha1($class)}($object, $data);
+        return $this->{"validate_" . sha1($class)}($object);
     }
 
     public function populate($object, Array $data)
@@ -97,11 +112,16 @@ class Mapper
      */
     public function validate_{{sha1($doc['class'])}}(\{{$doc['class']}} $object)
     {
+        $doc = array();
         @foreach ($doc['annotation']->getProperties() as $prop)
             /** {{$prop['property']}} */
+            @set($propname, $prop['property'])
+            @if ($prop->has('Id'))
+                @set($propname, '_id')
+            @end
             @if (in_array('public', $prop['visibility']))
             if ($object->{{$prop['property']}}) {
-                $data = $object->{{$prop['property']}};
+                $data = $doc["{{$propname}}"] = $object->{{$prop['property']}};
             } else {
                 @if ($prop->has('Required'))
                 throw new \RuntimeException("{$prop['property']} cannot be empty");
@@ -112,7 +132,7 @@ class Mapper
             @else
             $property = new \ReflectionProperty($object, "{{ $prop['property'] }}");
             $property->setAccessible(true);
-            $data = $property->getValue($object);
+            $data = $doc["{{$propname}}"] = $property->getValue($object);
             @if ($prop->has('Required'))
             if (empty($data)) {
                 throw new \RuntimeException("{$prop['property']} cannot be empty");
@@ -122,13 +142,18 @@ class Mapper
 
             @foreach($validators as $name => $callback)
             @if ($prop->has($name))
+            if (empty($this->loaded['{{$files[$name]}}'])) {
+                require_once '{{$files[$name]}}';
+                $this->loaded['{{$files[$name]}}'] = true;
+            }
             if ($data !== NULL && !{{$callback}}($data)) {
                 throw new \RuntimeException("Validation failed for {{$name}}");
             }
             @end
             @end
-
         @end
+
+        return $doc;
     }
 
         @foreach ($events as $ev)
