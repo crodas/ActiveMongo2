@@ -120,43 +120,43 @@ class Mapper
                 @set($propname, '_id')
             @end
             @if (in_array('public', $prop['visibility']))
-            if ($object->{{$prop['property']}} !== NULL) {
-                $data = $doc["{{$propname}}"] = $object->{{$prop['property']}};
-            } else {
-                @if ($prop->has('Required'))
-                throw new \RuntimeException("{$prop['property']} cannot be empty");
-                @else
-                $data = NULL;
-                @end
-            }
+                if ($object->{{$prop['property']}} !== NULL) {
+                    $data = $doc["{{$propname}}"] = $object->{{$prop['property']}};
+                } else {
+                    @if ($prop->has('Required'))
+                        throw new \RuntimeException("{$prop['property']} cannot be empty");
+                    @else
+                        $data = NULL;
+                    @end
+                }
             @else
-            $property = new \ReflectionProperty($object, "{{ $prop['property'] }}");
-            $property->setAccessible(true);
-            $data = $doc["{{$propname}}"] = $property->getValue($object);
-            @if ($prop->has('Required'))
-            if ($data === NULL) {
-                throw new \RuntimeException("{$prop['property']} cannot be empty");
-            }
-            @end
+                $property = new \ReflectionProperty($object, "{{ $prop['property'] }}");
+                $property->setAccessible(true);
+                $data = $doc["{{$propname}}"] = $property->getValue($object);
+                @if ($prop->has('Required'))
+                    if ($data === NULL) {
+                        throw new \RuntimeException("{$prop['property']} cannot be empty");
+                    }
+                @end
             @end
 
             @foreach($validators as $name => $callback)
-            @if ($prop->has($name))
-            if (empty($this->loaded['{{$files[$name]}}'])) {
-                require_once '{{$files[$name]}}';
-                $this->loaded['{{$files[$name]}}'] = true;
-            }
-            if ($data !== NULL && !{{$callback}}($data)) {
-                throw new \RuntimeException("Validation failed for {{$name}}");
-            }
-            @end
+                @if ($prop->has($name))
+                    if (empty($this->loaded['{{$files[$name]}}'])) {
+                        require_once '{{$files[$name]}}';
+                        $this->loaded['{{$files[$name]}}'] = true;
+                    }
+                    if ($data !== NULL && !{{$callback}}($data)) {
+                        throw new \RuntimeException("Validation failed for {{$name}}");
+                    }
+                @end
             @end
         @end
 
         return $doc;
     }
 
-        @foreach ($events as $ev)
+    @foreach ($events as $ev)
     /**
      *  Code for {{$ev}} events for objects {{$doc['class']}}
      */
@@ -165,18 +165,18 @@ class Mapper
         @foreach($doc['annotation']->getMethods() as $method)
             @if ($method->has($ev)) 
                 @if (in_array('public', $method['visibility']))
-            $return = $document->{{$method['function']}}($document, $array, $this->conn, {{var_export($method[0]['args'], true)}});
+                    $return = $document->{{$method['function']}}($document, $array, $this->conn, {{var_export($method[0]['args'], true)}});
                 @else
-            $reflection = new ReflectionMethod("\\{{addslashes($doc['class'])}}", "{{$method['function']}}");
-            $return = $reflection->invoke($document, $document, $array, $this->conn, {{var_export($method[0]['args'], true)}});
+                    $reflection = new ReflectionMethod("\\{{addslashes($doc['class'])}}", "{{$method['function']}}");
+                    $return = $reflection->invoke($document, $document, $array, $this->conn, {{var_export($method[0]['args'], true)}});
                 @end
-            if ($return === FALSE) {
-                throw new \RuntimeException("{{addslashes($doc['class']) . "::" . $method['function']}} returned false");
-            }
+                if ($return === FALSE) {
+                    throw new \RuntimeException("{{addslashes($doc['class']) . "::" . $method['function']}} returned false");
+                }
             @end
         @end
     }
 
-        @end
+    @end
     @end
 }

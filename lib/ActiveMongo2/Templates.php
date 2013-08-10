@@ -97,25 +97,25 @@ namespace {
                         $propname = '_id';
                     }
                     if (in_array('public', $prop['visibility'])) {
-                        echo "            if (\$object->" . ($prop['property']) . " !== NULL) {\n                \$data = \$doc[\"" . ($propname) . "\"] = \$object->" . ($prop['property']) . ";\n            } else {\n";
+                        echo "                if (\$object->" . ($prop['property']) . " !== NULL) {\n                    \$data = \$doc[\"" . ($propname) . "\"] = \$object->" . ($prop['property']) . ";\n                } else {\n";
                         if ($prop->has('Required')) {
-                            echo "                throw new \\RuntimeException(\"{\$prop['property']} cannot be empty\");\n";
+                            echo "                        throw new \\RuntimeException(\"{\$prop['property']} cannot be empty\");\n";
                         }
                         else {
-                            echo "                \$data = NULL;\n";
+                            echo "                        \$data = NULL;\n";
                         }
-                        echo "            }\n";
+                        echo "                }\n";
                     }
                     else {
-                        echo "            \$property = new \\ReflectionProperty(\$object, \"" . ( $prop['property'] ) . "\");\n            \$property->setAccessible(true);\n            \$data = \$doc[\"" . ($propname) . "\"] = \$property->getValue(\$object);\n";
+                        echo "                \$property = new \\ReflectionProperty(\$object, \"" . ( $prop['property'] ) . "\");\n                \$property->setAccessible(true);\n                \$data = \$doc[\"" . ($propname) . "\"] = \$property->getValue(\$object);\n";
                         if ($prop->has('Required')) {
-                            echo "            if (\$data === NULL) {\n                throw new \\RuntimeException(\"{\$prop['property']} cannot be empty\");\n            }\n";
+                            echo "                    if (\$data === NULL) {\n                        throw new \\RuntimeException(\"{\$prop['property']} cannot be empty\");\n                    }\n";
                         }
                     }
                     echo "\n";
                     foreach($validators as $name => $callback) {
                         if ($prop->has($name)) {
-                            echo "            if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n                require_once '" . ($files[$name]) . "';\n                \$this->loaded['" . ($files[$name]) . "'] = true;\n            }\n            if (\$data !== NULL && !" . ($callback) . "(\$data)) {\n                throw new \\RuntimeException(\"Validation failed for " . ($name) . "\");\n            }\n";
+                            echo "                    if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n                        require_once '" . ($files[$name]) . "';\n                        \$this->loaded['" . ($files[$name]) . "'] = true;\n                    }\n                    if (\$data !== NULL && !" . ($callback) . "(\$data)) {\n                        throw new \\RuntimeException(\"Validation failed for " . ($name) . "\");\n                    }\n";
                         }
                     }
                 }
@@ -125,12 +125,12 @@ namespace {
                     foreach($doc['annotation']->getMethods() as $method) {
                         if ($method->has($ev)) {
                             if (in_array('public', $method['visibility'])) {
-                                echo "            \$return = \$document->" . ($method['function']) . "(\$document, \$array, \$this->conn, " . (var_export($method[0]['args'], true)) . ");\n";
+                                echo "                    \$return = \$document->" . ($method['function']) . "(\$document, \$array, \$this->conn, " . (var_export($method[0]['args'], true)) . ");\n";
                             }
                             else {
-                                echo "            \$reflection = new ReflectionMethod(\"\\\\" . (addslashes($doc['class'])) . "\", \"" . ($method['function']) . "\");\n            \$return = \$reflection->invoke(\$document, \$document, \$array, \$this->conn, " . (var_export($method[0]['args'], true)) . ");\n";
+                                echo "                    \$reflection = new ReflectionMethod(\"\\\\" . (addslashes($doc['class'])) . "\", \"" . ($method['function']) . "\");\n                    \$return = \$reflection->invoke(\$document, \$document, \$array, \$this->conn, " . (var_export($method[0]['args'], true)) . ");\n";
                             }
-                            echo "            if (\$return === FALSE) {\n                throw new \\RuntimeException(\"" . (addslashes($doc['class']) . "::" . $method['function']) . " returned false\");\n            }\n";
+                            echo "                if (\$return === FALSE) {\n                    throw new \\RuntimeException(\"" . (addslashes($doc['class']) . "::" . $method['function']) . " returned false\");\n                }\n";
                         }
                     }
                     echo "    }\n\n";
