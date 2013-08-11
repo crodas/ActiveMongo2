@@ -78,6 +78,10 @@ class Mapper
         return $this->{"populate_" . sha1($class)}($object, $data);
     }
 
+    public function trigger($event, $object)
+    {
+    }
+
     public function ensureIndex($db)
     {
         @foreach($indexes as $index)
@@ -161,7 +165,7 @@ class Mapper
     /**
      *  Code for {{$ev}} events for objects {{$doc['class']}}
      */
-        public function trigger_{{$ev}}_{{sha1($doc['class'])}}(\{{$doc['class']}} $document, Array $args)
+        protected function event_{{$ev}}_{{sha1($doc['class'])}}(\{{$doc['class']}} $document, Array $args)
         {
             @foreach($doc['annotation']->getMethods() as $method)
                 @if ($method->has($ev)) 

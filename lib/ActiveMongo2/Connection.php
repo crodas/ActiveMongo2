@@ -83,15 +83,19 @@ class Connection
 
     public function getCollection($collection)
     {
-        if (!empty($this->collections[$collection])) {
-            return $this->collections[$collection];
+        try {
+            $data = $this->mapper->mapCollection($collection);
+        } catch (\RuntimeException $e) {
+            $data = $this->mapper->mapClass($collection);
         }
 
-        $class = $this->getDocumentClass($collection);
+        if (!empty($this->collections[$data['name']])) {
+            return $this->collections[$data['name']];
+        }
 
-        $mongoCol = $this->db->selectCollection($collection);
-        $this->collections[$collection] = new Collection($this, $class, $mongoCol);
-        return $this->collections[$collection];
+        $mongoCol = $this->db->selectCollection($data['name']);
+        $this->collections[$data['name']] = new Collection($this, $data['class'], $mongoCol);
+        return $this->collections[$data['name']];
     }
 
     public function registerDocument($class, Array $document)
