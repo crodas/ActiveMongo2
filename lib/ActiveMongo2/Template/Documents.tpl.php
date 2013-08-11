@@ -80,7 +80,13 @@ class Mapper
 
     public function trigger($event, $object, Array $args = array())
     {
-        die($event);
+        $class  = get_class($object);
+        $method = "event_{$event}_" . sha1($class);
+        if (!is_callable(array($this, $method))) {
+            throw new \RuntimeException("Cannot trigger {$event} event on '$class' objects");
+        }
+
+        return $this->$method($object, $args);
     }
 
     public function ensureIndex($db)
@@ -171,10 +177,10 @@ class Mapper
             @foreach($doc['annotation']->getMethods() as $method)
                 @if ($method->has($ev)) 
                     @if (in_array('public', $method['visibility']))
-                        $return = $document->{{$method['function']}}($document, $array, $this->conn, {{var_export($method[0]['args'], true)}});
+                        $return = $document->{{$method['function']}}($document, $args, $this->connection, {{var_export($method[0]['args'], true)}});
                     @else
                         $reflection = new ReflectionMethod("\\{{addslashes($doc['class'])}}", "{{$method['function']}}");
-                        $return = $reflection->invoke($document, $document, $array, $this->conn, {{var_export($method[0]['args'], true)}});
+                        $return = $reflection->invoke($document, $document, $args, $this->connection, {{var_export($method[0]['args'], true)}});
                     @end
                     if ($return === FALSE) {
                         throw new \RuntimeException("{{addslashes($doc['class']) . "::" . $method['function']}} returned false");

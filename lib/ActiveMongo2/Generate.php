@@ -94,7 +94,7 @@ class Generate
         $namespace    = sha1($config->getLoader());
         $mapper       = $this->getDocumentMapper($docs);
         $class_mapper = $this->getClassMapper($docs);
-        $events       = array('preSave', 'postSave', 'preCreate', 'postCreate');
+        $events       = array('preSave', 'postSave', 'preCreate', 'postCreate', 'onHydratation');
         $indexes      = array();
 
         foreach ($annotations->get('Unique') as $prop) {
