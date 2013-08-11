@@ -107,7 +107,8 @@ class Connection
             $doc = $refl->newInstance();
         }
         $this->setObjectDocument($doc, $document);
-        Runtime\Events::run('onHydratation', $doc);
+        $this->mapper->trigger('onHydratation', $doc);
+
         return $doc;
     }
 
@@ -204,20 +205,21 @@ class Connection
                 return $this;
             }
 
-            Runtime\Events::run('preUpdate', $obj, array(&$update, $this));
+            $this->mapper->trigger('preUpdate', $obj, array(&$update, $this));
 
             $this->classes[$class]->update(
                 array('_id' => $oldDoc['_id']), 
                 $update,
                 array('safe' => $safe)
             );
-            Runtime\Events::run('postUpdate', $obj, array($this));
+            $this->mapper->trigger('postUpdate', $obj, array($this));
+
             $this->setObjectDocument($obj, $document);
 
             return $this;
         }
 
-        Runtime\Events::run('preCreate', $obj, array(&$document, $this));
+        $this->mapper->trigger('preCreate', $obj, array(&$document, $this));
         if (empty($document['_id'])) {
             $document['_id'] = new MongoId;
         }
@@ -225,7 +227,7 @@ class Connection
         $this->setObjectDocument($obj, $document);
 
         $ret = $this->classes[$class]->save($document, array('w' => 1));
-        Runtime\Events::run('postCreate', $obj, array($this));
+        $this->mapper->trigger('postCreate', $obj, array($this));
 
         return $this;
     }

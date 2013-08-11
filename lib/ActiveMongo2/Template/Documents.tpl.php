@@ -78,8 +78,9 @@ class Mapper
         return $this->{"populate_" . sha1($class)}($object, $data);
     }
 
-    public function trigger($event, $object)
+    public function trigger($event, $object, Array $args = array())
     {
+        die($event);
     }
 
     public function ensureIndex($db)
