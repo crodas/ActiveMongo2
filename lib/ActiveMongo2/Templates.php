@@ -161,7 +161,7 @@ namespace {
                     foreach($doc['annotation']->getAll() as $method) {
                         if (!empty($plugins[$method['method']])) {
                             $temp = $plugins[$method['method']];
-                            echo "                    \$plugin = new \\" . ($temp['class']) . "(" . ( var_export($method['args'], true) ) . ");\n";
+                            echo "                    if (empty(\$this->loaded[\"" . ($temp['file']) . "\"])) {\n                        require_once \"" . ($temp['file']) . "\";\n                        \$this->loaded[\"" . ($temp['file']) . "\"] = true;\n                    }\n                    \$plugin = new \\" . ($temp['class']) . "(" . ( var_export($method['args'], true) ) . ");\n";
                             foreach($temp->getMethods() as $method) {
                                 ActiveMongo2\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin'], $this->context);
                             }

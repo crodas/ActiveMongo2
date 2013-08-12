@@ -180,6 +180,10 @@ class Mapper
             @foreach($doc['annotation']->getAll() as $method)
                 @if (!empty($plugins[$method['method']]))
                     @set($temp, $plugins[$method['method']])
+                    if (empty($this->loaded["{{$temp['file']}}"])) {
+                        require_once "{{$temp['file']}}";
+                        $this->loaded["{{$temp['file']}}"] = true;
+                    }
                     $plugin = new \{{$temp['class']}}({{ var_export($method['args'], true) }});
                     @foreach($temp->getMethods() as $method)
                         @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin'])
