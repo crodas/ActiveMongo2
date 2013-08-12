@@ -56,6 +56,38 @@ namespace {
     }
 
     /** 
+     *  Template class generated from Trigger.tpl.php
+     */
+    class class_11ca6999533bd9c460f246ff122fc6c9341f7a1f extends base_template_46ff768978a6897199daa478860b8cd25af655b1
+    {
+
+        public function render(Array $vars = array(), $return = false)
+        {
+            $this->context = $vars;
+
+            extract($vars);
+            if ($return) {
+                ob_start();
+            }
+            if ($method->has($ev)) {
+                if (in_array('public', $method['visibility'])) {
+                    echo "        \$return = " . ($target) . "->" . ($method['function']) . "(\$document, \$args, \$this->connection, " . (var_export($method[0]['args'], true)) . ");\n";
+                }
+                else {
+                    echo "        \$reflection = new ReflectionMethod(\"\\\\" . (addslashes($doc['class'])) . "\", \"" . ($method['function']) . "\");\n        \$return = \$reflection->invoke(\$document, " . ($target) . ", \$args, \$this->connection, " . (var_export($method[0]['args'], true)) . ");\n";
+                }
+                echo "    if (\$return === FALSE) {\n        throw new \\RuntimeException(\"" . (addslashes($doc['class']) . "::" . $method['function']) . " returned false\");\n    }\n";
+            }
+            echo "\n";
+
+            if ($return) {
+                return ob_get_clean();
+            }
+
+        }
+    }
+
+    /** 
      *  Template class generated from Documents.tpl.php
      */
     class class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b extends base_template_46ff768978a6897199daa478860b8cd25af655b1
@@ -124,14 +156,15 @@ namespace {
                 foreach($events as $ev) {
                     echo "    /**\n     *  Code for " . ($ev) . " events for objects " . ($doc['class']) . "\n     */\n        protected function event_" . ($ev) . "_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$document, Array \$args)\n        {\n";
                     foreach($doc['annotation']->getMethods() as $method) {
-                        if ($method->has($ev)) {
-                            if (in_array('public', $method['visibility'])) {
-                                echo "                        \$return = \$document->" . ($method['function']) . "(\$document, \$args, \$this->connection, " . (var_export($method[0]['args'], true)) . ");\n";
+                        ActiveMongo2\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'], $this->context);
+                    }
+                    foreach($doc['annotation']->getAll() as $method) {
+                        if (!empty($plugins[$method['method']])) {
+                            $temp = $plugins[$method['method']];
+                            echo "                    \$plugin = new \\" . ($temp['class']) . "(" . ( var_export($method['args'], true) ) . ");\n";
+                            foreach($temp->getMethods() as $method) {
+                                ActiveMongo2\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin'], $this->context);
                             }
-                            else {
-                                echo "                        \$reflection = new ReflectionMethod(\"\\\\" . (addslashes($doc['class'])) . "\", \"" . ($method['function']) . "\");\n                        \$return = \$reflection->invoke(\$document, \$document, \$args, \$this->connection, " . (var_export($method[0]['args'], true)) . ");\n";
-                            }
-                            echo "                    if (\$return === FALSE) {\n                        throw new \\RuntimeException(\"" . (addslashes($doc['class']) . "::" . $method['function']) . " returned false\");\n                    }\n";
                         }
                     }
                     echo "        }\n    \n";
@@ -162,6 +195,8 @@ namespace ActiveMongo2 {
         public static function get($name, Array $context = array())
         {
             static $classes = array (
+                'trigger.tpl.php' => 'class_11ca6999533bd9c460f246ff122fc6c9341f7a1f',
+                'trigger' => 'class_11ca6999533bd9c460f246ff122fc6c9341f7a1f',
                 'documents.tpl.php' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
                 'documents' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
             );

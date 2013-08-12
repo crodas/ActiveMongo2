@@ -175,16 +175,15 @@ class Mapper
         protected function event_{{$ev}}_{{sha1($doc['class'])}}(\{{$doc['class']}} $document, Array $args)
         {
             @foreach($doc['annotation']->getMethods() as $method)
-                @if ($method->has($ev)) 
-                    @if (in_array('public', $method['visibility']))
-                        $return = $document->{{$method['function']}}($document, $args, $this->connection, {{var_export($method[0]['args'], true)}});
-                    @else
-                        $reflection = new ReflectionMethod("\\{{addslashes($doc['class'])}}", "{{$method['function']}}");
-                        $return = $reflection->invoke($document, $document, $args, $this->connection, {{var_export($method[0]['args'], true)}});
+                @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'])
+            @end
+            @foreach($doc['annotation']->getAll() as $method)
+                @if (!empty($plugins[$method['method']]))
+                    @set($temp, $plugins[$method['method']])
+                    $plugin = new \{{$temp['class']}}({{ var_export($method['args'], true) }});
+                    @foreach($temp->getMethods() as $method)
+                        @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin'])
                     @end
-                    if ($return === FALSE) {
-                        throw new \RuntimeException("{{addslashes($doc['class']) . "::" . $method['function']}} returned false");
-                    }
                 @end
             @end
         }

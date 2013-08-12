@@ -38,7 +38,10 @@ namespace ActiveMongo2\Plugin;
 
 use Notoj\Annotation;
 
-/** @Persist(table="_autoincrement") */
+/** 
+ * @Persist(table="_autoincrement") 
+ * @Plugin("Autoincrement")
+ */
 class Autoincrement
 {
     /** @Id */
@@ -50,8 +53,9 @@ class Autoincrement
     /**
      *  @preCreate
      */
-    public static function setCollectionId(Array $args, $object, Array &$document, $conn)
+    public static function setCollectionId($object, Array &$args, $conn, $extra)
     {
+        $document = &$args[0];
         if (empty($document['_id'])) {
             $doc = $conn->getCollection("_autoincrement")->findAndModify(
                 array('_id' => get_class($object)),

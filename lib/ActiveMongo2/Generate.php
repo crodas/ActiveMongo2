@@ -96,6 +96,16 @@ class Generate
         $class_mapper = $this->getClassMapper($docs);
         $events       = array('preSave', 'postSave', 'preCreate', 'postCreate', 'onHydratation');
         $indexes      = array();
+        $plugins      = array();
+
+        foreach ($annotations->get('Plugin') as $prop) {
+            if (!$prop->isClass()) continue;
+            foreach ($prop->get('Plugin') as $anno) {
+                $name = current($anno['args']);
+                if (empty($name)) continue;
+                $plugins[$name] = $prop;
+            }
+        }
 
         foreach ($annotations->get('Unique') as $prop) {
             if (!$prop->isProperty()) continue;
@@ -108,7 +118,8 @@ class Generate
         $code = Templates::get('documents')
             ->render(compact(
                 'docs', 'namespace', 'class_mapper', 'events',
-                'validators', 'mapper', 'files', 'indexes'
+                'validators', 'mapper', 'files', 'indexes',
+                'plugins'
             ), true);
 
         $code = FixCode::fix($code);
