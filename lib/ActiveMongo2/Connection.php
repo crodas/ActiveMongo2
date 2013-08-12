@@ -182,6 +182,12 @@ class Connection
         return $diff;
     }
 
+    public function is($collection, $object)
+    {
+        $class = $this->mapper->mapCollection($collection)['class'];
+        return $object instanceof $class;
+    }
+
     public function save($obj, $safe = true)
     {
         if ($obj instanceof DocumentProxy) {

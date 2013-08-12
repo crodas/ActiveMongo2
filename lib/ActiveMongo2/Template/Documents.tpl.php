@@ -125,15 +125,16 @@ class Mapper
     public function validate_{{sha1($doc['class'])}}(\{{$doc['class']}} $object)
     {
         $doc = array();
+
         @foreach ($doc['annotation']->getProperties() as $prop)
-            /** {{$prop['property']}} */
+            /* {{$prop['property']}} {{ '{{{' }} */
             @set($propname, $prop['property'])
             @if ($prop->has('Id'))
                 @set($propname, '_id')
             @end
             @if (in_array('public', $prop['visibility']))
                 if ($object->{{$prop['property']}} !== NULL) {
-                    $data = $doc["{{$propname}}"] = $object->{{$prop['property']}};
+                    $data = $object->{{$prop['property']}};
                 } else {
                     @if ($prop->has('Required'))
                         throw new \RuntimeException("{$prop['property']} cannot be empty");
@@ -144,7 +145,7 @@ class Mapper
             @else
                 $property = new \ReflectionProperty($object, "{{ $prop['property'] }}");
                 $property->setAccessible(true);
-                $data = $doc["{{$propname}}"] = $property->getValue($object);
+                $data = $property->getValue($object);
                 @if ($prop->has('Required'))
                     if ($data === NULL) {
                         throw new \RuntimeException("{$prop['property']} cannot be empty");
@@ -158,13 +159,16 @@ class Mapper
                         require_once '{{$files[$name]}}';
                         $this->loaded['{{$files[$name]}}'] = true;
                     }
-                    if ($data !== NULL && !{{$callback}}($data)) {
+                    if ($data !== NULL && !{{$callback}}($data, {{var_export($prop[0]['args'],  true)}}, $this->connection, $this)) {
                         throw new \RuntimeException("Validation failed for {{$name}}");
                     }
                 @end
             @end
-        @end
+            
+            $doc['{{$propname}}'] = $data;
+            /* }}} */
 
+        @end
         return $doc;
     }
 

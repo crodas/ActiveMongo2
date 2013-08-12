@@ -59,3 +59,25 @@ function _validate_integer(&$value)
     $value = (int)$value;
     return true;
 }
+
+/**
+ *  @Validate(Reference)
+ */
+function _validate_reference_one(&$value, Array $args, $conn, $mapper)
+{
+    $document = $value;
+    $conn->save($document);
+
+    if (!empty($args) && !$conn->is(current($args), $document)) {
+        throw new \RuntimeException("Invalid value");
+    }
+
+    $array = $mapper->validate($document);
+
+    $value = array(
+        '$id'   => $array['_id'],
+        '$ref'  => current($args),
+    );
+
+    return true;
+}

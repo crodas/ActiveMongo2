@@ -122,15 +122,15 @@ namespace {
                     }
                     echo "            }\n";
                 }
-                echo "    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function validate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n        \$doc = array();\n";
+                echo "    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function validate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n        \$doc = array();\n\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
-                    echo "            /** " . ($prop['property']) . " */\n";
+                    echo "            /* " . ($prop['property']) . " " . ( '{{{' ) . " */\n";
                     $propname = $prop['property'];
                     if ($prop->has('Id')) {
                         $propname = '_id';
                     }
                     if (in_array('public', $prop['visibility'])) {
-                        echo "                if (\$object->" . ($prop['property']) . " !== NULL) {\n                    \$data = \$doc[\"" . ($propname) . "\"] = \$object->" . ($prop['property']) . ";\n                } else {\n";
+                        echo "                if (\$object->" . ($prop['property']) . " !== NULL) {\n                    \$data = \$object->" . ($prop['property']) . ";\n                } else {\n";
                         if ($prop->has('Required')) {
                             echo "                        throw new \\RuntimeException(\"{\$prop['property']} cannot be empty\");\n";
                         }
@@ -140,7 +140,7 @@ namespace {
                         echo "                }\n";
                     }
                     else {
-                        echo "                \$property = new \\ReflectionProperty(\$object, \"" . ( $prop['property'] ) . "\");\n                \$property->setAccessible(true);\n                \$data = \$doc[\"" . ($propname) . "\"] = \$property->getValue(\$object);\n";
+                        echo "                \$property = new \\ReflectionProperty(\$object, \"" . ( $prop['property'] ) . "\");\n                \$property->setAccessible(true);\n                \$data = \$property->getValue(\$object);\n";
                         if ($prop->has('Required')) {
                             echo "                    if (\$data === NULL) {\n                        throw new \\RuntimeException(\"{\$prop['property']} cannot be empty\");\n                    }\n";
                         }
@@ -148,11 +148,12 @@ namespace {
                     echo "\n";
                     foreach($validators as $name => $callback) {
                         if ($prop->has($name)) {
-                            echo "                    if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n                        require_once '" . ($files[$name]) . "';\n                        \$this->loaded['" . ($files[$name]) . "'] = true;\n                    }\n                    if (\$data !== NULL && !" . ($callback) . "(\$data)) {\n                        throw new \\RuntimeException(\"Validation failed for " . ($name) . "\");\n                    }\n";
+                            echo "                    if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n                        require_once '" . ($files[$name]) . "';\n                        \$this->loaded['" . ($files[$name]) . "'] = true;\n                    }\n                    if (\$data !== NULL && !" . ($callback) . "(\$data, " . (var_export($prop[0]['args'],  true)) . ", \$this->connection, \$this)) {\n                        throw new \\RuntimeException(\"Validation failed for " . ($name) . "\");\n                    }\n";
                         }
                     }
+                    echo "            \n            \$doc['" . ($propname) . "'] = \$data;\n            /* }}} */\n\n";
                 }
-                echo "\n        return \$doc;\n    }\n\n";
+                echo "        return \$doc;\n    }\n\n";
                 foreach($events as $ev) {
                     echo "    /**\n     *  Code for " . ($ev) . " events for objects " . ($doc['class']) . "\n     */\n        protected function event_" . ($ev) . "_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$document, Array \$args)\n        {\n";
                     foreach($doc['annotation']->getMethods() as $method) {
