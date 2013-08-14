@@ -114,13 +114,19 @@ namespace {
                         $name = '_id';
                     }
                     echo "            if (array_key_exists(\"" . ($name) . "\", \$data)) {\n";
+                    foreach($hydratations as $zname => $callback) {
+                        if ($prop->has($zname)) {
+                            echo "                        if (empty(\$this->loaded['" . ($files[$zname]) . "'])) {\n                            require_once '" . ($files[$zname]) . "';\n                            \$this->loaded['" . ($files[$zname]) . "'] = true;\n                        }\n                        \n                        " . ($callback) . "(\$data['" . ($name) . "'], " . (var_export($prop[0]['args'],  true)) . ", \$this->connection, \$this);\n";
+                        }
+                    }
+                    echo "\n";
                     if (in_array('public', $prop['visibility'])) {
-                        echo "                \$object->" . ($prop['property']) . " = \$data['" . ($name) . "'];\n";
+                        echo "                    \$object->" . ($prop['property']) . " = \$data['" . ($name) . "'];\n";
                     }
                     else {
-                        echo "                \$property = new \\ReflectionProperty(\$object, \"" . ( $prop['property'] ) . "\");\n                \$property->setAccessible(true);\n                \$property->setValue(\$object, \$data['" . ($name) . "']);\n";
+                        echo "                    \$property = new \\ReflectionProperty(\$object, \"" . ( $prop['property'] ) . "\");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$object, \$data['" . ($name) . "']);\n";
                     }
-                    echo "            }\n";
+                    echo "                \n            }\n";
                 }
                 echo "    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function validate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n        \$doc = array();\n\n";
                 foreach($doc['annotation']->getProperties() as $prop) {

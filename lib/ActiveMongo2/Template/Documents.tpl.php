@@ -108,13 +108,25 @@ class Mapper
                 @set($name, '_id')
             @end
             if (array_key_exists("{{$name}}", $data)) {
-            @if (in_array('public', $prop['visibility']))
-                $object->{{$prop['property']}} = $data['{{$name}}'];
-            @else
-                $property = new \ReflectionProperty($object, "{{ $prop['property'] }}");
-                $property->setAccessible(true);
-                $property->setValue($object, $data['{{$name}}']);
-            @end
+                @foreach($hydratations as $zname => $callback)
+                    @if ($prop->has($zname))
+                        if (empty($this->loaded['{{$files[$zname]}}'])) {
+                            require_once '{{$files[$zname]}}';
+                            $this->loaded['{{$files[$zname]}}'] = true;
+                        }
+                        
+                        {{$callback}}($data['{{$name}}'], {{var_export($prop[0]['args'],  true)}}, $this->connection, $this);
+                    @end
+                @end
+
+                @if (in_array('public', $prop['visibility']))
+                    $object->{{$prop['property']}} = $data['{{$name}}'];
+                @else
+                    $property = new \ReflectionProperty($object, "{{ $prop['property'] }}");
+                    $property->setAccessible(true);
+                    $property->setValue($object, $data['{{$name}}']);
+                @end
+                
             }
         @end
     }

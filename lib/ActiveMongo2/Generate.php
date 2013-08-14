@@ -76,18 +76,20 @@ class Generate
             }
         }
 
-        $validators = array();
-        $files      = array();
-        foreach ($annotations->get('Validate') as $validator) {
-            foreach ($validator->get('Validate') as $val) {
-                $type = current($val['args']);
-                if (empty($type)) continue;
-                if ($validator->isMethod()) {
-                    $validators[$type] = "\\" . $validator['class'] . "::" . $validator['function'];
-                } else if ($validator->isFunction()) {
-                    $validators[$type] = "\\" . $validator['function'];
+        $files  = array();
+        foreach (array('Validate' => 'validators', 'Hydratate' => 'hydratations') as $operation => $var) {
+            $$var = array();
+            foreach ($annotations->get($operation) as $validator) {
+                foreach ($validator->get($operation) as $val) {
+                    $type = current($val['args']);
+                    if (empty($type)) continue;
+                    if ($validator->isMethod()) {
+                        ${$var}[$type] = "\\" . $validator['class'] . "::" . $validator['function'];
+                    } else if ($validator->isFunction()) {
+                        ${$var}[$type] = "\\" . $validator['function'];
+                    }
+                    $files[$type] = $validator['file'];
                 }
-                $files[$type] = $validator['file'];
             }
         }
 
@@ -119,7 +121,7 @@ class Generate
             ->render(compact(
                 'docs', 'namespace', 'class_mapper', 'events',
                 'validators', 'mapper', 'files', 'indexes',
-                'plugins'
+                'plugins', 'hydratations'
             ), true);
 
         $code = FixCode::fix($code);

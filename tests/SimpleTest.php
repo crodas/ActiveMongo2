@@ -107,6 +107,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $post = new PostDocument;
         $post->author = $user;
         $post->title  = "foobar post";
+        $post->uri    = "foobar-post";
         $post->readers[] = $user;
         $conn->save($post);
 

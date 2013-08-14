@@ -36,6 +36,7 @@
 */
 namespace ActiveMongo2\Filter;
 
+use ActiveMongo2\Runtime\Reference;
 
 /** @Validate(String) */
 function _validate_string(&$value)
@@ -58,6 +59,20 @@ function _validate_integer(&$value)
     }
     $value = (int)$value;
     return true;
+}
+
+/**
+ *  @Hydratate(Reference)
+ */
+function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
+{
+    $expected = current($args);
+    if ($expected && $expected != $value['$ref']) {
+        throw new \RuntimeException("Expecting document {$expected} but got {$value['ref']}");
+    }
+
+    $class = $mapper->mapCollection($value['$ref'])['class'];
+    $value = new Reference($value, $class, $conn, empty($value['_data']) ? array() : $value['_data']);
 }
 
 /**
