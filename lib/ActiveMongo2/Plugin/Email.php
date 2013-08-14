@@ -37,71 +37,10 @@
 
 namespace ActiveMongo2\Plugin;
 
-use Notoj\Annotation;
-
 /**
- *  @Plugin(Sluggable)
+ *  @Validate(Email)
  */
-class Sluggable
+function _do_validate_email($string)
 {
-    protected $args;
-    public function __construct(Array $args)
-    {
-        $this->args = $args;
-        if (count($args) != 2) {
-            throw new \RuntimeException("@Sluggable expects two arguments");
-        }
-
-    }
-
-    public static function sluggify($text)
-    {
-        // replace non letter or digits by -
-        $text = preg_replace('~[^\\pL\d]+~u', '-', $text);
-
-        // trim
-        $text = trim($text, '-');
-
-        // transliterate
-        if (function_exists('iconv')) {
-            $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
-        }
-
-        // lowercase
-        $text = strtolower($text);
-
-        // remove unwanted characters
-        $text = preg_replace('~[^-\w]+~', '', $text);
-
-        if (empty($text)) {
-            return 'n-a';
-        }
-
-        return $text;
-    }
-
-    /**
-     *  @preCreate
-     */
-    public function setSlugUrl($obj, Array $event_args, $conn)
-    {
-        $args = $this->args;
-        $document = &$event_args[0];
-        if (!empty($document[$args[1]])) {
-            /* If the slug already exists, and it is different than
-               empty, then use just exit gracefully */
-            return;
-        }
-
-        $source = self::sluggify($document[$args[0]]);
-        $col = $conn->getCollection(get_class($obj));
-
-        $slug = self::sluggify($document[$args[0]]);
-
-        while ( $col->count(array($args[1] => $slug)) != 0) {
-            $slug .= '-' . uniqid(true);
-        }
-
-        $document[$args[1]] = $slug;
-    }
+        return empty($string) || filter_var($string, FILTER_VALIDATE_EMAIL);
 }
