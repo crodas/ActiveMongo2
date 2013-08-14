@@ -96,7 +96,7 @@ class Generate
         $namespace    = sha1($config->getLoader());
         $mapper       = $this->getDocumentMapper($docs);
         $class_mapper = $this->getClassMapper($docs);
-        $events       = array('preSave', 'postSave', 'preCreate', 'postCreate', 'onHydratation');
+        $events       = array('preSave', 'postSave', 'preCreate', 'postCreate', 'onHydratation', 'preUpdate', 'postUpdate');
         $indexes      = array();
         $plugins      = array();
 

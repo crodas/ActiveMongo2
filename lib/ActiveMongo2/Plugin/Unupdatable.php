@@ -38,15 +38,26 @@ namespace ActiveMongo2\Plugin;
 
 use Notoj\Annotation;
 
+
+/**
+ *  @Plugin(Unupdatable)
+ */
 class Unupdatable
 {
+    protected $args;
+
+    public function __construct($args)
+    {
+        $this->args = $args;
+    }
+
     /**
      *  @preUpdate
      */
-    public static function check(Array $args, $object, Array $doc, $conn)
+    public function check($object, Array $args, $conn)
     {
-        foreach ($args as $prop) {
-            foreach ($doc as $key => $props) {
+        foreach ($this->args as $prop) {
+            foreach ($args[0] as $key => $props) {
                 if ($key == $prop) {
                     throw new \RuntimeException("{$prop} cannot be updated");
                 }
