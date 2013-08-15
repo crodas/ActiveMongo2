@@ -193,15 +193,20 @@ class Mapper
             @foreach($doc['annotation']->getMethods() as $method)
                 @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'])
             @end
-            @foreach($doc['annotation']->getAll() as $method)
-                @if (!empty($plugins[$method['method']]))
-                    @set($temp, $plugins[$method['method']])
-                    if (empty($this->loaded["{{$temp['file']}}"])) {
-                        require_once "{{$temp['file']}}";
-                        $this->loaded["{{$temp['file']}}"] = true;
-                    }
-                    $plugin = new \{{$temp['class']}}({{ var_export($method['args'], true) }});
+
+            @foreach($doc['annotation']->getAll() as $zmethod)
+                @set($first_time, false)
+                @if (!empty($plugins[$zmethod['method']]))
+                    @set($temp, $plugins[$zmethod['method']])
                     @foreach($temp->getMethods() as $method)
+                        @if ($method->has($ev) && empty($first_time)) 
+                            if (empty($this->loaded["{{$temp['file']}}"])) {
+                                require_once "{{$temp['file']}}";
+                                $this->loaded["{{$temp['file']}}"] = true;
+                            }
+                            $plugin = new \{{$temp['class']}}({{ var_export($zmethod['args'], true) }});
+                            @set($first_time, true)
+                        @end
                         @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin'])
                     @end
                 @end

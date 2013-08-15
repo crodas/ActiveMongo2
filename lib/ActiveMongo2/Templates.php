@@ -165,11 +165,16 @@ namespace {
                     foreach($doc['annotation']->getMethods() as $method) {
                         ActiveMongo2\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'], $this->context);
                     }
-                    foreach($doc['annotation']->getAll() as $method) {
-                        if (!empty($plugins[$method['method']])) {
-                            $temp = $plugins[$method['method']];
-                            echo "                    if (empty(\$this->loaded[\"" . ($temp['file']) . "\"])) {\n                        require_once \"" . ($temp['file']) . "\";\n                        \$this->loaded[\"" . ($temp['file']) . "\"] = true;\n                    }\n                    \$plugin = new \\" . ($temp['class']) . "(" . ( var_export($method['args'], true) ) . ");\n";
+                    echo "\n";
+                    foreach($doc['annotation']->getAll() as $zmethod) {
+                        $first_time = false;
+                        if (!empty($plugins[$zmethod['method']])) {
+                            $temp = $plugins[$zmethod['method']];
                             foreach($temp->getMethods() as $method) {
+                                if ($method->has($ev) && empty($first_time)) {
+                                    echo "                            if (empty(\$this->loaded[\"" . ($temp['file']) . "\"])) {\n                                require_once \"" . ($temp['file']) . "\";\n                                \$this->loaded[\"" . ($temp['file']) . "\"] = true;\n                            }\n                            \$plugin = new \\" . ($temp['class']) . "(" . ( var_export($zmethod['args'], true) ) . ");\n";
+                                    $first_time = true;
+                                }
                                 ActiveMongo2\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin'], $this->context);
                             }
                         }
