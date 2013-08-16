@@ -60,19 +60,21 @@ class Generate
         }
 
         $docs = array();
-        foreach ($annotations->get('Persist') as $object) {
-            if (!$object->isClass()) continue;
-            $data = array(
-               'class' => $object['class'], 
-               'file' => $object['file'],
-               'annotation' => $object,
-            );
+        foreach (array('Persist', 'Embeddable') as $type) {
+            foreach ($annotations->get($type) as $object) {
+                if (!$object->isClass()) continue;
+                $data = array(
+                    'class' => $object['class'], 
+                    'file' => $object['file'],
+                    'annotation' => $object,
+                );
 
-            foreach ($object->get('Persist') as $ann) {
-                $data['name'] = current($ann['args']);
-                if (empty($data['name'])) continue;
+                foreach ($object->get($type) as $ann) {
+                    $data['name'] = $ann['args'] ? current($ann['args']) : null;
+                    if (empty($data['name'])) continue;
 
-                $docs[ $data['name'] ] = $data;
+                    $docs[ $data['name'] ] = $data;
+                }
             }
         }
 
