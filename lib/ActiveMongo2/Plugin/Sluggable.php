@@ -93,10 +93,8 @@ class Sluggable
             return;
         }
 
-        $source = self::sluggify($document[$args[0]]);
-        $col = $conn->getCollection(get_class($obj));
-
-        $slug = self::sluggify($document[$args[0]]);
+        $slug = self::sluggify(empty($document[$args[0]]) ? 'n-a' : $document[$args[0]]);
+        $col  = $conn->getCollection(get_class($obj));
 
         while ( $col->count(array($args[1] => $slug)) != 0) {
             $slug .= '-' . uniqid(true);
