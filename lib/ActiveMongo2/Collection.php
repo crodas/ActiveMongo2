@@ -37,7 +37,6 @@
 namespace ActiveMongo2;
 
 use MongoCollection;
-use ActiveMongo2\Runtime\Utils;
 
 class Collection 
 {
@@ -52,9 +51,6 @@ class Collection
 
     public function __construct(Connection $conn, $class, MongoCollection $col)
     {
-        if (!Utils::class_exists($class)) {
-            throw new \RuntimeException("Cannot find {$class} class");
-        }
         $this->zconn  = $conn;
         $this->zcol   = $col;
         $this->class  = $class;
@@ -62,7 +58,6 @@ class Collection
 
     protected function analizeUpdate($query)
     {
-        $ref = Utils::getReflectionClass($this->class);
     }
 
     public function query()

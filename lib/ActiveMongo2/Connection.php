@@ -159,7 +159,7 @@ class Connection
             $this->classes[$class] = $this->db->selectCollection($collection);
         }
 
-        $document = Runtime\Serialize::getDocument($obj, $this);
+        $document = $this->mapper->validate($obj);
         $hash = spl_object_hash($obj);
 
         unset($this->docs[$hash]);
