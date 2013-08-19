@@ -101,13 +101,58 @@ namespace {
             if ($return) {
                 ob_start();
             }
-            echo "<?php\n\nnamespace ActiveMongo2\\Generated" . ($namespace) . ";\n\nuse ActiveMongo2\\Connection;\n\nclass Mapper\n{\n    protected \$mapper = " . ( var_export($mapper, true) ) . ";\n    protected \$class_mapper = " . ( var_export($class_mapper, true) ) . ";\n    protected \$loaded = array();\n    protected \$connection;\n\n    public function __construct(Connection \$conn)\n    {\n        \$this->connection = \$conn;\n    }\n\n    public function mapCollection(\$col)\n    {\n        if (empty(\$this->mapper[\$col])) {\n            throw new \\RuntimeException(\"Cannot map {\$col} collection to its class\");\n        }\n\n        \$data = \$this->mapper[\$col];\n\n        if (empty(\$this->loaded[\$data['file']])) {\n            require_once \$data['file'];\n            \$this->loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    public function mapClass(\$class)\n    {\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        \$data = \$this->class_mapper[\$class];\n\n        if (empty(\$this->loaded[\$data['file']])) {\n            require_once \$data['file'];\n            \$this->loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    public function mapObject(\$object)\n    {\n        \$class = get_class(\$object);\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->class_mapper[\$class];\n    }\n\n    public function validate(\$object)\n    {\n        \$class = get_class(\$object);\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"validate_\" . sha1(\$class)}(\$object);\n    }\n\n    public function populate(\$object, Array \$data)\n    {\n        \$class = get_class(\$object);\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"populate_\" . sha1(\$class)}(\$object, \$data);\n    }\n\n    public function trigger(\$event, \$object, Array \$args = array())\n    {\n        \$class  = get_class(\$object);\n        \$method = \"event_{\$event}_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$object, \$args);\n    }\n\n    public function ensureIndex(\$db)\n    {\n";
+            echo "<?php\n\nnamespace ActiveMongo2\\Generated" . ($namespace) . ";\n\nuse ActiveMongo2\\Connection;\n\nclass Mapper\n{\n    protected \$mapper = " . ( var_export($mapper, true) ) . ";\n    protected \$class_mapper = " . ( var_export($class_mapper, true) ) . ";\n    protected \$loaded = array();\n    protected \$connection;\n\n    public function __construct(Connection \$conn)\n    {\n        \$this->connection = \$conn;\n    }\n\n    public function mapCollection(\$col)\n    {\n        if (empty(\$this->mapper[\$col])) {\n            throw new \\RuntimeException(\"Cannot map {\$col} collection to its class\");\n        }\n\n        \$data = \$this->mapper[\$col];\n\n        if (empty(\$this->loaded[\$data['file']])) {\n            require_once \$data['file'];\n            \$this->loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    public function mapClass(\$class)\n    {\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        \$data = \$this->class_mapper[\$class];\n\n        if (empty(\$this->loaded[\$data['file']])) {\n            require_once \$data['file'];\n            \$this->loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    public function mapObject(\$object)\n    {\n        \$class = get_class(\$object);\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->class_mapper[\$class];\n    }\n\n    public function getDocument(\$object)\n    {\n        \$class = get_class(\$object);\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"get_array_\" . sha1(\$class)}(\$object);\n    }\n\n    public function validate(\$object)\n    {\n        \$class = get_class(\$object);\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"validate_\" . sha1(\$class)}(\$object);\n    }\n\n    public function update(\$object, Array \$doc, Array \$old)\n    {\n        \$class = get_class(\$object);\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"update_\" . sha1(\$class)}(\$doc, \$old);\n    }\n\n    public function populate(\$object, Array \$data)\n    {\n        \$class = get_class(\$object);\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"populate_\" . sha1(\$class)}(\$object, \$data);\n    }\n\n    public function trigger(\$event, \$object, Array \$args = array())\n    {\n        \$class  = get_class(\$object);\n        \$method = \"event_{\$event}_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$object, \$args);\n    }\n\n    public function ensureIndex(\$db)\n    {\n";
             foreach($indexes as $index) {
                 echo "            \$db->" . ($index[0]) . "->ensureIndex(" . (var_export($index[1], true)) . ", " . (var_export($index[2], true)) . ");\n";
             }
             echo "    }\n\n";
             foreach($docs as $doc) {
-                echo "    /**\n     *  Populate objects " . ($doc['class']) . " \n     */\n    public function populate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, Array \$data)\n    {\n";
+                echo "    /**\n     *  Get update object " . ($doc['class']) . " \n     */\n    public function update_" . (sha1($doc['class'])) . "(Array \$current, Array \$old)\n    {\n        if (\$current['_id'] != \$old['_id']) {\n            throw new \\RuntimeException(\"document ids cannot be updated\");\n        }\n\n        \$change = array();\n\n";
+                foreach($doc['annotation']->getProperties() as $prop) {
+                    $propname = $prop['property'];
+                    if ($prop->has('Id')) {
+                        $propname = '_id';
+                    }
+                    echo "\n            if (array_key_exists('";
+                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
+                    echo "', \$current)\n                || array_key_exists('";
+                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
+                    echo "', \$old)) {\n\n                if (!array_key_exists('";
+                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
+                    echo "', \$current)) {\n                    \$change['\$unset']['";
+                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
+                    echo "'] = 1;\n                } else if (!array_key_exists('";
+                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
+                    echo "', \$old)) {\n                    \$change['\$set']['";
+                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
+                    echo "'] = \$current['";
+                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
+                    echo "'];\n                } else if (\$current['";
+                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
+                    echo "'] !== \$old['";
+                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
+                    echo "']) {\n";
+                    if ($prop->has('Inc')) {
+                        echo "                        if (empty(\$old['";
+                        echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
+                        echo "'])) {\n                            \$prev = 0;\n                        } else {\n                            \$prev = \$old['";
+                        echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
+                        echo "'];\n                        }\n                        \$change['\$inc']['";
+                        echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
+                        echo "'] = \$current['";
+                        echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
+                        echo "'] - \$prev;\n";
+                    }
+                    else {
+                        echo "                        \$change['\$set']['";
+                        echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
+                        echo "'] = \$current['";
+                        echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
+                        echo "'];\n";
+                    }
+                    echo "                }\n            }\n";
+                }
+                echo "\n        return \$change;\n    }\n\n    /**\n     *  Populate objects " . ($doc['class']) . " \n     */\n    public function populate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, Array \$data)\n    {\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
                     $name = $prop['property'];
                     if ($prop->has('Id')) {

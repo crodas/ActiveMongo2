@@ -155,11 +155,11 @@ class Connection
     {
         $class = get_class($obj);
         if (empty($this->classes[$class])) {
-            $collection =  Runtime\Serialize::getCollection($obj);
+            $collection = $this->mapper->mapClass(get_class($obj))['name'];
             $this->classes[$class] = $this->db->selectCollection($collection);
         }
 
-        $document = $this->mapper->validate($obj);
+        $document = $this->mapper->getDocument($obj);
         $hash = spl_object_hash($obj);
 
         unset($this->docs[$hash]);
@@ -205,7 +205,7 @@ class Connection
         $document = $this->mapper->validate($obj);
         $oldDoc   = $this->getRawDocument($obj, false);
         if ($oldDoc) {
-            $update = Runtime\Serialize::changes($obj, $document, $oldDoc, $this);
+            $update = $this->mapper->update($obj, $document, $oldDoc);
 
             if (empty($update)) {
                 return $this;

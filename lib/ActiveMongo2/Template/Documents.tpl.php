@@ -58,6 +58,16 @@ class Mapper
         return $this->class_mapper[$class];
     }
 
+    public function getDocument($object)
+    {
+        $class = get_class($object);
+        if (empty($this->class_mapper[$class])) {
+            throw new \RuntimeException("Cannot map class {$class} to its document");
+        }
+
+        return $this->{"get_array_" . sha1($class)}($object);
+    }
+
     public function validate($object)
     {
         $class = get_class($object);
@@ -66,6 +76,16 @@ class Mapper
         }
 
         return $this->{"validate_" . sha1($class)}($object);
+    }
+
+    public function update($object, Array $doc, Array $old)
+    {
+        $class = get_class($object);
+        if (empty($this->class_mapper[$class])) {
+            throw new \RuntimeException("Cannot map class {$class} to its document");
+        }
+
+        return $this->{"update_" . sha1($class)}($doc, $old);
     }
 
     public function populate($object, Array $data)
@@ -97,6 +117,48 @@ class Mapper
     }
 
     @foreach($docs as $doc)
+    /**
+     *  Get update object {{$doc['class']}} 
+     */
+    public function update_{{sha1($doc['class'])}}(Array $current, Array $old)
+    {
+        if ($current['_id'] != $old['_id']) {
+            throw new \RuntimeException("document ids cannot be updated");
+        }
+
+        $change = array();
+
+        @foreach ($doc['annotation']->getProperties() as $prop)
+            @set($propname, $prop['property'])
+            @if ($prop->has('Id'))
+                @set($propname, '_id')
+            @end
+
+            if (array_key_exists('{{{$propname}}}', $current)
+                || array_key_exists('{{{$propname}}}', $old)) {
+
+                if (!array_key_exists('{{{$propname}}}', $current)) {
+                    $change['$unset']['{{{$propname}}}'] = 1;
+                } else if (!array_key_exists('{{{$propname}}}', $old)) {
+                    $change['$set']['{{{$propname}}}'] = $current['{{{$propname}}}'];
+                } else if ($current['{{{$propname}}}'] !== $old['{{{$propname}}}']) {
+                    @if ($prop->has('Inc'))
+                        if (empty($old['{{{$propname}}}'])) {
+                            $prev = 0;
+                        } else {
+                            $prev = $old['{{{$propname}}}'];
+                        }
+                        $change['$inc']['{{{$propname}}}'] = $current['{{{$propname}}}'] - $prev;
+                    @else
+                        $change['$set']['{{{$propname}}}'] = $current['{{{$propname}}}'];
+                    @end
+                }
+            }
+        @end
+
+        return $change;
+    }
+
     /**
      *  Populate objects {{$doc['class']}} 
      */

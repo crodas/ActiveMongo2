@@ -34,65 +34,84 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2\Filter;
 
-use ActiveMongo2\Reference;
+namespace ActiveMongo2;
 
-/** @Validate(String) */
-function _validate_string(&$value)
+class Reference implements DocumentProxy
 {
-    if (!is_scalar($value)) {
-        return false;
-    }
-    $value = "" . $value;
-    return true;
-}
+    protected $class;
+    protected $doc;
+    protected $ref;
+    protected $values;
+    protected $map;
 
-/** 
- * @Validate(Integer) 
- * @Validate(Int) 
- */
-function _validate_integer(&$value)
-{
-    if (!is_numeric($value)) {
-        return false;
-    }
-    $value = (int)$value;
-    return true;
-}
+    protected static $all_objects = array();
 
-/**
- *  @Hydratate(Reference)
- */
-function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
-{
-    $expected = current($args);
-    if ($expected && $expected != $value['$ref']) {
-        throw new \RuntimeException("Expecting document {$expected} but got {$value['ref']}");
+    public function __construct(Array $info, $class, $conn, $map)
+    {
+        $this->ref    = $info;
+        $this->class  = $conn->getCollection($class);
+        $this->values = !empty($info['_extra']) ? $info['_extra'] : array();
+        $this->map    = $map;
+
+        $this->values['_id'] = $info['$id'];
     }
 
-    $class = $mapper->mapCollection($value['$ref'])['class'];
-    $value = new Reference($value, $class, $conn, empty($value['_data']) ? array() : $value['_data']);
-}
-
-/**
- *  @Validate(Reference)
- */
-function _validate_reference_one(&$value, Array $args, $conn, $mapper)
-{
-    $document = $value;
-    $conn->save($document);
-
-    if (!empty($args) && !$conn->is(current($args), $document)) {
-        throw new \RuntimeException("Invalid value");
+    public function getObject()
+    {
+        return $this->doc;
     }
 
-    $array = $mapper->validate($document);
+    public function getReference()
+    {
+        return $this->ref;
+    }
 
-    $value = array(
-        '$id'   => $array['_id'],
-        '$ref'  => current($args),
-    );
+    private function _loadDocument()
+    {
+        if (!$this->doc) {
+            $id = sha1(serialize($this->ref));
+            if (empty(self::$all_objects[$id])) {
+                self::$all_objects[$id] = $this->class->findOne(array('_id' => $this->ref['$id']));
+            }
+            $this->doc = self::$all_objects[$id];
+        }
+    }
 
-    return true;
+    public function __call($name, $args)
+    {
+        if (!empty($this->map[$name])) {
+            $zname = $this->map[$name];
+            if (array_key_exists($zname, $this->values)) {
+                return $this->values[$zname];
+            }
+        }
+
+        $this->_loadDocument();
+
+        if (!empty($this->doc->$name)) {
+            return $this->doc->$name;
+        }
+
+        return call_user_func_array(array($this->doc, $name), $args);
+    }
+
+    public function __set($name, $value)
+    {
+        $this->_loadDocument();
+        $this->doc->{$name} = $value;
+    }
+
+    public function __get($name)
+    {
+        if (!empty($this->map[$name])) {
+            $zname = $this->map[$name];
+            if (array_key_exists($zname, $this->values)) {
+                return $this->values[$zname];
+            }
+        }
+
+        $this->_loadDocument();
+        return $this->doc->$name;
+    }
 }
