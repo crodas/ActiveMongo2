@@ -120,9 +120,9 @@ class Mapper
     /**
      *  Get update object {{$doc['class']}} 
      */
-    public function update_{{sha1($doc['class'])}}(Array $current, Array $old)
+    public function update_{{sha1($doc['class'])}}(Array $current, Array $old, $embed = false)
     {
-        if ($current['_id'] != $old['_id']) {
+        if (!$embed && $current['_id'] != $old['_id']) {
             throw new \RuntimeException("document ids cannot be updated");
         }
 
@@ -134,23 +134,53 @@ class Mapper
                 @set($propname, '_id')
             @end
 
-            if (array_key_exists('{{{$propname}}}', $current)
-                || array_key_exists('{{{$propname}}}', $old)) {
+            if (array_key_exists('{{$propname}}', $current)
+                || array_key_exists('{{$propname}}', $old)) {
 
-                if (!array_key_exists('{{{$propname}}}', $current)) {
-                    $change['$unset']['{{{$propname}}}'] = 1;
-                } else if (!array_key_exists('{{{$propname}}}', $old)) {
-                    $change['$set']['{{{$propname}}}'] = $current['{{{$propname}}}'];
-                } else if ($current['{{{$propname}}}'] !== $old['{{{$propname}}}']) {
+                if (!array_key_exists('{{$propname}}', $current)) {
+                    $change['$unset']['{{$propname}}'] = 1;
+                } else if (!array_key_exists('{{$propname}}', $old)) {
+                    $change['$set']['{{$propname}}'] = $current['{{$propname}}'];
+                } else if ($current['{{$propname}}'] !== $old['{{$propname}}']) {
                     @if ($prop->has('Inc'))
-                        if (empty($old['{{{$propname}}}'])) {
+                        if (empty($old['{{$propname}}'])) {
                             $prev = 0;
                         } else {
-                            $prev = $old['{{{$propname}}}'];
+                            $prev = $old['{{$propname}}'];
                         }
-                        $change['$inc']['{{{$propname}}}'] = $current['{{{$propname}}}'] - $prev;
+                        $change['$inc']['{{$propname}}'] = $current['{{$propname}}'] - $prev;
+                    @elif ($prop->has('Embed'))
+                        if ($current['{{$propname}}']['__embed_class'] != $old['{{$propname}}']['__embed_class']) {
+                            $change['$set']['{{$propname}}.' . $index] = $current['{{$propname}}'];
+                        } else {
+                            $update = 'update_' . sha1($current['{{$propname}}']['__embed_class']);
+                            $diff = $this->$update($current['{{$propname}}'], $old['{{$propname}}'], true);
+                            foreach ($diff as $op => $value) {
+                                foreach ($value as $p => $val) {
+                                    $change[$op]['{{$propname}}.' . $p] = $val;
+                                }
+                            }
+                        }
+                    @elif ($prop->has('EmbedMany'))
+                        foreach ($current['{{$propname}}'] as $index => $value) {
+                            if (!array_key_exists($index, $old['{{$propname}}'])) {
+                                $change['$push']['{{$propname}}'] = $value;
+                                continue;
+                            }
+                            if ($value['__embed_class'] != $old['{{$propname}}'][$index]['__embed_class']) {
+                                $change['$set']['{{$propname}}.' . $index] = $value;
+                            } else {
+                                $update = 'update_' . sha1($value['__embed_class']);
+                                $diff = $this->$update($value, $old['{{$propname}}'][$index], true);
+                                foreach ($diff as $op => $value) {
+                                    foreach ($value as $p => $val) {
+                                        $change[$op]['{{$propname}}.' . $index . '.' . $p] = $val;
+                                    }
+                                }
+                            }
+                        }
                     @else
-                        $change['$set']['{{{$propname}}}'] = $current['{{{$propname}}}'];
+                        $change['$set']['{{$propname}}'] = $current['{{$propname}}'];
                     @end
                 }
             }
@@ -207,12 +237,12 @@ class Mapper
             @end
             @if (in_array('public', $prop['visibility']))
                 if ($object->{{$prop['property']}} !== NULL) {
-                    $doc['{{{$propname}}}'] = $object->{{$prop['property']}};
+                    $doc['{{$propname}}'] = $object->{{$prop['property']}};
                 }
             @else
                 $property = new \ReflectionProperty($object, "{{ $prop['property'] }}");
                 $property->setAccessible(true);
-                $doc['{{{$propname}}}'] = $property->getValue($object);
+                $doc['{{$propname}}'] = $property->getValue($object);
             @end
             /* }}} */
         @end
@@ -232,7 +262,7 @@ class Mapper
                 @set($propname, '_id')
             @end
             @if ($prop->has('Required'))
-            if (empty($doc['{{{$propname}}}'])) {
+            if (empty($doc['{{$propname}}'])) {
                 throw new \RuntimeException("{{$prop['property']}} cannot be empty");
             }
             @end

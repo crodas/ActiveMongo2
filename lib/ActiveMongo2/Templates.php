@@ -107,49 +107,27 @@ namespace {
             }
             echo "    }\n\n";
             foreach($docs as $doc) {
-                echo "    /**\n     *  Get update object " . ($doc['class']) . " \n     */\n    public function update_" . (sha1($doc['class'])) . "(Array \$current, Array \$old)\n    {\n        if (\$current['_id'] != \$old['_id']) {\n            throw new \\RuntimeException(\"document ids cannot be updated\");\n        }\n\n        \$change = array();\n\n";
+                echo "    /**\n     *  Get update object " . ($doc['class']) . " \n     */\n    public function update_" . (sha1($doc['class'])) . "(Array \$current, Array \$old, \$embed = false)\n    {\n        if (!\$embed && \$current['_id'] != \$old['_id']) {\n            throw new \\RuntimeException(\"document ids cannot be updated\");\n        }\n\n        \$change = array();\n\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
                     $propname = $prop['property'];
                     if ($prop->has('Id')) {
                         $propname = '_id';
                     }
-                    echo "\n            if (array_key_exists('";
-                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                    echo "', \$current)\n                || array_key_exists('";
-                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                    echo "', \$old)) {\n\n                if (!array_key_exists('";
-                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                    echo "', \$current)) {\n                    \$change['\$unset']['";
-                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                    echo "'] = 1;\n                } else if (!array_key_exists('";
-                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                    echo "', \$old)) {\n                    \$change['\$set']['";
-                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                    echo "'] = \$current['";
-                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                    echo "'];\n                } else if (\$current['";
-                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                    echo "'] !== \$old['";
-                    echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                    echo "']) {\n";
+                    echo "\n            if (array_key_exists('" . ($propname) . "', \$current)\n                || array_key_exists('" . ($propname) . "', \$old)) {\n\n                if (!array_key_exists('" . ($propname) . "', \$current)) {\n                    \$change['\$unset']['" . ($propname) . "'] = 1;\n                } else if (!array_key_exists('" . ($propname) . "', \$old)) {\n                    \$change['\$set']['" . ($propname) . "'] = \$current['" . ($propname) . "'];\n                } else if (\$current['" . ($propname) . "'] !== \$old['" . ($propname) . "']) {\n";
                     if ($prop->has('Inc')) {
-                        echo "                        if (empty(\$old['";
-                        echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                        echo "'])) {\n                            \$prev = 0;\n                        } else {\n                            \$prev = \$old['";
-                        echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                        echo "'];\n                        }\n                        \$change['\$inc']['";
-                        echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                        echo "'] = \$current['";
-                        echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                        echo "'] - \$prev;\n";
+                        echo "                        if (empty(\$old['" . ($propname) . "'])) {\n                            \$prev = 0;\n                        } else {\n                            \$prev = \$old['" . ($propname) . "'];\n                        }\n                        \$change['\$inc']['" . ($propname) . "'] = \$current['" . ($propname) . "'] - \$prev;\n";
+                    }
+                    else if ($prop->has('Embed')) {
+                        echo "                        if (\$current['" . ($propname) . "']['__embed_class'] != \$old['" . ($propname) . "']['__embed_class']) {\n                            \$change['\$set']['" . ($propname) . ".' . \$index] = \$current['" . ($propname) . "'];\n                        } else {\n                            \$update = 'update_' . sha1(\$current['" . ($propname) . "']['__embed_class']);\n                            \$diff = \$this->\$update(\$current['" . ($propname) . "'], \$old['" . ($propname) . "'], true);\n                            foreach (\$diff as \$op => \$value) {\n                                foreach (\$value as \$p => \$val) {\n                                    \$change[\$op]['" . ($propname) . ".' . \$p] = \$val;\n                                }\n                            }\n                        }\n";
+                    }
+                    else if ($prop->has('EmbedMany')) {
+                        echo "                        foreach (\$current['" . ($propname) . "'] as \$index => \$value) {\n                            if (!array_key_exists(\$index, \$old['" . ($propname) . "'])) {\n                                \$change['\$push']['" . ($propname) . "'] = \$value;\n                                continue;\n                            }\n                            if (\$value['__embed_class'] != \$old['" . ($propname) . "'][\$index]['__embed_class']) {\n                                \$change['\$set']['" . ($propname) . ".' . \$index] = \$value;\n                            } else {\n                                \$update = 'update_' . sha1(\$value['__embed_class']);\n                                \$diff = \$this->\$update(\$value, \$old['" . ($propname) . "'][\$index], true);\n                                foreach (\$diff as \$op => \$value) {\n                                    foreach (\$value as \$p => \$val) {\n                                        \$change[\$op]['" . ($propname) . ".' . \$index . '.' . \$p] = \$val;\n                                    }\n                                }\n                            }\n                        }\n";
                     }
                     else {
-                        echo "                        \$change['\$set']['";
-                        echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                        echo "'] = \$current['";
-                        echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                        echo "'];\n";
+                        echo "                        \$change['\$set']['" . ($propname) . "'] = \$current['" . ($propname) . "'];\n";
                     }
+
+
                     echo "                }\n            }\n";
                 }
                 echo "\n        return \$change;\n    }\n\n    /**\n     *  Populate objects " . ($doc['class']) . " \n     */\n    public function populate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, Array \$data)\n    {\n";
@@ -181,14 +159,10 @@ namespace {
                         $propname = '_id';
                     }
                     if (in_array('public', $prop['visibility'])) {
-                        echo "                if (\$object->" . ($prop['property']) . " !== NULL) {\n                    \$doc['";
-                        echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                        echo "'] = \$object->" . ($prop['property']) . ";\n                }\n";
+                        echo "                if (\$object->" . ($prop['property']) . " !== NULL) {\n                    \$doc['" . ($propname) . "'] = \$object->" . ($prop['property']) . ";\n                }\n";
                     }
                     else {
-                        echo "                \$property = new \\ReflectionProperty(\$object, \"" . ( $prop['property'] ) . "\");\n                \$property->setAccessible(true);\n                \$doc['";
-                        echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                        echo "'] = \$property->getValue(\$object);\n";
+                        echo "                \$property = new \\ReflectionProperty(\$object, \"" . ( $prop['property'] ) . "\");\n                \$property->setAccessible(true);\n                \$doc['" . ($propname) . "'] = \$property->getValue(\$object);\n";
                     }
                     echo "            /* }}} */\n";
                 }
@@ -199,9 +173,7 @@ namespace {
                         $propname = '_id';
                     }
                     if ($prop->has('Required')) {
-                        echo "            if (empty(\$doc['";
-                        echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
-                        echo "'])) {\n                throw new \\RuntimeException(\"" . ($prop['property']) . " cannot be empty\");\n            }\n";
+                        echo "            if (empty(\$doc['" . ($propname) . "'])) {\n                throw new \\RuntimeException(\"" . ($prop['property']) . " cannot be empty\");\n            }\n";
                     }
                     foreach($validators as $name => $callback) {
                         if ($prop->has($name)) {
