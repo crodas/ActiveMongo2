@@ -149,24 +149,20 @@ namespace {
                 }
                 echo "        return \$doc;\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function validate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n        \$doc = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
-                    echo "            /* " . ($prop['property']) . " " . ( '{{{' ) . " */\n";
                     $propname = $prop['property'];
                     if ($prop->has('Id')) {
                         $propname = '_id';
                     }
-                    echo "\n";
                     if ($prop->has('Required')) {
                         echo "            if (empty(\$doc['";
                         echo htmlentities($propname, ENT_QUOTES, 'UTF-8', false);
                         echo "'])) {\n                throw new \\RuntimeException(\"" . ($prop['property']) . " cannot be empty\");\n            }\n";
                     }
-                    echo "\n";
                     foreach($validators as $name => $callback) {
                         if ($prop->has($name)) {
-                            echo "                    if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n                        require_once '" . ($files[$name]) . "';\n                        \$this->loaded['" . ($files[$name]) . "'] = true;\n                    }\n                    if (!empty(\$doc['" . ($propname) . "']) && !" . ($callback) . "(\$doc['" . ($propname) . "'], " . (var_export($prop[0]['args'],  true)) . ", \$this->connection, \$this)) {\n                        throw new \\RuntimeException(\"Validation failed for " . ($name) . "\");\n                    }\n";
+                            echo "                    /* " . ($prop['property']) . " - " . ($name) . " " . ( '{{{' ) . " */\n                    if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n                        require_once '" . ($files[$name]) . "';\n                        \$this->loaded['" . ($files[$name]) . "'] = true;\n                    }\n                    if (!empty(\$doc['" . ($propname) . "']) && !" . ($callback) . "(\$doc['" . ($propname) . "'], " . (var_export($prop[0]['args'],  true)) . ", \$this->connection, \$this)) {\n                        throw new \\RuntimeException(\"Validation failed for " . ($name) . "\");\n                    }\n                    /* }}} */\n\n";
                         }
                     }
-                    echo "            /* }}} */\n\n";
                 }
                 echo "\n        return \$doc;\n    }\n\n";
                 foreach($events as $ev) {

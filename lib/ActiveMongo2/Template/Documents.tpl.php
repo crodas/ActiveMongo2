@@ -165,20 +165,18 @@ class Mapper
         $doc = $this->get_array_{{sha1($doc['class'])}}($object);
 
         @foreach ($doc['annotation']->getProperties() as $prop)
-            /* {{$prop['property']}} {{ '{{{' }} */
             @set($propname, $prop['property'])
             @if ($prop->has('Id'))
                 @set($propname, '_id')
             @end
-
             @if ($prop->has('Required'))
             if (empty($doc['{{{$propname}}}'])) {
                 throw new \RuntimeException("{{$prop['property']}} cannot be empty");
             }
             @end
-
             @foreach($validators as $name => $callback)
                 @if ($prop->has($name))
+                    /* {{$prop['property']}} - {{$name}} {{ '{{{' }} */
                     if (empty($this->loaded['{{$files[$name]}}'])) {
                         require_once '{{$files[$name]}}';
                         $this->loaded['{{$files[$name]}}'] = true;
@@ -186,10 +184,10 @@ class Mapper
                     if (!empty($doc['{{$propname}}']) && !{{$callback}}($doc['{{$propname}}'], {{var_export($prop[0]['args'],  true)}}, $this->connection, $this)) {
                         throw new \RuntimeException("Validation failed for {{$name}}");
                     }
+                    /* }}} */
+
                 @end
             @end
-            /* }}} */
-
         @end
 
         return $doc;
