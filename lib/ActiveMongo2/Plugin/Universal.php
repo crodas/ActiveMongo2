@@ -64,15 +64,7 @@ class Universal
         $uuid->object = $doc;
         $conn->save($uuid);
 
-        $mapper->setProperty($doc, '@Universal', $uuid->id);
+        $mapper->updateProperty($doc, '@Universal', $uuid->id);
         $conn->save($doc);
     }
-}
-
-/**
- *  @Validate(Universal)
- */
-function __validate_universal(&$value)
-{
-    var_dump($value);exit;
 }

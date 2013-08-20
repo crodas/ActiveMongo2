@@ -109,6 +109,17 @@ class Mapper
         return $this->$method($object, $args);
     }
 
+    public function updateProperty($document, $key, $value)
+    {
+        $class  = get_class($document);
+        $method = "update_property_" . sha1($class);
+        if (!is_callable(array($this, $method))) {
+            throw new \RuntimeException("Cannot trigger {$event} event on '$class' objects");
+        }
+
+        return $this->$method($document, $key, $value);
+    }
+
     public function ensureIndex($db)
     {
         @foreach($indexes as $index)
@@ -275,6 +286,27 @@ class Mapper
 
         return $doc;
     }
+
+    protected function update_property_{{sha1($doc['class'])}}(\{{$doc['class']}} $document, $property, $value)
+    {
+        @foreach ($doc['annotation']->getProperties() as $prop)
+            @set($propname, $prop['property'])
+            if ($property ==  '{{$propname}}'
+            @foreach($prop->getAll() as $annotation) 
+                 || $property == '@{{$annotation['method']}}'
+            @end
+            ) {
+                @if (in_array('public', $prop['visibility']))
+                    $document->{{$prop['property']}} = $value;
+                @else
+                    $property = new \ReflectionProperty($object, "{{ $prop['property'] }}");
+                    $property->setAccessible(true);
+                    $property->setValue($document, $value);
+                @end
+            }
+        @end
+    }
+
 
         @foreach ($events as $ev)
     /**
