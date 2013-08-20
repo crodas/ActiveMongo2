@@ -50,29 +50,21 @@ class UniversalDocument
 
 }
 
+/**
+ *  @Plugin(Universal)
+ */
 class Universal
 {
     /**
      *  @postCreate
      */
-    public static function setCollectionId($doc, $object, $conn)
+    public function createUniversalId($doc, Array $args, $conn, $annotation_args, $mapper)
     {
-        $reflection = Utils::getReflectionClass($object);
         $uuid = new UniversalDocument;
-        $uuid->object = $object;
+        $uuid->object = $doc;
         $conn->save($uuid);
 
-        $has = false;
-        foreach ($reflection->getProperties() as $prop) {
-            if ($prop->getAnnotations()->has('Universal')) {
-                $prop->setValue($object, $uuid->id);
-                $has = true;
-            }
-        }
-
-        if ($has) {
-            $conn->save($object);
-        }
+        $mapper->updateProperty($doc, '@Universal', $uuid->id);
+        $conn->save($doc);
     }
 }
-

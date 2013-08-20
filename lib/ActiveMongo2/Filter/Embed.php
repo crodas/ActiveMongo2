@@ -35,24 +35,68 @@
   +---------------------------------------------------------------------------------+
 */
 
-namespace ActiveMongo2\Runtime\Hydrate;
+namespace ActiveMongo2\Plugin;
 
-class Embed
+/**
+ *  @Hydratate(EmbedOne)
+ *  @Hydratate(Embed)
+ */
+function _populate_embed_one(&$value, $args, $conn, $mapper)
 {
-
-    public static function Hydrate($value, $ann, $connection)
-    {
-        if (!is_array($value)) {
-            return NULL;
-        }
-
-        if ($ann['args']) {
-            $class = current($ann['args']);
-            $class = $connection->getDocumentClass($class);
-        } else {
-            $class = $value['@object_class'];
-        }
-
-        return $connection->registerDocument($class, $value);
+    if (is_array($value) && $value)  {
+        $class = $value['__embed_class'];
+        $value = $conn->registerDocument($class, $value);
     }
+}
+
+/**
+ *  @Hydratate(EmbedMany)
+ */
+function _populate_embed_many(&$value, $args, $conn, $mapper)
+{
+    foreach ((array)$value as $id => $val) {
+        _populate_embed_one($value[$id], $args, $conn, $mapper);
+    }
+}
+
+/**
+ *  @Validate(EmbedMany)
+ */
+function _do_embed_many(&$value, $args, $conn, $mapper)
+{
+    if (!is_array($value)) {
+        return false;
+    }
+
+    foreach ($value as $id => $val) {
+        if (!_do_embed_one($value[$id], $args, $conn, $mapper)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ *  @Validate(EmbedOne)
+ *  @Validate(Embed)
+ */
+function _do_embed_one(&$value, $args, $conn, $mapper)
+{
+    if (!is_object($value)) {
+        return false;
+    }
+
+    $class = get_class($value);
+
+    if ($args) {
+        $collection = current($args); 
+        if ($class != $mapper->mapCollection($collection)['class']) {
+            return false;
+        }
+    }
+
+    $value = $mapper->validate($value);
+    $value['__embed_class'] = $class;
+    return true;
 }

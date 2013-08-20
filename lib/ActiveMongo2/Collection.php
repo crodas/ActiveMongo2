@@ -37,7 +37,6 @@
 namespace ActiveMongo2;
 
 use MongoCollection;
-use ActiveMongo2\Runtime\Utils;
 
 class Collection 
 {
@@ -52,9 +51,6 @@ class Collection
 
     public function __construct(Connection $conn, $class, MongoCollection $col)
     {
-        if (!Utils::class_exists($class)) {
-            throw new \RuntimeException("Cannot find {$class} class");
-        }
         $this->zconn  = $conn;
         $this->zcol   = $col;
         $this->class  = $class;
@@ -62,7 +58,6 @@ class Collection
 
     protected function analizeUpdate($query)
     {
-        $ref = Utils::getReflectionClass($this->class);
     }
 
     public function query()
@@ -75,24 +70,6 @@ class Collection
         $this->analizeUpdate($update);
         $opts = array_merge(self::$defaultOpts, $opts);
         return $this->zcol->update($filter, $update, $opts);
-    }
-
-    public function ensureIndex()
-    {
-        $map = Runtime\Serialize::getDocummentMapping($this->class);
-        $ref = Utils::getReflectionClass($this->class);
-        
-        foreach ($map as $property => $doc) {
-            $prop = $ref->getProperty($property)->getAnnotations();
-            if ($prop->has('Index')) {
-                $this->zcol->ensureIndex(array($doc => 1));
-            }
-            if ($prop->has('Unique')) {
-                $this->zcol->ensureIndex(array($doc => 1), array('unique' => true));
-            }
-        }
-
-        return $this;
     }
 
     public function count($filter = array(), $skip = 0, $limit = 0)

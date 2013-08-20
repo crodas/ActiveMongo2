@@ -35,13 +35,12 @@
   +---------------------------------------------------------------------------------+
 */
 
-namespace ActiveMongo2\Runtime;
-
-use ActiveMongo2\DocumentProxy;
+namespace ActiveMongo2;
 
 class Reference implements DocumentProxy
 {
     protected $class;
+    protected $_class;
     protected $doc;
     protected $ref;
     protected $values;
@@ -52,6 +51,7 @@ class Reference implements DocumentProxy
     public function __construct(Array $info, $class, $conn, $map)
     {
         $this->ref    = $info;
+        $this->_class = $class;
         $this->class  = $conn->getCollection($class);
         $this->values = !empty($info['_extra']) ? $info['_extra'] : array();
         $this->map    = $map;
@@ -61,7 +61,13 @@ class Reference implements DocumentProxy
 
     public function getObject()
     {
+        $this->_loadDocument();
         return $this->doc;
+    }
+
+    public function getClass()
+    {
+        return $this->_class;
     }
 
     public function getReference()

@@ -34,88 +34,69 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2\Runtime\Validate;
+namespace ActiveMongo2\Filter;
 
-use ActiveMongo2\Runtime\Utils;
-use ActiveMongo2\Runtime\Serialize;
-use ActiveMongo2\Runtime\Reference as ref;
+use ActiveMongo2\Reference;
 
-class Reference
+/** @Validate(String) */
+function _validate_string(&$value)
 {
-    public static function validate($value, $ann, $connection)
-    {
-        if (empty($value)) {
-            return true;
-        }
-        if ($value instanceof ref) {
-            return true;
-        }
-        
+    if (!is_scalar($value)) {
+        return false;
+    }
+    $value = "" . $value;
+    return true;
+}
 
-        if ($ann['args']) {
-            $class = current($ann['args']);
-            $class = $connection->getDocumentClass($class);
+/** 
+ * @Validate(Integer) 
+ * @Validate(Int) 
+ */
+function _validate_integer(&$value)
+{
+    if (!is_numeric($value)) {
+        return false;
+    }
+    $value = (int)$value;
+    return true;
+}
 
-            if (!($value instanceof $class)) {
-                return false;
-            }
-        } else {
-            $class = get_class($value);
-        }
-
-        $ref = Utils::getReflectionClass($class);
-        $ann = $ref->getAnnotations();
-        if (!$ann->get('Referenceable') && !$ann->get('Universal')) {
-            throw new \RuntimeException("$class can not be referenced");
-        }
-
-        return true;
+/**
+ *  @Hydratate(Reference)
+ */
+function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
+{
+    $expected = current($args);
+    if ($expected && $expected != $value['$ref']) {
+        throw new \RuntimeException("Expecting document {$expected} but got {$value['ref']}");
     }
 
-    public static function transformate($value, $ann, $connection)
-    {
-        if ($value instanceof ref) {
-            if (!$value->getObject()) {
-                return $value->getReference();
-            }
-            $value = $value->getObject();
-        }
+    $class = $mapper->mapCollection($value['$ref'])['class'];
+    $value = new Reference($value, $class, $conn, empty($value['_data']) ? array() : $value['_data']);
+}
 
-        if ($ann['args']) {
-            $class = current($ann['args']);
-            $class = $connection->getDocumentClass($class);
-        
-            if (!is_a($value, $class)) {
-                return NULL;
-            }
-        } else {
-            $class = get_class($value);
-        }
+/**
+ *  @Validate(Reference)
+ */
+function _validate_reference_one(&$value, Array $args, $conn, $mapper)
+{
+    $document = $value;
+    $conn->save($document);
 
-        $ref = Utils::getReflectionClass($class);
-        $ann = $ref->getAnnotations();
+    if (!empty($args) && !$conn->is(current($args), $document)) {
+        throw new \RuntimeException("Invalid value");
+    }
 
-        $connection->save($value);
+    if ($document instanceof Reference) {
+        $value = $document->getReference();
+    } else {
+        $array = $mapper->validate($document);
 
-        $doc = $connection->getRawDocument($value);
-
-        $ref = array(
-            '$ref' => Serialize::getCollection($value),
-            '$id'  => $doc['_id'],
+        $value = array(
+            '$id'   => $array['_id'],
+            '$ref'  => $mapper->mapClass(get_class($document))['name'],
         );
-
-        if ($ann->getOne('Referenceable')) {
-            $keys = $ann->getOne('Referenceable');
-            $keys = array_combine($keys, $keys);
-
-            $ref['_extra'] = array_intersect_key($doc, $keys);
-        }
-
-        if (!$ann['args']) {
-            $ref['_class'] = $class;
-        }
-
-        return $ref;
     }
 
+    return true;
 }

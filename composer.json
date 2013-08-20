@@ -2,9 +2,12 @@
     "name": "crodas/activemongo2",
     "description": "Mongo abstraction",
     "require": {
-        "crodas/notoj": "*"
+        "crodas/notoj": "~0.1",
+        "crodas/simple-view-engine": "~0.1",
+        "crodas/watch-files": "~0.1"
     },
-    "license": "BSD",
+    "license": "BSD-4-Clause",
+    "version": "v0.1.1",
     "authors": [
         {
             "name": "César D. Rodas",
