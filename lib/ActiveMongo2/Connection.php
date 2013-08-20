@@ -37,7 +37,6 @@
 namespace ActiveMongo2;
 
 use MongoClient;
-use ActiveMongo2\Runtime\Utils;
 use MongoId;
 
 class Connection
@@ -185,6 +184,9 @@ class Connection
     public function is($collection, $object)
     {
         $class = $this->mapper->mapCollection($collection)['class'];
+        if ($object instanceof Reference) {
+            return $class == $object->getClass();
+        }
         return $object instanceof $class;
     }
 
@@ -233,7 +235,7 @@ class Connection
         $this->setObjectDocument($obj, $document);
 
         $ret = $this->classes[$class]->save($document, array('w' => 1));
-        $this->mapper->trigger('postCreate', $obj, array($this));
+        $this->mapper->trigger('postCreate', $obj, array($document));
 
         return $this;
     }

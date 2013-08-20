@@ -130,6 +130,7 @@ class Mapper
 
         @foreach ($doc['annotation']->getProperties() as $prop)
             @set($propname, $prop['property'])
+            @set($var, 'current')
             @if ($prop->has('Id'))
                 @set($propname, '_id')
             @end
@@ -141,6 +142,7 @@ class Mapper
                     $change['$unset']['{{$propname}}'] = 1;
                 } else if (!array_key_exists('{{$propname}}', $old)) {
                     $change['$set']['{{$propname}}'] = $current['{{$propname}}'];
+                    @include('validate', compact('propname', 'validators', 'files', 'prop', 'var'));
                 } else if ($current['{{$propname}}'] !== $old['{{$propname}}']) {
                     @if ($prop->has('Inc'))
                         if (empty($old['{{$propname}}'])) {
@@ -181,6 +183,7 @@ class Mapper
                         }
                     @else
                         $change['$set']['{{$propname}}'] = $current['{{$propname}}'];
+                        @include('validate', compact('propname', 'validators', 'files', 'prop'));
                     @end
                 }
             }
@@ -207,7 +210,7 @@ class Mapper
                             $this->loaded['{{$files[$zname]}}'] = true;
                         }
                         
-                        {{$callback}}($data['{{$name}}'], {{var_export($prop[0]['args'],  true)}}, $this->connection, $this);
+                        {{$callback}}($data['{{$name}}'], {{var_export($prop[0]['args'] ?: [],  true)}}, $this->connection, $this);
                     @end
                 @end
 
@@ -266,20 +269,8 @@ class Mapper
                 throw new \RuntimeException("{{$prop['property']}} cannot be empty");
             }
             @end
-            @foreach($validators as $name => $callback)
-                @if ($prop->has($name))
-                    /* {{$prop['property']}} - {{$name}} {{ '{{{' }} */
-                    if (empty($this->loaded['{{$files[$name]}}'])) {
-                        require_once '{{$files[$name]}}';
-                        $this->loaded['{{$files[$name]}}'] = true;
-                    }
-                    if (!empty($doc['{{$propname}}']) && !{{$callback}}($doc['{{$propname}}'], {{var_export($prop[0]['args'],  true)}}, $this->connection, $this)) {
-                        throw new \RuntimeException("Validation failed for {{$name}}");
-                    }
-                    /* }}} */
 
-                @end
-            @end
+            @include('validate', compact('propname', 'validators', 'files', 'prop'));
         @end
 
         return $doc;
@@ -307,8 +298,8 @@ class Mapper
                             }
                             $plugin = new \{{$temp['class']}}({{ var_export($zmethod['args'], true) }});
                             @set($first_time, true)
+                            @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin'])
                         @end
-                        @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin'])
                     @end
                 @end
             @end

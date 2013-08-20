@@ -87,12 +87,16 @@ function _validate_reference_one(&$value, Array $args, $conn, $mapper)
         throw new \RuntimeException("Invalid value");
     }
 
-    $array = $mapper->validate($document);
+    if ($document instanceof Reference) {
+        $value = $document->getReference();
+    } else {
+        $array = $mapper->validate($document);
 
-    $value = array(
-        '$id'   => $array['_id'],
-        '$ref'  => current($args),
-    );
+        $value = array(
+            '$id'   => $array['_id'],
+            '$ref'  => $mapper->mapClass(get_class($document))['name'],
+        );
+    }
 
     return true;
 }

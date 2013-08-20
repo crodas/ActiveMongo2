@@ -71,14 +71,44 @@ namespace {
             }
             if ($method->has($ev)) {
                 if (in_array('public', $method['visibility'])) {
-                    echo "        \$return = " . ($target) . "->" . ($method['function']) . "(\$document, \$args, \$this->connection, " . (var_export($method[0]['args'], true)) . ");\n";
+                    echo "        \$return = " . ($target) . "->" . ($method['function']) . "(\$document, \$args, \$this->connection, " . (var_export($method[0]['args'], true)) . ", \$this);\n";
                 }
                 else {
-                    echo "        \$reflection = new ReflectionMethod(\"\\\\" . (addslashes($doc['class'])) . "\", \"" . ($method['function']) . "\");\n        \$return = \$reflection->invoke(\$document, " . ($target) . ", \$args, \$this->connection, " . (var_export($method[0]['args'], true)) . ");\n";
+                    echo "        \$reflection = new ReflectionMethod(\"\\\\" . (addslashes($doc['class'])) . "\", \"" . ($method['function']) . "\");\n        \$return = \$reflection->invoke(\$document, " . ($target) . ", \$args, \$this->connection, " . (var_export($method[0]['args'], true)) . ", \$this);\n";
                 }
                 echo "    if (\$return === FALSE) {\n        throw new \\RuntimeException(\"" . (addslashes($doc['class']) . "::" . $method['function']) . " returned false\");\n    }\n";
             }
             echo "\n";
+
+            if ($return) {
+                return ob_get_clean();
+            }
+
+        }
+    }
+
+    /** 
+     *  Template class generated from Validate.tpl.php
+     */
+    class class_9e8794c44ad8c1631f7e215c9edaf7dbac875fb4 extends base_template_46ff768978a6897199daa478860b8cd25af655b1
+    {
+
+        public function render(Array $vars = array(), $return = false)
+        {
+            $this->context = $vars;
+
+            extract($vars);
+            if ($return) {
+                ob_start();
+            }
+            if (empty($var)) {
+                $var = 'doc';
+            }
+            foreach($validators as $name => $callback) {
+                if ($prop->has($name)) {
+                    echo "        /* " . ($prop['property']) . " - " . ($name) . " " . ( '{{{' ) . " */\n        if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n            require_once '" . ($files[$name]) . "';\n            \$this->loaded['" . ($files[$name]) . "'] = true;\n        }\n        if (!empty(\$" . ($var) . "['" . ($propname) . "']) && !" . ($callback) . "(\$" . ($var) . "['" . ($propname) . "'], " . (var_export(($prop[0]['args']) ?: [],  true)) . ", \$this->connection, \$this)) {\n            throw new \\RuntimeException(\"Validation failed for " . ($name) . "\");\n        }\n        /* }}} */\n\n";
+                }
+            }
 
             if ($return) {
                 return ob_get_clean();
@@ -110,10 +140,13 @@ namespace {
                 echo "    /**\n     *  Get update object " . ($doc['class']) . " \n     */\n    public function update_" . (sha1($doc['class'])) . "(Array \$current, Array \$old, \$embed = false)\n    {\n        if (!\$embed && \$current['_id'] != \$old['_id']) {\n            throw new \\RuntimeException(\"document ids cannot be updated\");\n        }\n\n        \$change = array();\n\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
                     $propname = $prop['property'];
+                    $var = 'current';
                     if ($prop->has('Id')) {
                         $propname = '_id';
                     }
-                    echo "\n            if (array_key_exists('" . ($propname) . "', \$current)\n                || array_key_exists('" . ($propname) . "', \$old)) {\n\n                if (!array_key_exists('" . ($propname) . "', \$current)) {\n                    \$change['\$unset']['" . ($propname) . "'] = 1;\n                } else if (!array_key_exists('" . ($propname) . "', \$old)) {\n                    \$change['\$set']['" . ($propname) . "'] = \$current['" . ($propname) . "'];\n                } else if (\$current['" . ($propname) . "'] !== \$old['" . ($propname) . "']) {\n";
+                    echo "\n            if (array_key_exists('" . ($propname) . "', \$current)\n                || array_key_exists('" . ($propname) . "', \$old)) {\n\n                if (!array_key_exists('" . ($propname) . "', \$current)) {\n                    \$change['\$unset']['" . ($propname) . "'] = 1;\n                } else if (!array_key_exists('" . ($propname) . "', \$old)) {\n                    \$change['\$set']['" . ($propname) . "'] = \$current['" . ($propname) . "'];\n";
+                    ActiveMongo2\Templates::exec('validate', compact('propname', 'validators', 'files', 'prop', 'var'), $this->context);
+                    echo "                } else if (\$current['" . ($propname) . "'] !== \$old['" . ($propname) . "']) {\n";
                     if ($prop->has('Inc')) {
                         echo "                        if (empty(\$old['" . ($propname) . "'])) {\n                            \$prev = 0;\n                        } else {\n                            \$prev = \$old['" . ($propname) . "'];\n                        }\n                        \$change['\$inc']['" . ($propname) . "'] = \$current['" . ($propname) . "'] - \$prev;\n";
                     }
@@ -125,6 +158,7 @@ namespace {
                     }
                     else {
                         echo "                        \$change['\$set']['" . ($propname) . "'] = \$current['" . ($propname) . "'];\n";
+                        ActiveMongo2\Templates::exec('validate', compact('propname', 'validators', 'files', 'prop'), $this->context);
                     }
 
 
@@ -139,7 +173,7 @@ namespace {
                     echo "            if (array_key_exists(\"" . ($name) . "\", \$data)) {\n";
                     foreach($hydratations as $zname => $callback) {
                         if ($prop->has($zname)) {
-                            echo "                        if (empty(\$this->loaded['" . ($files[$zname]) . "'])) {\n                            require_once '" . ($files[$zname]) . "';\n                            \$this->loaded['" . ($files[$zname]) . "'] = true;\n                        }\n                        \n                        " . ($callback) . "(\$data['" . ($name) . "'], " . (var_export($prop[0]['args'],  true)) . ", \$this->connection, \$this);\n";
+                            echo "                        if (empty(\$this->loaded['" . ($files[$zname]) . "'])) {\n                            require_once '" . ($files[$zname]) . "';\n                            \$this->loaded['" . ($files[$zname]) . "'] = true;\n                        }\n                        \n                        " . ($callback) . "(\$data['" . ($name) . "'], " . (var_export($prop[0]['args'] ?: [],  true)) . ", \$this->connection, \$this);\n";
                         }
                     }
                     echo "\n";
@@ -175,11 +209,8 @@ namespace {
                     if ($prop->has('Required')) {
                         echo "            if (empty(\$doc['" . ($propname) . "'])) {\n                throw new \\RuntimeException(\"" . ($prop['property']) . " cannot be empty\");\n            }\n";
                     }
-                    foreach($validators as $name => $callback) {
-                        if ($prop->has($name)) {
-                            echo "                    /* " . ($prop['property']) . " - " . ($name) . " " . ( '{{{' ) . " */\n                    if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n                        require_once '" . ($files[$name]) . "';\n                        \$this->loaded['" . ($files[$name]) . "'] = true;\n                    }\n                    if (!empty(\$doc['" . ($propname) . "']) && !" . ($callback) . "(\$doc['" . ($propname) . "'], " . (var_export($prop[0]['args'],  true)) . ", \$this->connection, \$this)) {\n                        throw new \\RuntimeException(\"Validation failed for " . ($name) . "\");\n                    }\n                    /* }}} */\n\n";
-                        }
-                    }
+                    echo "\n";
+                    ActiveMongo2\Templates::exec('validate', compact('propname', 'validators', 'files', 'prop'), $this->context);
                 }
                 echo "\n        return \$doc;\n    }\n\n";
                 foreach($events as $ev) {
@@ -196,8 +227,8 @@ namespace {
                                 if ($method->has($ev) && empty($first_time)) {
                                     echo "                            if (empty(\$this->loaded[\"" . ($temp['file']) . "\"])) {\n                                require_once \"" . ($temp['file']) . "\";\n                                \$this->loaded[\"" . ($temp['file']) . "\"] = true;\n                            }\n                            \$plugin = new \\" . ($temp['class']) . "(" . ( var_export($zmethod['args'], true) ) . ");\n";
                                     $first_time = true;
+                                    ActiveMongo2\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin'], $this->context);
                                 }
-                                ActiveMongo2\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin'], $this->context);
                             }
                         }
                     }
@@ -231,6 +262,8 @@ namespace ActiveMongo2 {
             static $classes = array (
                 'trigger.tpl.php' => 'class_11ca6999533bd9c460f246ff122fc6c9341f7a1f',
                 'trigger' => 'class_11ca6999533bd9c460f246ff122fc6c9341f7a1f',
+                'validate.tpl.php' => 'class_9e8794c44ad8c1631f7e215c9edaf7dbac875fb4',
+                'validate' => 'class_9e8794c44ad8c1631f7e215c9edaf7dbac875fb4',
                 'documents.tpl.php' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
                 'documents' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
             );
