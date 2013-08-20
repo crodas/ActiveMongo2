@@ -21,6 +21,7 @@ class Mapper
     {
         if (!empty($this->class_mapper[$class])) {
             require $this->class_mapper[$class]['file'];
+            return true;
         }
         return false;
     }
