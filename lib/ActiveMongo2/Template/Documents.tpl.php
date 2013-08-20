@@ -14,6 +14,15 @@ class Mapper
     public function __construct(Connection $conn)
     {
         $this->connection = $conn;
+        spl_autoload_register(array($this, '__autoloader'));
+    }
+
+    public function __autoloader($class)
+    {
+        if (!empty($this->class_mapper[$class])) {
+            require $this->class_mapper[$class]['file'];
+        }
+        return false;
     }
 
     public function mapCollection($col)

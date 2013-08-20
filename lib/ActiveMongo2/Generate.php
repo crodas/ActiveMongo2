@@ -139,7 +139,7 @@ class Generate
             $watcher->watchFile($file);
         }
 
-        //$watcher->watch();
+        $watcher->watch();
     }
 
     public function getDocumentMapper(Array $map)
