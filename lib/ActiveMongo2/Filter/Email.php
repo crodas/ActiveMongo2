@@ -35,12 +35,12 @@
   +---------------------------------------------------------------------------------+
 */
 
-namespace ActiveMongo2\Runtime\Validate;
+namespace ActiveMongo2\Plugin;
 
-class Email
+/**
+ *  @Validate(Email)
+ */
+function _do_validate_email($string)
 {
-    public static function validate($string)
-    {
         return empty($string) || filter_var($string, FILTER_VALIDATE_EMAIL);
-    }
 }

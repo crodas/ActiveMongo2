@@ -39,8 +39,21 @@ namespace ActiveMongo2\Plugin;
 
 use Notoj\Annotation;
 
+/**
+ *  @Plugin(Sluggable)
+ */
 class Sluggable
 {
+    protected $args;
+    public function __construct(Array $args)
+    {
+        $this->args = $args;
+        if (count($args) != 2) {
+            throw new \RuntimeException("@Sluggable expects two arguments");
+        }
+
+    }
+
     public static function sluggify($text)
     {
         // replace non letter or digits by -
@@ -70,22 +83,18 @@ class Sluggable
     /**
      *  @preCreate
      */
-    public static function setSlugUrl(Array $args, $object, Array &$document, $conn)
+    public function setSlugUrl($obj, Array $event_args, $conn)
     {
-        if (count($args) != 2) {
-            throw new \RuntimeException("@Sluggable expects two arguments");
-        }
-
+        $args = $this->args;
+        $document = &$event_args[0];
         if (!empty($document[$args[1]])) {
             /* If the slug already exists, and it is different than
                empty, then use just exit gracefully */
             return;
         }
 
-        $source = self::sluggify($document[$args[0]]);
-        $col = $conn->getCollection(get_class($object));
-
-        $slug = self::sluggify($document[$args[0]]);
+        $slug = self::sluggify(empty($document[$args[0]]) ? 'n-a' : $document[$args[0]]);
+        $col  = $conn->getCollection(get_class($obj));
 
         while ( $col->count(array($args[1] => $slug)) != 0) {
             $slug .= '-' . uniqid(true);

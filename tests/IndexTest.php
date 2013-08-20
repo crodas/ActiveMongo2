@@ -10,7 +10,7 @@ class IndexTest extends \phpunit_framework_testcase
     public function testUniqueIndex()
     {
         $conn = getConnection();
-        $conn->getCollection('post')->ensureIndex();
+        $conn->ensureIndex();
 
         $post = new PostNoTitleDocument;
         $post->uri = "something that I say";

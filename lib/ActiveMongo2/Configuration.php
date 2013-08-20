@@ -34,13 +34,60 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
+namespace ActiveMongo2;
 
-namespace ActiveMongo2\Runtime\Validate;
+use Notoj\Notoj;
+use WatchFiles\Watch;
 
-class String
+class Configuration
 {
-    public static function validate($string)
+    protected $loader;
+    protected $path;
+    protected $devel = false;
+
+    public function __construct($loader)
     {
-        return empty($string) || is_string($string);
+        $this->loader = $loader;
+    }
+
+    public function getModelPath()
+    {
+        return $this->path;
+    }
+
+    public function getLoader()
+    {
+        return $this->loader;
+    }
+
+    public function addModelPath($path)
+    {
+        $this->path[] = $path;
+        return $this;
+    }
+
+    public function initialize(Connection $conn)
+    {
+        Notoj::enableCache($this->loader . ".tmp");
+
+        if ($this->devel || !is_file($this->loader)) {
+            $watcher = new Watch($this->loader . ".lock");
+            if (!$watcher->isWatching() || $watcher->hasChanged()) {
+                new Generate($this, $watcher);
+            }
+        }
+        
+        
+        $class = "\\ActiveMongo2\\Generated" . sha1($this->GetLoader()) . "\\Mapper";
+        if (!class_exists($class, false)) {
+            require $this->getLoader();
+        }
+        return new $class($conn);
+    }
+
+    public function development()
+    {
+        $this->devel = true;
+        return $this;
     }
 }
