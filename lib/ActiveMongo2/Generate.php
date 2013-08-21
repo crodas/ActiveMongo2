@@ -43,11 +43,14 @@ use crodas\SimpleView\FixCode;
 class Generate
 {
     protected $files = array();
+    protected $config;
 
     public function __construct(Configuration $config, Watch $watcher)
     {
-        $annotations = new Notoj\Annotations;
-        $this->files = array();
+        $annotations  = new Notoj\Annotations;
+        $this->files  = array();
+        $this->config = $config;
+
         foreach ($config->getModelPath() as $path) {
             $dir = new Notoj\Dir($path);
             $dir->getAnnotations($annotations);
@@ -65,7 +68,7 @@ class Generate
                 if (!$object->isClass()) continue;
                 $data = array(
                     'class' => $object['class'], 
-                    'file' => $object['file'],
+                    'file' => $this->getRelativePath($object['file']),
                     'annotation' => $object,
                 );
 
@@ -90,7 +93,7 @@ class Generate
                     } else if ($validator->isFunction()) {
                         ${$var}[$type] = "\\" . $validator['function'];
                     }
-                    $files[$type] = $validator['file'];
+                    $files[$type] = $this->getRelativePath($validator['file']);
                 }
             }
         }
@@ -119,11 +122,12 @@ class Generate
             }
         }
 
+        $self = $this;
         $code = Templates::get('documents')
             ->render(compact(
                 'docs', 'namespace', 'class_mapper', 'events',
                 'validators', 'mapper', 'files', 'indexes',
-                'plugins', 'hydratations'
+                'plugins', 'hydratations', 'self'
             ), true);
 
         $code = FixCode::fix($code);
@@ -140,6 +144,48 @@ class Generate
         }
 
         $watcher->watch();
+    }
+    
+    public function getRelativePath($dir1, $dir2=NULL)
+    {
+        if (empty($dir2)) {
+            $dir2 = $this->config->getLoader();
+        }
+
+        $slash = DIRECTORY_SEPARATOR;
+
+        $file = basename($dir1);
+        $dir1 = trim(realpath(dirname($dir1)), $slash);
+        $dir2 = trim(realpath(dirname($dir2)), $slash);
+        $to   = explode($slash, $dir1);
+        $from = explode($slash, $dir2);
+
+        $realPath = $to;
+
+        foreach ($from as $depth => $dir) {
+            if(isset($to[$depth]) && $dir === $to[$depth]) {
+                array_shift($realPath);
+            } else {
+                $remaining = count($from) - $depth;
+                if($remaining) {
+                    // add traversals up to first matching dir
+                    $padLength = (count($realPath) + $remaining) * -1;
+                    $realPath  = array_pad($realPath, $padLength, '..');
+                    break;
+                }
+            }
+        }
+
+        $rpath = implode($slash, $realPath);
+        if ($rpath && $rpath[0] != $slash) {
+            $rpath = $slash . $rpath;
+        }
+        
+        if ($file) {
+            $rpath .= $slash . $file;
+        }
+
+        return $rpath;
     }
 
     public function getDocumentMapper(Array $map)

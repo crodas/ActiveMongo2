@@ -20,7 +20,9 @@ class Mapper
     public function __autoloader($class)
     {
         if (!empty($this->class_mapper[$class])) {
-            require $this->class_mapper[$class]['file'];
+            $this->loaded[$this->class_mapper[$class]['file']] = true;
+            require __DIR__ . $this->class_mapper[$class]['file'];
+
             return true;
         }
         return false;
@@ -35,7 +37,7 @@ class Mapper
         $data = $this->mapper[$col];
 
         if (empty($this->loaded[$data['file']])) {
-            require_once $data['file'];
+            require_once __DIR__ .  $data['file'];
             $this->loaded[$data['file']] = true;
         }
 
@@ -51,7 +53,7 @@ class Mapper
         $data = $this->class_mapper[$class];
 
         if (empty($this->loaded[$data['file']])) {
-            require_once $data['file'];
+            require_once __DIR__ . $data['file'];
             $this->loaded[$data['file']] = true;
         }
 
@@ -227,7 +229,7 @@ class Mapper
                 @foreach($hydratations as $zname => $callback)
                     @if ($prop->has($zname))
                         if (empty($this->loaded['{{$files[$zname]}}'])) {
-                            require_once '{{$files[$zname]}}';
+                            require_once __DIR__ .  '{{$files[$zname]}}';
                             $this->loaded['{{$files[$zname]}}'] = true;
                         }
                         
@@ -334,9 +336,9 @@ class Mapper
                     @set($temp, $plugins[$zmethod['method']])
                     @foreach($temp->getMethods() as $method)
                         @if ($method->has($ev) && empty($first_time)) 
-                            if (empty($this->loaded["{{$temp['file']}}"])) {
-                                require_once "{{$temp['file']}}";
-                                $this->loaded["{{$temp['file']}}"] = true;
+                            if (empty($this->loaded["{{$self->getRelativePath($temp['file'])}}"])) {
+                                require_once __DIR__ .  "{{$self->getRelativePath($temp['file'])}}";
+                                $this->loaded["{{$self->getRelativePath($temp['file'])}}"] = true;
                             }
                             $plugin = new \{{$temp['class']}}({{ var_export($zmethod['args'], true) }});
                             @set($first_time, true)
