@@ -37,8 +37,6 @@
 
 namespace ActiveMongo2\Plugin;
 
-use Notoj\Annotation;
-
 /**
  *  @Plugin(Sluggable)
  */
@@ -51,7 +49,6 @@ class Sluggable
         if (count($args) != 2) {
             throw new \RuntimeException("@Sluggable expects two arguments");
         }
-
     }
 
     public static function sluggify($text)
