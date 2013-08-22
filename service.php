@@ -22,7 +22,7 @@ function activemongo2_service($config)
     }
 
     $conf = new \ActiveMongo2\Configuration(
-        "/tmp/database.php"
+        "/tmp/activemongo2:" . $db . ".php"
     );
 
     foreach ((array)$config['path'] as $path) {
