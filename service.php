@@ -10,6 +10,7 @@ namespace ActiveMongo2\Service;
  *      db: {required: true},
  *      opts: { default:{}, type: 'hash'},
  *      path: { require: true},
+ *      temp_dir: { default: '/tmp' }
  *      devel: {default: true}
  *  }, { shared: true })
  */
@@ -22,7 +23,7 @@ function activemongo2_service($config)
     }
 
     $conf = new \ActiveMongo2\Configuration(
-        "/tmp/activemongo2:" . $db . ".php"
+        $config['temp_dir'] . "/activemongo2:" . $db . ".php"
     );
 
     foreach ((array)$config['path'] as $path) {
