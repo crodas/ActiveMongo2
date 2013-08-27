@@ -34,30 +34,78 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2\Filter;
+
+namespace ActiveMongo2\Plugin;
 
 use ActiveMongo2\Reference;
 
-/** @Validate(String) */
-function _validate_string(&$value)
-{
-    if (!is_scalar($value)) {
-        return false;
-    }
-    $value = "" . $value;
-    return true;
-}
-
-/** 
- * @Validate(Integer) 
- * @Validate(Int) 
+/**
+ *  @Hydratate(ReferenceMany)
  */
-function _validate_integer(&$value)
+function _hydratate_reference_many(&$value, Array $args, $conn, $mapper)
 {
-    if (!is_numeric($value)) {
+    foreach ((array)$value as $id => $val) {
+        _hydratate_reference_one($value[$id], $args, $conn, $mapper);
+    }
+}
+
+/**
+ *  @Validate(ReferenceMany)
+ */
+function _validate_reference_many(&$value, Array $args, $conn, $mapper)
+{
+    if (!is_array($value)) {
         return false;
     }
-    $value = (int)$value;
+
+    foreach ($value as $id => $val) {
+        if (!_validate_reference_one($value[$id], $args, $conn, $mapper)) {
+            return false;
+        }
+    }
+
     return true;
 }
 
+
+/**
+ *  @Hydratate(Reference)
+ *  @Hydratate(ReferenceOne)
+ */
+function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
+{
+    $expected = current($args);
+    if ($expected && $expected != $value['$ref']) {
+        throw new \RuntimeException("Expecting document {$expected} but got {$value['ref']}");
+    }
+
+    $class = $mapper->mapCollection($value['$ref'])['class'];
+    $value = new Reference($value, $class, $conn, empty($value['_data']) ? array() : $value['_data']);
+}
+
+/**
+ *  @Validate(Reference)
+ *  @Validate(ReferenceOne)
+ */
+function _validate_reference_one(&$value, Array $args, $conn, $mapper)
+{
+    $document = $value;
+    $conn->save($document);
+
+    if (!empty($args) && !$conn->is(current($args), $document)) {
+        throw new \RuntimeException("Invalid value");
+    }
+
+    if ($document instanceof Reference) {
+        $value = $document->getReference();
+    } else {
+        $array = $mapper->validate($document);
+
+        $value = array(
+            '$id'   => $array['_id'],
+            '$ref'  => $mapper->mapClass(get_class($document))['name'],
+        );
+    }
+
+    return true;
+}
