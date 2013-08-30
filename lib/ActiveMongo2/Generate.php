@@ -39,6 +39,7 @@ namespace ActiveMongo2;
 use Notoj;
 use WatchFiles\Watch;
 use crodas\SimpleView\FixCode;
+use crodas\Path;
 
 class Generate
 {
@@ -152,50 +153,7 @@ class Generate
             $dir2 = $this->config->getLoader();
         }
 
-        $slash = DIRECTORY_SEPARATOR;
-
-        $file = basename($dir1);
-        $dir1 = trim(realpath(dirname($dir1)), $slash);
-        $dir2 = trim(realpath(dirname($dir2)), $slash);
-        $to   = explode($slash, $dir1);
-        $from = explode($slash, $dir2);
-
-        if ($slash == '\\') {
-            // F*cking windows ;-)
-            if (strncasecmp($dir1, $dir2, 2) != 0) {
-                // There is no relative path
-                return $dir1;
-            }
-            $dir1 = substr($dir1, 2);
-            $dir2 = substr($dir2, 2);
-        }
-
-        $realPath = $to;
-
-        foreach ($from as $depth => $dir) {
-            if(isset($to[$depth]) && $dir === $to[$depth]) {
-                array_shift($realPath);
-            } else {
-                $remaining = count($from) - $depth;
-                if($remaining) {
-                    // add traversals up to first matching dir
-                    $padLength = (count($realPath) + $remaining) * -1;
-                    $realPath  = array_pad($realPath, $padLength, '..');
-                    break;
-                }
-            }
-        }
-
-        $rpath = implode($slash, $realPath);
-        if ($rpath && $rpath[0] != $slash) {
-            $rpath = $slash . $rpath;
-        }
-        
-        if ($file) {
-            $rpath .= $slash . $file;
-        }
-
-        return $rpath;
+        return Path::getRelative($dir1, $dir2);
     }
 
     public function getDocumentMapper(Array $map)
