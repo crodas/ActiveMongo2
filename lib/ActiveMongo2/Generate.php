@@ -68,8 +68,8 @@ class Generate
             foreach ($annotations->get($type) as $object) {
                 if (!$object->isClass()) continue;
                 $data = array(
-                    'class' => $object['class'], 
-                    'file' => $this->getRelativePath($object['file']),
+                    'class' => strtolower($object['class']), 
+                    'file'  => $this->getRelativePath($object['file']),
                     'annotation' => $object,
                 );
 
@@ -117,7 +117,7 @@ class Generate
 
         foreach ($annotations->get('Unique') as $prop) {
             if (!$prop->isProperty()) continue;
-            $collection = $class_mapper[$prop['class']]['name'];
+            $collection = $class_mapper[strtolower($prop['class'])]['name'];
             foreach ($prop->get('Unique') as $anno) {
                 $indexes[] = array($collection,  array($prop['property'] => 1), array('unique' => 1));
             }

@@ -19,6 +19,7 @@ class Mapper
 
     public function __autoloader($class)
     {
+        $class = strtolower($class);
         if (!empty($this->class_mapper[$class])) {
             $this->loaded[$this->class_mapper[$class]['file']] = true;
             require __DIR__ . $this->class_mapper[$class]['file'];
@@ -46,6 +47,7 @@ class Mapper
 
     public function mapClass($class)
     {
+        $class = strtolower($class);
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -62,7 +64,7 @@ class Mapper
 
     public function mapObject($object)
     {
-        $class = get_class($object);
+        $class = strtolower(get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -72,7 +74,7 @@ class Mapper
 
     public function getDocument($object)
     {
-        $class = get_class($object);
+        $class = strtolower(get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -82,7 +84,7 @@ class Mapper
 
     public function validate($object)
     {
-        $class = get_class($object);
+        $class = strtolower(get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -92,7 +94,7 @@ class Mapper
 
     public function update($object, Array $doc, Array $old)
     {
-        $class = get_class($object);
+        $class = strtolower(get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -102,7 +104,7 @@ class Mapper
 
     public function populate($object, Array $data)
     {
-        $class = get_class($object);
+        $class = strtolower(get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -112,7 +114,7 @@ class Mapper
 
     public function trigger($event, $object, Array $args = array())
     {
-        $class  = get_class($object);
+        $class  = strtolower(get_class($object));
         $method = "event_{$event}_" . sha1($class);
         if (!is_callable(array($this, $method))) {
             throw new \RuntimeException("Cannot trigger {$event} event on '$class' objects");
@@ -123,7 +125,7 @@ class Mapper
 
     public function updateProperty($document, $key, $value)
     {
-        $class  = get_class($document);
+        $class  = strtolower(get_class($document));
         $method = "update_property_" . sha1($class);
         if (!is_callable(array($this, $method))) {
             throw new \RuntimeException("Cannot trigger {$event} event on '$class' objects");
