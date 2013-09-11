@@ -31,6 +31,8 @@ class PostDocument
     /** @Integer */
     public $xxxyyy;
 
+    /** @Array */
+    public $tags;
 
     /**
      *  @preSave

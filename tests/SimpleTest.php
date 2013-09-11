@@ -190,4 +190,33 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($fromDB->visits, 40);
         $this->assertEquals($fromDB->username, "barfoo");
     }
+
+    public function testArray1()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda2s";
+        $conn->save($user);
+
+
+        $post = new PostDocument;
+        $post->author = $user;
+        $post->title  = "foobar";
+        $post->tags = array('foobar', 'xx', 'xx');
+        $conn->save($post);
+
+        $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
+        $this->assertEquals($zpost->tags, $post->tags);
+
+        unset($post->tags[0]);
+        $conn->save($post);
+
+        $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
+        $this->assertEquals($zpost->tags, array_values($post->tags));
+        unset($post->tags[1]);
+        $conn->save($post);
+
+        $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
+        $this->assertEquals($zpost->tags, array_values($post->tags));
+    }
 }

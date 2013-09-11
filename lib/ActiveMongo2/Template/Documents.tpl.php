@@ -62,6 +62,26 @@ class Mapper
         return $data;
     }
 
+    protected function array_unique($array, $toRemove)
+    {
+        $return = array();
+        $count  = array();
+        foreach ($array as $key => $value) {
+            $val = serialize($value);
+            if (empty($count[$val])) {
+                $count[$val] = 0;
+            }
+            $count[$val]++; 
+        }
+        foreach ($toRemove as $value) {
+            $val = serialize($value);
+            if (!empty($count[$val]) && $count[$val] != 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function mapObject($object)
     {
         $class = strtolower(get_class($object));
@@ -205,17 +225,21 @@ class Mapper
                                 }
                             }
                         }
-                    @elif ($prop->has('ReferenceMany'))
+                    @elif ($prop->has('ReferenceMany') || $prop->has('Array'))
                         // add things to the array
                         $toAdd    = array_diff_key($current['{{$propname}}'], $old['{{$propname}}']);
                         $toRemove = array_diff_key($old['{{$propname}}'], $current['{{$propname}}']);
 
-                        foreach ($toAdd as $value) {
-                            $change['$push']['{{$propname}}'] = $value;
-                        }
+                        if (count($toRemove) > 0 && $this->array_unique($old['{{$propname}}'], $toRemove)) {
+                            $change['$set']['{{$propname}}'] = array_values($current['{{$propname}}']);
+                        } else {
+                            foreach ($toAdd as $value) {
+                                $change['$push']['{{$propname}}'] = $value;
+                            }
 
-                        foreach ($toRemove as $value) {
-                            $change['$pull']['{{$propname}}'] = $value;
+                            foreach ($toRemove as $value) {
+                                $change['$pull']['{{$propname}}'] = $value;
+                            }
                         }
 
                     @else
