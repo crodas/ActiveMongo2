@@ -154,10 +154,14 @@ namespace {
                     else if ($prop->has('EmbedMany')) {
                         echo "                        foreach (\$current['" . ($propname) . "'] as \$index => \$value) {\n                            if (!array_key_exists(\$index, \$old['" . ($propname) . "'])) {\n                                \$change['\$push']['" . ($propname) . "'] = \$value;\n                                continue;\n                            }\n                            if (\$value['__embed_class'] != \$old['" . ($propname) . "'][\$index]['__embed_class']) {\n                                \$change['\$set']['" . ($propname) . ".' . \$index] = \$value;\n                            } else {\n                                \$update = 'update_' . sha1(\$value['__embed_class']);\n                                \$diff = \$this->\$update(\$value, \$old['" . ($propname) . "'][\$index], true);\n                                foreach (\$diff as \$op => \$value) {\n                                    foreach (\$value as \$p => \$val) {\n                                        \$change[\$op]['" . ($propname) . ".' . \$index . '.' . \$p] = \$val;\n                                    }\n                                }\n                            }\n                        }\n";
                     }
+                    else if ($prop->has('ReferenceMany')) {
+                        echo "                        // add things to the array\n                        \$toAdd    = array_diff_key(\$current['" . ($propname) . "'], \$old['" . ($propname) . "']);\n                        \$toRemove = array_diff_key(\$old['" . ($propname) . "'], \$current['" . ($propname) . "']);\n\n                        foreach (\$toAdd as \$value) {\n                            \$change['\$push']['" . ($propname) . "'] = \$value;\n                        }\n\n                        foreach (\$toRemove as \$value) {\n                            \$change['\$pull']['" . ($propname) . "'] = \$value;\n                        }\n\n";
+                    }
                     else {
                         echo "                        \$change['\$set']['" . ($propname) . "'] = \$current['" . ($propname) . "'];\n";
                         ActiveMongo2\Templates::exec('validate', compact('propname', 'validators', 'files', 'prop'), $this->context);
                     }
+
 
 
                     echo "                }\n            }\n";

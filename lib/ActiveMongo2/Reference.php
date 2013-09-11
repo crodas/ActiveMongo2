@@ -78,7 +78,7 @@ class Reference implements DocumentProxy
     private function _loadDocument()
     {
         if (!$this->doc) {
-            $id = sha1(serialize($this->ref));
+            $id = $this->ref['$ref'] . ':' . $this->ref['$id'];
             if (empty(self::$all_objects[$id])) {
                 self::$all_objects[$id] = $this->class->findOne(array('_id' => $this->ref['$id']));
             }

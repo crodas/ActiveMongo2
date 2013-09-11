@@ -25,12 +25,13 @@ class EmbedTest extends \phpunit_framework_testcase
 
         // test default behavior
         $this->assertEquals($post->readers, NULL);
-        
+                 
         // add reference
         $post->readers[] = $user;
         $conn->save($post);
         $this->assertEquals(count($this->getPost()->readers), 1);
 
+        
         // add another reference
         $post->readers[] = $user;
         $conn->save($post);
@@ -45,6 +46,13 @@ class EmbedTest extends \phpunit_framework_testcase
         $conn->save($post);
         $this->assertEquals($this->getUser()->visits, 1024);
         $this->assertEquals($this->getUser()->visits, $post->readers[0]->visits);
+
+        // remove one
+        unset($post->readers[0]);
+        $conn->save($post);
+        $this->assertEquals(count($this->getPost()->readers), count($post->readers));
+        $this->assertEquals(count($this->getPost()->readers), 1);
+        $this->assertTrue(!empty($this->getPost()->readers[0]));
 
         //delete things
         $conn->delete($post);

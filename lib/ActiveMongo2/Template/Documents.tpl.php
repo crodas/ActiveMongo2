@@ -205,6 +205,19 @@ class Mapper
                                 }
                             }
                         }
+                    @elif ($prop->has('ReferenceMany'))
+                        // add things to the array
+                        $toAdd    = array_diff_key($current['{{$propname}}'], $old['{{$propname}}']);
+                        $toRemove = array_diff_key($old['{{$propname}}'], $current['{{$propname}}']);
+
+                        foreach ($toAdd as $value) {
+                            $change['$push']['{{$propname}}'] = $value;
+                        }
+
+                        foreach ($toRemove as $value) {
+                            $change['$pull']['{{$propname}}'] = $value;
+                        }
+
                     @else
                         $change['$set']['{{$propname}}'] = $current['{{$propname}}'];
                         @include('validate', compact('propname', 'validators', 'files', 'prop'));

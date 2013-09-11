@@ -215,11 +215,14 @@ class Connection
 
             $this->mapper->trigger('preUpdate', $obj, array(&$update, $this));
 
-            $this->classes[$class]->update(
-                array('_id' => $oldDoc['_id']), 
-                $update,
-                array('safe' => $safe)
-            );
+            foreach ($update as $op => $value) {
+                $this->classes[$class]->update(
+                    array('_id' => $oldDoc['_id']), 
+                    array($op => $value),
+                    array('safe' => $safe)
+                );
+            }
+
             $this->mapper->trigger('postUpdate', $obj, array($this));
 
             $this->setObjectDocument($obj, $document);

@@ -100,10 +100,10 @@ function _validate_reference_one(&$value, Array $args, $conn, $mapper)
         $value = $document->getReference();
     } else {
         $array = $mapper->validate($document);
-
         $value = array(
             '$id'   => $array['_id'],
             '$ref'  => $mapper->mapClass(get_class($document))['name'],
+            '__uniqid'   => uniqid(true),
         );
     }
 
