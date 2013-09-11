@@ -39,6 +39,7 @@ namespace ActiveMongo2;
 use Notoj;
 use WatchFiles\Watch;
 use crodas\SimpleView\FixCode;
+use crodas\File;
 use crodas\Path;
 
 class Generate
@@ -133,9 +134,7 @@ class Generate
 
         $code = FixCode::fix($code);
 
-        if (file_put_contents($config->getLoader(), $code, LOCK_EX) === false) {
-            throw new \RuntimeException("Cannot write file " . $config->GetLoader());
-        }
+        File::write($config->getLoader(), $code);
 
         $this->files = array_unique($this->files);
 
