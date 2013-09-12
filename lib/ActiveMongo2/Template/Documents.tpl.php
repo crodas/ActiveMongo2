@@ -208,33 +208,52 @@ class Mapper
                             }
                         }
                     @elif ($prop->has('EmbedMany'))
-                        foreach ($current['{{$propname}}'] as $index => $value) {
-                            if (!array_key_exists($index, $old['{{$propname}}'])) {
-                                $change['$push']['{{$propname}}'] = $value;
-                                continue;
-                            }
-                            if ($value['__embed_class'] != $old['{{$propname}}'][$index]['__embed_class']) {
-                                $change['$set']['{{$propname}}.' . $index] = $value;
-                            } else {
-                                $update = 'update_' . sha1($value['__embed_class']);
-                                $diff = $this->$update($value, $old['{{$propname}}'][$index], true);
-                                foreach ($diff as $op => $value) {
-                                    foreach ($value as $p => $val) {
-                                        $change[$op]['{{$propname}}.' . $index . '.' . $p] = $val;
-                                    }
-                                }
-                            }
-                        }
-                    @elif ($prop->has('ReferenceMany') || $prop->has('Array'))
                         // add things to the array
-                        $toAdd    = array_diff_key($current['{{$propname}}'], $old['{{$propname}}']);
                         $toRemove = array_diff_key($old['{{$propname}}'], $current['{{$propname}}']);
 
                         if (count($toRemove) > 0 && $this->array_unique($old['{{$propname}}'], $toRemove)) {
                             $change['$set']['{{$propname}}'] = array_values($current['{{$propname}}']);
                         } else {
-                            foreach ($toAdd as $value) {
-                                $change['$push']['{{$propname}}'] = $value;
+                            foreach ($current['{{$propname}}'] as $index => $value) {
+                                if (!array_key_exists($index, $old['{{$propname}}'])) {
+                                    $change['$push']['{{$propname}}'] = $value;
+                                    continue;
+                                }
+                                if ($value['__embed_class'] != $old['{{$propname}}'][$index]['__embed_class']) {
+                                    $change['$set']['{{$propname}}.' . $index] = $value;
+                                } else {
+                                    $update = 'update_' . sha1($value['__embed_class']);
+                                    $diff = $this->$update($value, $old['{{$propname}}'][$index], true);
+                                    foreach ($diff as $op => $value) {
+                                        foreach ($value as $p => $val) {
+                                            $change[$op]['{{$propname}}.' . $index . '.' . $p] = $val;
+                                        }
+                                    }
+                                }
+                            }
+
+                            foreach ($toRemove as $value) {
+                                $change['$pull']['{{$propname}}'] = $value;
+                            }
+                        }
+
+
+
+                    @elif ($prop->has('ReferenceMany') || $prop->has('Array'))
+                        // add things to the array
+                        $toRemove = array_diff_key($old['{{$propname}}'], $current['{{$propname}}']);
+
+                        if (count($toRemove) > 0 && $this->array_unique($old['{{$propname}}'], $toRemove)) {
+                            $change['$set']['{{$propname}}'] = array_values($current['{{$propname}}']);
+                        } else {
+                            foreach ($current['{{$propname}}'] as $index => $value) {
+                                if (!array_key_exists($index, $old['{{$propname}}'])) {
+                                    $change['$push']['{{$propname}}'] = $value;
+                                    continue;
+                                }
+                                if ($old['{{$propname}}'][$index] != $value) {
+                                    $change['$set']['{{$propname}}.' . $index] = $value;
+                                }
                             }
 
                             foreach ($toRemove as $value) {

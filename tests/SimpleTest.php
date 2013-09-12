@@ -202,8 +202,16 @@ class SimpleTest extends \phpunit_framework_testcase
         $post = new PostDocument;
         $post->author = $user;
         $post->title  = "foobar";
+
         $post->tags = array('foobar', 'xx', 'xx');
         $conn->save($post);
+        $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
+        $this->assertEquals($zpost->tags, $post->tags);
+
+        $post->tags[0] = 'yyy';
+        $conn->save($post);
+        $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
+        $this->assertEquals($zpost->tags, $post->tags);
 
         $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
         $this->assertEquals($zpost->tags, $post->tags);

@@ -2,10 +2,53 @@
 use ActiveMongo2\Tests\Document\PostDocument;
 use ActiveMongo2\Tests\Document\UserDocument;
 
-class EmbedTest extends \phpunit_framework_testcase
+class EmbedReferenceTest extends \phpunit_framework_testcase
 {
     protected $post;
     protected $user;
+
+    public function testEmbedMany()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "crodas:" . uniqid();
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author = $user;
+        $post->title = "some weird title";
+        $conn->save($post);
+
+        $this->post = $post->id;
+        $this->user = $user->userid;
+
+        // test default behavior
+        $this->assertEquals($post->readers_1, NULL);
+
+        $post->readers_1[] = $user;
+        $post->readers_1[] = $user;
+        $conn->save($post);
+
+        $zpost = $this->getPost();
+        $zuser = $zpost->readers_1;
+        $zuser[1]->visits = 99;
+        $zuser[0]->visits = 499;
+        $conn->save($zpost);
+
+        $zuser = $this->getPost()->readers_1;
+        $this->assertNotEquals($zuser[0]->visits, $zuser[1]->visits);
+
+                 
+        $this->assertEquals(count($this->getPost()->readers_1), 2);
+        unset($post->readers_1[0]);
+        $conn->save($post);
+
+        $this->assertEquals(count($this->getPost()->readers_1), 1);
+        $this->assertEquals(array_keys($this->getPost()->readers_1), array(0));
+
+        $conn->delete($post);
+        $conn->delete($user);
+    }
 
     public function testReferenceMany()
     {
@@ -53,6 +96,7 @@ class EmbedTest extends \phpunit_framework_testcase
         $this->assertEquals(count($this->getPost()->readers), count($post->readers));
         $this->assertEquals(count($this->getPost()->readers), 1);
         $this->assertTrue(!empty($this->getPost()->readers[0]));
+        $this->assertEquals(array_keys($this->getPost()->readers), array(0));
 
         //delete things
         $conn->delete($post);
