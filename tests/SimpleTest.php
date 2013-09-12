@@ -191,6 +191,25 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($fromDB->username, "barfoo");
     }
 
+    public function testInc()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda2ssds";
+        $conn->save($user);
+
+        $user2 = $conn->getCollection('user')->findOne(['_id' => $user->userid]);
+        $user2->visits = 10;
+        $conn->save($user2);
+
+        $user->visits = 10;
+        $conn->save($user);
+
+        $user3 = $conn->getCollection('user')->findOne(['_id' => $user->userid]);
+        $this->assertEquals(20, $user3->visits);
+
+    }
+
     public function testArray1()
     {
         $conn = getConnection();
