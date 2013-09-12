@@ -19,8 +19,11 @@ class Mapper
 
     public function __autoloader($class)
     {
+        $class = strtolower($class);
         if (!empty($this->class_mapper[$class])) {
-            require $this->class_mapper[$class]['file'];
+            $this->loaded[$this->class_mapper[$class]['file']] = true;
+            require __DIR__ . $this->class_mapper[$class]['file'];
+
             return true;
         }
         return false;
@@ -35,7 +38,7 @@ class Mapper
         $data = $this->mapper[$col];
 
         if (empty($this->loaded[$data['file']])) {
-            require_once $data['file'];
+            require_once __DIR__ .  $data['file'];
             $this->loaded[$data['file']] = true;
         }
 
@@ -44,6 +47,7 @@ class Mapper
 
     public function mapClass($class)
     {
+        $class = strtolower($class);
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -51,16 +55,36 @@ class Mapper
         $data = $this->class_mapper[$class];
 
         if (empty($this->loaded[$data['file']])) {
-            require_once $data['file'];
+            require_once __DIR__ . $data['file'];
             $this->loaded[$data['file']] = true;
         }
 
         return $data;
     }
 
+    protected function array_unique($array, $toRemove)
+    {
+        $return = array();
+        $count  = array();
+        foreach ($array as $key => $value) {
+            $val = serialize($value);
+            if (empty($count[$val])) {
+                $count[$val] = 0;
+            }
+            $count[$val]++; 
+        }
+        foreach ($toRemove as $value) {
+            $val = serialize($value);
+            if (!empty($count[$val]) && $count[$val] != 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function mapObject($object)
     {
-        $class = get_class($object);
+        $class = strtolower(get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -70,7 +94,7 @@ class Mapper
 
     public function getDocument($object)
     {
-        $class = get_class($object);
+        $class = strtolower(get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -80,7 +104,7 @@ class Mapper
 
     public function validate($object)
     {
-        $class = get_class($object);
+        $class = strtolower(get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -90,7 +114,7 @@ class Mapper
 
     public function update($object, Array $doc, Array $old)
     {
-        $class = get_class($object);
+        $class = strtolower(get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -100,7 +124,7 @@ class Mapper
 
     public function populate($object, Array $data)
     {
-        $class = get_class($object);
+        $class = strtolower(get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -110,7 +134,7 @@ class Mapper
 
     public function trigger($event, $object, Array $args = array())
     {
-        $class  = get_class($object);
+        $class  = strtolower(get_class($object));
         $method = "event_{$event}_" . sha1($class);
         if (!is_callable(array($this, $method))) {
             throw new \RuntimeException("Cannot trigger {$event} event on '$class' objects");
@@ -121,7 +145,7 @@ class Mapper
 
     public function updateProperty($document, $key, $value)
     {
-        $class  = get_class($document);
+        $class  = strtolower(get_class($document));
         $method = "update_property_" . sha1($class);
         if (!is_callable(array($this, $method))) {
             throw new \RuntimeException("Cannot trigger {$event} event on '$class' objects");
@@ -163,7 +187,6 @@ class Mapper
                     $change['$unset']['{{$propname}}'] = 1;
                 } else if (!array_key_exists('{{$propname}}', $old)) {
                     $change['$set']['{{$propname}}'] = $current['{{$propname}}'];
-                    @include('validate', compact('propname', 'validators', 'files', 'prop', 'var'));
                 } else if ($current['{{$propname}}'] !== $old['{{$propname}}']) {
                     @if ($prop->has('Inc'))
                         if (empty($old['{{$propname}}'])) {
@@ -185,23 +208,59 @@ class Mapper
                             }
                         }
                     @elif ($prop->has('EmbedMany'))
-                        foreach ($current['{{$propname}}'] as $index => $value) {
-                            if (!array_key_exists($index, $old['{{$propname}}'])) {
-                                $change['$push']['{{$propname}}'] = $value;
-                                continue;
-                            }
-                            if ($value['__embed_class'] != $old['{{$propname}}'][$index]['__embed_class']) {
-                                $change['$set']['{{$propname}}.' . $index] = $value;
-                            } else {
-                                $update = 'update_' . sha1($value['__embed_class']);
-                                $diff = $this->$update($value, $old['{{$propname}}'][$index], true);
-                                foreach ($diff as $op => $value) {
-                                    foreach ($value as $p => $val) {
-                                        $change[$op]['{{$propname}}.' . $index . '.' . $p] = $val;
+                        // add things to the array
+                        $toRemove = array_diff_key($old['{{$propname}}'], $current['{{$propname}}']);
+
+                        if (count($toRemove) > 0 && $this->array_unique($old['{{$propname}}'], $toRemove)) {
+                            $change['$set']['{{$propname}}'] = array_values($current['{{$propname}}']);
+                        } else {
+                            foreach ($current['{{$propname}}'] as $index => $value) {
+                                if (!array_key_exists($index, $old['{{$propname}}'])) {
+                                    $change['$push']['{{$propname}}'] = $value;
+                                    continue;
+                                }
+                                if ($value['__embed_class'] != $old['{{$propname}}'][$index]['__embed_class']) {
+                                    $change['$set']['{{$propname}}.' . $index] = $value;
+                                } else {
+                                    $update = 'update_' . sha1($value['__embed_class']);
+                                    $diff = $this->$update($value, $old['{{$propname}}'][$index], true);
+                                    foreach ($diff as $op => $value) {
+                                        foreach ($value as $p => $val) {
+                                            $change[$op]['{{$propname}}.' . $index . '.' . $p] = $val;
+                                        }
                                     }
                                 }
                             }
+
+                            foreach ($toRemove as $value) {
+                                $change['$pull']['{{$propname}}'] = $value;
+                            }
                         }
+
+
+
+                    @elif ($prop->has('ReferenceMany') || $prop->has('Array'))
+                        // add things to the array
+                        $toRemove = array_diff_key($old['{{$propname}}'], $current['{{$propname}}']);
+
+                        if (count($toRemove) > 0 && $this->array_unique($old['{{$propname}}'], $toRemove)) {
+                            $change['$set']['{{$propname}}'] = array_values($current['{{$propname}}']);
+                        } else {
+                            foreach ($current['{{$propname}}'] as $index => $value) {
+                                if (!array_key_exists($index, $old['{{$propname}}'])) {
+                                    $change['$push']['{{$propname}}'] = $value;
+                                    continue;
+                                }
+                                if ($old['{{$propname}}'][$index] != $value) {
+                                    $change['$set']['{{$propname}}.' . $index] = $value;
+                                }
+                            }
+
+                            foreach ($toRemove as $value) {
+                                $change['$pull']['{{$propname}}'] = $value;
+                            }
+                        }
+
                     @else
                         $change['$set']['{{$propname}}'] = $current['{{$propname}}'];
                         @include('validate', compact('propname', 'validators', 'files', 'prop'));
@@ -227,7 +286,7 @@ class Mapper
                 @foreach($hydratations as $zname => $callback)
                     @if ($prop->has($zname))
                         if (empty($this->loaded['{{$files[$zname]}}'])) {
-                            require_once '{{$files[$zname]}}';
+                            require_once __DIR__ .  '{{$files[$zname]}}';
                             $this->loaded['{{$files[$zname]}}'] = true;
                         }
                         
@@ -334,9 +393,9 @@ class Mapper
                     @set($temp, $plugins[$zmethod['method']])
                     @foreach($temp->getMethods() as $method)
                         @if ($method->has($ev) && empty($first_time)) 
-                            if (empty($this->loaded["{{$temp['file']}}"])) {
-                                require_once "{{$temp['file']}}";
-                                $this->loaded["{{$temp['file']}}"] = true;
+                            if (empty($this->loaded["{{$self->getRelativePath($temp['file'])}}"])) {
+                                require_once __DIR__ .  "{{$self->getRelativePath($temp['file'])}}";
+                                $this->loaded["{{$self->getRelativePath($temp['file'])}}"] = true;
                             }
                             $plugin = new \{{$temp['class']}}({{ var_export($zmethod['args'], true) }});
                             @set($first_time, true)

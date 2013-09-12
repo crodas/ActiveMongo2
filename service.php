@@ -8,8 +8,10 @@ namespace ActiveMongo2\Service;
  *      user: {default: NULL},
  *      pass: {default: NULL},
  *      db: {required: true},
- *      class: {type: 'string'},
- *      opts: { default:{}, type: 'hash'}
+ *      opts: { default:{}, type: 'hash'},
+ *      path: { require: true},
+ *      temp_dir: { default: '/tmp' },
+ *      devel: {default: true}
  *  }, { shared: true })
  */
 function activemongo2_service($config)
@@ -19,8 +21,19 @@ function activemongo2_service($config)
     if ($config['user'] || $config['pass']) {
         $db->authenticate($config['user'], $config['pass']);
     }
-    $mongo = new \ActiveMongo2\Connection($conn, $config['db']);
-    $mongo->registerNamespace($config['class']);
+
+    $conf = new \ActiveMongo2\Configuration(
+        $config['temp_dir'] . "/activemongo2:" . $db . ".php"
+    );
+
+    foreach ((array)$config['path'] as $path) {
+        $conf->addModelPath($path);
+    }
+
+    if ($config['devel']) {
+        $conf->development();
+    }
+    $mongo = new \ActiveMongo2\Connection($conf, $conn, $db);
     return $mongo;
 }
 

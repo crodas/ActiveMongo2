@@ -28,9 +28,14 @@ class PostDocument
     /** @ReferenceMany("user") */
     public $readers;
 
+    /** @EmbedMany("user") */
+    public $readers_1;
+
     /** @Integer */
     public $xxxyyy;
 
+    /** @Array */
+    public $tags;
 
     /**
      *  @preSave

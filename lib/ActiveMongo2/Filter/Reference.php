@@ -35,91 +35,76 @@
   +---------------------------------------------------------------------------------+
 */
 
-namespace ActiveMongo2;
+namespace ActiveMongo2\Plugin;
 
-class Reference implements DocumentProxy
+use ActiveMongo2\Reference;
+
+/**
+ *  @Hydratate(ReferenceMany)
+ */
+function _hydratate_reference_many(&$value, Array $args, $conn, $mapper)
 {
-    protected $class;
-    protected $_class;
-    protected $doc;
-    protected $ref;
-    protected $values;
-    protected $map;
+    foreach ((array)$value as $id => $val) {
+        _hydratate_reference_one($value[$id], $args, $conn, $mapper);
+    }
+}
 
-    protected static $all_objects = array();
-
-    public function __construct(Array $info, $class, $conn, $map)
-    {
-        $this->ref    = $info;
-        $this->_class = $class;
-        $this->class  = $conn->getCollection($class);
-        $this->values = !empty($info['_extra']) ? $info['_extra'] : array();
-        $this->map    = $map;
-
-        $this->values['_id'] = $info['$id'];
+/**
+ *  @Validate(ReferenceMany)
+ */
+function _validate_reference_many(&$value, Array $args, $conn, $mapper)
+{
+    if (!is_array($value)) {
+        return false;
     }
 
-    public function getObject()
-    {
-        $this->_loadDocument();
-        return $this->doc;
-    }
-
-    public function getClass()
-    {
-        return $this->_class;
-    }
-
-    public function getReference()
-    {
-        return $this->ref;
-    }
-
-    private function _loadDocument()
-    {
-        if (!$this->doc) {
-            $id = $this->ref['$ref'] . ':' . $this->ref['$id'];
-            if (empty(self::$all_objects[$id])) {
-                self::$all_objects[$id] = $this->class->findOne(array('_id' => $this->ref['$id']));
-            }
-            $this->doc = self::$all_objects[$id];
+    foreach ($value as $id => $val) {
+        if (!_validate_reference_one($value[$id], $args, $conn, $mapper)) {
+            return false;
         }
     }
 
-    public function __call($name, $args)
-    {
-        if (!empty($this->map[$name])) {
-            $zname = $this->map[$name];
-            if (array_key_exists($zname, $this->values)) {
-                return $this->values[$zname];
-            }
-        }
+    return true;
+}
 
-        $this->_loadDocument();
 
-        if (!empty($this->doc->$name)) {
-            return $this->doc->$name;
-        }
-
-        return call_user_func_array(array($this->doc, $name), $args);
+/**
+ *  @Hydratate(Reference)
+ *  @Hydratate(ReferenceOne)
+ */
+function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
+{
+    $expected = current($args);
+    if ($expected && $expected != $value['$ref']) {
+        throw new \RuntimeException("Expecting document {$expected} but got {$value['ref']}");
     }
 
-    public function __set($name, $value)
-    {
-        $this->_loadDocument();
-        $this->doc->{$name} = $value;
+    $class = $mapper->mapCollection($value['$ref'])['class'];
+    $value = new Reference($value, $class, $conn, empty($value['_data']) ? array() : $value['_data']);
+}
+
+/**
+ *  @Validate(Reference)
+ *  @Validate(ReferenceOne)
+ */
+function _validate_reference_one(&$value, Array $args, $conn, $mapper)
+{
+    $document = $value;
+    $conn->save($document);
+
+    if (!empty($args) && !$conn->is(current($args), $document)) {
+        throw new \RuntimeException("Invalid value");
     }
 
-    public function __get($name)
-    {
-        if (!empty($this->map[$name])) {
-            $zname = $this->map[$name];
-            if (array_key_exists($zname, $this->values)) {
-                return $this->values[$zname];
-            }
-        }
-
-        $this->_loadDocument();
-        return $this->doc->$name;
+    if ($document instanceof Reference) {
+        $value = $document->getReference();
+    } else {
+        $array = $mapper->validate($document);
+        $value = array(
+            '$id'   => $array['_id'],
+            '$ref'  => $mapper->mapClass(get_class($document))['name'],
+        );
     }
+
+    return true;
 }

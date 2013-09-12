@@ -39,15 +39,20 @@ namespace ActiveMongo2;
 use Notoj;
 use WatchFiles\Watch;
 use crodas\SimpleView\FixCode;
+use crodas\File;
+use crodas\Path;
 
 class Generate
 {
     protected $files = array();
+    protected $config;
 
     public function __construct(Configuration $config, Watch $watcher)
     {
-        $annotations = new Notoj\Annotations;
-        $this->files = array();
+        $annotations  = new Notoj\Annotations;
+        $this->files  = array();
+        $this->config = $config;
+
         foreach ($config->getModelPath() as $path) {
             $dir = new Notoj\Dir($path);
             $dir->getAnnotations($annotations);
@@ -64,8 +69,8 @@ class Generate
             foreach ($annotations->get($type) as $object) {
                 if (!$object->isClass()) continue;
                 $data = array(
-                    'class' => $object['class'], 
-                    'file' => $object['file'],
+                    'class' => strtolower($object['class']), 
+                    'file'  => $this->getRelativePath($object['file']),
                     'annotation' => $object,
                 );
 
@@ -90,7 +95,7 @@ class Generate
                     } else if ($validator->isFunction()) {
                         ${$var}[$type] = "\\" . $validator['function'];
                     }
-                    $files[$type] = $validator['file'];
+                    $files[$type] = $this->getRelativePath($validator['file']);
                 }
             }
         }
@@ -113,24 +118,23 @@ class Generate
 
         foreach ($annotations->get('Unique') as $prop) {
             if (!$prop->isProperty()) continue;
-            $collection = $class_mapper[$prop['class']]['name'];
+            $collection = $class_mapper[strtolower($prop['class'])]['name'];
             foreach ($prop->get('Unique') as $anno) {
                 $indexes[] = array($collection,  array($prop['property'] => 1), array('unique' => 1));
             }
         }
 
+        $self = $this;
         $code = Templates::get('documents')
             ->render(compact(
                 'docs', 'namespace', 'class_mapper', 'events',
                 'validators', 'mapper', 'files', 'indexes',
-                'plugins', 'hydratations'
+                'plugins', 'hydratations', 'self'
             ), true);
 
         $code = FixCode::fix($code);
 
-        if (file_put_contents($config->getLoader(), $code, LOCK_EX) === false) {
-            throw new \RuntimeException("Cannot write file " . $config->GetLoader());
-        }
+        File::write($config->getLoader(), $code);
 
         $this->files = array_unique($this->files);
 
@@ -140,6 +144,15 @@ class Generate
         }
 
         $watcher->watch();
+    }
+    
+    public function getRelativePath($dir1, $dir2=NULL)
+    {
+        if (empty($dir2)) {
+            $dir2 = $this->config->getLoader();
+        }
+
+        return Path::getRelative($dir1, $dir2);
     }
 
     public function getDocumentMapper(Array $map)

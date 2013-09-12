@@ -2,6 +2,7 @@
 
 require __DIR__ . "/../vendor/autoload.php";
 
+@mkdir(__DIR__ . "/tmp");
 foreach (glob(__DIR__ . "/tmp/*") as $delete) {
     unlink($delete);
 }
