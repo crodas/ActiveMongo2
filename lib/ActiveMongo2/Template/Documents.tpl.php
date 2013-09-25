@@ -393,9 +393,9 @@ class Mapper
                     @set($temp, $plugins[$zmethod['method']])
                     @foreach($temp->getMethods() as $method)
                         @if ($method->has($ev) && empty($first_time)) 
-                            if (empty($this->loaded["{{$self->getRelativePath($temp['file'])}}"])) {
+                            if (empty($this->loaded['{{$self->getRelativePath($temp['file'])}}'])) {
                                 require_once __DIR__ .  "{{$self->getRelativePath($temp['file'])}}";
-                                $this->loaded["{{$self->getRelativePath($temp['file'])}}"] = true;
+                                $this->loaded['{{$self->getRelativePath($temp['file'])}}'] = true;
                             }
                             $plugin = new \{{$temp['class']}}({{ var_export($zmethod['args'], true) }});
                             @set($first_time, true)
