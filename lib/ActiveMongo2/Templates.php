@@ -243,7 +243,7 @@ namespace {
                             $temp = $plugins[$zmethod['method']];
                             foreach($temp->getMethods() as $method) {
                                 if ($method->has($ev) && empty($first_time)) {
-                                    echo "                            if (empty(\$this->loaded[\"" . ($self->getRelativePath($temp['file'])) . "\"])) {\n                                require_once __DIR__ .  \"" . ($self->getRelativePath($temp['file'])) . "\";\n                                \$this->loaded[\"" . ($self->getRelativePath($temp['file'])) . "\"] = true;\n                            }\n                            \$plugin = new \\" . ($temp['class']) . "(" . ( var_export($zmethod['args'], true) ) . ");\n";
+                                    echo "                            if (empty(\$this->loaded['" . ($self->getRelativePath($temp['file'])) . "'])) {\n                                require_once __DIR__ .  '" . ($self->getRelativePath($temp['file'])) . "';\n                                \$this->loaded['" . ($self->getRelativePath($temp['file'])) . "'] = true;\n                            }\n                            \$plugin = new \\" . ($temp['class']) . "(" . ( var_export($zmethod['args'], true) ) . ");\n";
                                     $first_time = true;
                                     ActiveMongo2\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin'], $this->context);
                                 }
