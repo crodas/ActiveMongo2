@@ -19,6 +19,13 @@ class EmbedReferenceTest extends \phpunit_framework_testcase
         $post->title = "some weird title";
         $conn->save($post);
 
+        // check if $post->author is a reference
+        $this->assertTrue($post->author instanceof \ActiveMongo2\Reference);
+        // load the username
+        $this->assertEquals($post->author->username, $user->username);
+        // check that username didn't load the user from db
+        $this->assertTrue(is_array($post->author->getReference()));
+
         $this->post = $post->id;
         $this->user = $user->userid;
 

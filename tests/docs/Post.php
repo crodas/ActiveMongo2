@@ -16,7 +16,7 @@ class PostDocument
     /** @Universal */
     public $global_id;
 
-    /** @Reference("user") @Required */
+    /** @Reference("user", [username, email]) @Required */
     public $author;
 
     /** @Required @String */
