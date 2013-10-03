@@ -387,6 +387,26 @@ class Mapper
                 @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'])
             @end
 
+            @if ($ev == "postUpdate" && !empty($references[$doc['name']]))
+                // update all the references!
+                @foreach ($references[$doc['name']] as $ref)
+                    // update {{{$doc['name']}}} references in  {{{$ref['collection']}}} 
+                    $replicate = array();
+                    foreach ($args[1] as $operation => $values) {
+                        @foreach ($ref['update'] as $field)
+                            if (!empty($values["{{{ $field}}}"])) {
+                                $replicate[$operation] = ["{{{$ref['property']}}}.{{{$field}}}" => $values["{{{$field}}}"]];
+                            }
+                        @end
+                    }
+
+                    if (!empty($replicate)) {
+                        $args[0]->getCollection("{{{$ref['collection']}}}")
+                            ->update(['{{{$ref['property']}}}.$id' => $args[2]], $replicate, ['w' => 0, 'multi' => true]);
+                    }
+                @end
+            @end
+
             @foreach($doc['annotation']->getAll() as $zmethod)
                 @set($first_time, false)
                 @if (!empty($plugins[$zmethod['method']]))

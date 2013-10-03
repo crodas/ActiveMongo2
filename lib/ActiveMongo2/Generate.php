@@ -130,8 +130,9 @@ class Generate
             foreach ($prop as $ann) {
                 if (empty($ann['args']) || count($ann['args']) < 2) continue;
                 $references[$ann['args'][0]][] = array(
-                    'collection' => $class_mapper[strtolower($prop['class'])]['name'],
-                    'update' => $ann['args'][1],
+                    'property'      => $prop['property'],
+                    'collection'    => $class_mapper[strtolower($prop['class'])]['name'],
+                    'update'        => $ann['args'][1],
                 );
             }
         }
@@ -141,7 +142,7 @@ class Generate
             ->render(compact(
                 'docs', 'namespace', 'class_mapper', 'events',
                 'validators', 'mapper', 'files', 'indexes',
-                'plugins', 'hydratations', 'self'
+                'plugins', 'hydratations', 'self', 'references'
             ), true);
 
         $code = FixCode::fix($code);
