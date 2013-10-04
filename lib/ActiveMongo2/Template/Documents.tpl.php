@@ -394,8 +394,12 @@ class Mapper
                     $replicate = array();
                     foreach ($args[1] as $operation => $values) {
                         @foreach ($ref['update'] as $field)
-                            if (!empty($values["{{{ $field}}}"])) {
-                                $replicate[$operation] = ["{{{$ref['property']}}}.{{{$field}}}" => $values["{{{$field}}}"]];
+                            if (!empty($values["{{{$field}}}"])) {
+                                @if ($ref['multi'])
+                                    $replicate[$operation] = ["{{{$ref['property']}}}.$.{{{$field}}}" => $values["{{{$field}}}"]];
+                                @else
+                                    $replicate[$operation] = ["{{{$ref['property']}}}.{{{$field}}}" => $values["{{{$field}}}"]];
+                                @end
                             }
                         @end
                     }

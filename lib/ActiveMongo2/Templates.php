@@ -247,14 +247,27 @@ namespace {
                             echo " \n                    \$replicate = array();\n                    foreach (\$args[1] as \$operation => \$values) {\n";
                             foreach($ref['update'] as $field) {
                                 echo "                            if (!empty(\$values[\"";
-                                echo htmlentities( $field, ENT_QUOTES, 'UTF-8', false);
-                                echo "\"])) {\n                                \$replicate[\$operation] = [\"";
-                                echo htmlentities($ref['property'], ENT_QUOTES, 'UTF-8', false);
-                                echo ".";
                                 echo htmlentities($field, ENT_QUOTES, 'UTF-8', false);
-                                echo "\" => \$values[\"";
-                                echo htmlentities($field, ENT_QUOTES, 'UTF-8', false);
-                                echo "\"]];\n                            }\n";
+                                echo "\"])) {\n";
+                                if ($ref['multi']) {
+                                    echo "                                    \$replicate[\$operation] = [\"";
+                                    echo htmlentities($ref['property'], ENT_QUOTES, 'UTF-8', false);
+                                    echo ".\$.";
+                                    echo htmlentities($field, ENT_QUOTES, 'UTF-8', false);
+                                    echo "\" => \$values[\"";
+                                    echo htmlentities($field, ENT_QUOTES, 'UTF-8', false);
+                                    echo "\"]];\n";
+                                }
+                                else {
+                                    echo "                                    \$replicate[\$operation] = [\"";
+                                    echo htmlentities($ref['property'], ENT_QUOTES, 'UTF-8', false);
+                                    echo ".";
+                                    echo htmlentities($field, ENT_QUOTES, 'UTF-8', false);
+                                    echo "\" => \$values[\"";
+                                    echo htmlentities($field, ENT_QUOTES, 'UTF-8', false);
+                                    echo "\"]];\n";
+                                }
+                                echo "                            }\n";
                             }
                             echo "                    }\n\n                    if (!empty(\$replicate)) {\n                        \$args[0]->getCollection(\"";
                             echo htmlentities($ref['collection'], ENT_QUOTES, 'UTF-8', false);
