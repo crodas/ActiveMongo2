@@ -237,6 +237,46 @@ namespace {
                         ActiveMongo2\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'], $this->context);
                     }
                     echo "\n";
+                    if ($ev == "postUpdate" && !empty($references[$doc['name']])) {
+                        echo "                // update all the references!\n";
+                        foreach($references[$doc['name']] as $ref) {
+                            echo "                    // update ";
+                            echo htmlentities($doc['name'], ENT_QUOTES, 'UTF-8', false);
+                            echo " references in  ";
+                            echo htmlentities($ref['collection'], ENT_QUOTES, 'UTF-8', false);
+                            echo " \n                    \$replicate = array();\n                    foreach (\$args[1] as \$operation => \$values) {\n";
+                            foreach($ref['update'] as $field) {
+                                echo "                            if (!empty(\$values[\"";
+                                echo htmlentities($field, ENT_QUOTES, 'UTF-8', false);
+                                echo "\"])) {\n";
+                                if ($ref['multi']) {
+                                    echo "                                    \$replicate[\$operation] = [\"";
+                                    echo htmlentities($ref['property'], ENT_QUOTES, 'UTF-8', false);
+                                    echo ".\$.";
+                                    echo htmlentities($field, ENT_QUOTES, 'UTF-8', false);
+                                    echo "\" => \$values[\"";
+                                    echo htmlentities($field, ENT_QUOTES, 'UTF-8', false);
+                                    echo "\"]];\n";
+                                }
+                                else {
+                                    echo "                                    \$replicate[\$operation] = [\"";
+                                    echo htmlentities($ref['property'], ENT_QUOTES, 'UTF-8', false);
+                                    echo ".";
+                                    echo htmlentities($field, ENT_QUOTES, 'UTF-8', false);
+                                    echo "\" => \$values[\"";
+                                    echo htmlentities($field, ENT_QUOTES, 'UTF-8', false);
+                                    echo "\"]];\n";
+                                }
+                                echo "                            }\n";
+                            }
+                            echo "                    }\n\n                    if (!empty(\$replicate)) {\n                        \$args[0]->getCollection(\"";
+                            echo htmlentities($ref['collection'], ENT_QUOTES, 'UTF-8', false);
+                            echo "\")\n                            ->update(['";
+                            echo htmlentities($ref['property'], ENT_QUOTES, 'UTF-8', false);
+                            echo ".\$id' => \$args[2]], \$replicate, ['w' => 0, 'multi' => true]);\n                    }\n";
+                        }
+                    }
+                    echo "\n";
                     foreach($doc['annotation']->getAll() as $zmethod) {
                         $first_time = false;
                         if (!empty($plugins[$zmethod['method']])) {

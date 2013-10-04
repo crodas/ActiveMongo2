@@ -106,6 +106,7 @@ class SimpleTest extends \phpunit_framework_testcase
 
         $post = new PostDocument;
         $post->author = $user;
+        $post->collaborators[] = $user;
         $post->title  = "foobar post";
         $post->readers[] = $user;
         $conn->save($post);
@@ -114,6 +115,15 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($savedPost->author->userid, $user->userid);
         $this->assertEquals($savedPost->author->username, $user->username);
         $this->assertEquals($savedPost->uri, "foobar-post");
+
+        $user->username = "foobar";
+        $conn->save($user);
+
+        sleep(1);
+        $savedPost = $conn->getCollection('post')->findOne();
+        $this->assertEquals($savedPost->author->username, $user->username);
+        $this->assertEquals($savedPost->collaborators[0]->username, $user->username);
+
 
     }
 

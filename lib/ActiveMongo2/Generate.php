@@ -124,12 +124,33 @@ class Generate
             }
         }
 
+        $references = [];
+        $vars = [
+            'Reference' => false,
+            'ReferenceOne' => false,
+            'ReferenceMany' => true,
+        ];
+        foreach ($vars as $type => $multi) {
+            foreach ($annotations->get($type) as $prop) {
+                if (!$prop->isProperty()) continue;
+                foreach ($prop as $ann) {
+                    if (empty($ann['args']) || count($ann['args']) < 2) continue;
+                    $references[$ann['args'][0]][] = array(
+                        'property'      => $prop['property'],
+                        'collection'    => $class_mapper[strtolower($prop['class'])]['name'],
+                        'update'        => $ann['args'][1],
+                        'multi'         => $multi,
+                    );
+                }
+            }
+        }   
+
         $self = $this;
         $code = Templates::get('documents')
             ->render(compact(
                 'docs', 'namespace', 'class_mapper', 'events',
                 'validators', 'mapper', 'files', 'indexes',
-                'plugins', 'hydratations', 'self'
+                'plugins', 'hydratations', 'self', 'references'
             ), true);
 
         $code = FixCode::fix($code);

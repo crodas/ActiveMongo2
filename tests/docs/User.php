@@ -4,7 +4,6 @@ namespace ActiveMongo2\Tests\Document;
 
 /** 
  * @Persist(collection="user") 
- * @Referenceable
  * @Unupdatable("email")
  */
 class UserDocument

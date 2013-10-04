@@ -19,6 +19,9 @@ class PostDocument
     /** @Reference("user", [username, email]) @Required */
     public $author;
 
+    /** @ReferenceMany("user", [username, email]) */
+    public $collaborators = array();
+
     /** @Required @String */
     public $title;
 

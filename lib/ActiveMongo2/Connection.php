@@ -223,7 +223,7 @@ class Connection
                 );
             }
 
-            $this->mapper->trigger('postUpdate', $obj, array($this));
+            $this->mapper->trigger('postUpdate', $obj, array($this, $update, $oldDoc['_id']));
 
             $this->setObjectDocument($obj, $document);
 
