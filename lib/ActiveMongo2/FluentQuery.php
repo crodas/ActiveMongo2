@@ -165,15 +165,15 @@ class FluentQuery implements \IteratorAggregate
 
     public function in(Array $values)
     {
-        return $this->genericQuery('$in', $value);
+        return $this->genericQuery('$in', $values);
     }
 
     public function all(Array $values)
     {
-        return $this->genericQuery('$all', $value);
+        return $this->genericQuery('$all', $values);
     }
 
-    public function notIn(Array $values)
+    public function notIn(Array $value)
     {
         return $this->genericQuery('$nin', $value);
     }
@@ -188,7 +188,7 @@ class FluentQuery implements \IteratorAggregate
         return $this;
     }
 
-    public function notEquals($values)
+    public function notEquals($value)
     {
         return $this->genericQuery('$ne', $value);
     }
