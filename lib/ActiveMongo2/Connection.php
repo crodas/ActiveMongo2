@@ -70,6 +70,11 @@ class Connection
         return $this->db->command($command, $args);
     }
 
+    public function getDatabase()
+    {
+        return $this->db;
+    }
+
     public function getConnection()
     {
         return $this->conn;

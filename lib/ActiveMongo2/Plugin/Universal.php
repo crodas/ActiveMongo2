@@ -62,6 +62,9 @@ class Universal
     {
         $uuid = new UniversalDocument;
         $uuid->object = $doc;
+        if (!empty($annotation_args['auto_increment'])) {
+            $uuid->id = Autoincrement::getId($conn, get_class($uuid));
+        }
         $conn->save($uuid);
 
         $mapper->updateProperty($doc, '@Universal', $uuid->id);
