@@ -6,6 +6,7 @@ namespace ActiveMongo2\Tests\Document;
  * @Persist(collection="post")
  * @Sluggable("title", "uri")
  * @Autoincrement
+ * @UniversalAutoincrement
  * @Universal
  */
 class PostDocument
