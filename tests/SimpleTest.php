@@ -52,6 +52,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals(0, $find->count());
     }
 
+
     /** @dependsOn testSimpleFind */
     public function testDrop()
     {
@@ -72,6 +73,8 @@ class SimpleTest extends \phpunit_framework_testcase
         $conn = getConnection();
         $user = new UserDocument;
         $user->username = "crodas-" . rand(0, 0xfffff);
+        $user->addresses[] = new AddressDocument;
+        $user->addresses[] = new AddressDocument;
         $conn->save($user);
 
         $col = getConnection()->getCollection('user');
@@ -82,6 +85,10 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertTrue(count($col->find()->toArray()) > 0);
         $this->assertTrue($col->findOne() instanceof UserDocument);
         $this->assertEquals($col->findOne(array('foo' => 'bar')), NULL);
+
+        $res = $col->aggregate(['$project' => ['username' => 1, 'addresses' => 1]], ['$unwind' => '$addresses']);
+        $this->assertEquals(count($res), 2);
+        $this->assertEquals($res[0]->userid, $res[1]->userid);
     }
 
     public function testPluginAutoincrement()
