@@ -56,15 +56,29 @@ class UniversalDocument
 class Universal
 {
     /**
+     *  @preCreate
+     */
+    public function createId($doc, Array &$args, $conn, $annotation_args, $mapper)
+    {
+        if (!empty($annotation_args['set_id']) && !empty($annotation_args['auto_increment'])) {
+            $args[0]['_id'] = Autoincrement::getId($conn, __NAMESPACE__ . "\\UniversalDocument");
+        }
+    }
+
+    /**
      *  @postCreate
      */
-    public function createUniversalId($doc, Array $args, $conn, $annotation_args, $mapper)
+    public function postCreateId($doc, Array $args, $conn, $annotation_args, $mapper)
     {
         $uuid = new UniversalDocument;
         $uuid->object = $doc;
-        if (!empty($annotation_args['auto_increment'])) {
+
+        if (!empty($annotation_args['set_id'])) {
+            $uuid->id = $args[0]['_id'];
+        } else if (!empty($annotation_args['auto_increment'])) {
             $uuid->id = Autoincrement::getId($conn, get_class($uuid));
         }
+
         $conn->save($uuid);
 
         $mapper->updateProperty($doc, '@Universal', $uuid->id);

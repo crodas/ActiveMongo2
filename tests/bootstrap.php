@@ -9,15 +9,18 @@ foreach (glob(__DIR__ . "/tmp/*") as $delete) {
 
 function getConnection()
 {
+    static $zconn;
+    if (!empty($zconn)) return $zconn;
+
     $conf = new \ActiveMongo2\Configuration(__DIR__ . "/tmp/foo.php");
     $conf
         ->addModelPath(__DIR__ . '/docs')
         ->development();
 
     $mongo = new MongoClient;
-    $conn  = new \ActiveMongo2\Connection($conf, $mongo, 'activemongo2_tests');
+    $zconn = new \ActiveMongo2\Connection($conf, $mongo, 'activemongo2_tests');
 
-    return $conn;
+    return $zconn;
 }
 
 getConnection()->dropDatabase();

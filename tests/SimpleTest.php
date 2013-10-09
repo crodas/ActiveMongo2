@@ -32,7 +32,6 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertFalse($user->runEvent);
         $conn->save($user);
         $this->assertTrue($user->runEvent);
-        $this->assertTrue($user->userid instanceof \MongoId);
 
         $find = $conn->getCollection('user')
             ->find(array('_id' => $user->userid));

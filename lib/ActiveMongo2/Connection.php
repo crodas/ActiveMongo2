@@ -128,13 +128,14 @@ class Connection
         } else {
             $value = $object->$prop;
         }
-
+        
         $this->docs[$hash] = array($document, $value);
     }
 
     public function getRawDocument($object, $default = NULL)
     {
         $docid = spl_object_hash($object);
+        $prop  = $this->uniq;
         if (empty($this->docs[$docid])) {
             if ($default === NULL) {
                 throw new \RuntimeException("Cannot find document");
@@ -142,8 +143,7 @@ class Connection
             return $default;
         }
 
-        $doc  = $this->docs[$docid];
-        $prop = $this->uniq;
+        $doc = $this->docs[$docid];
 
         if (empty($object->$prop) || $object->$prop != $doc[1]) {
             if ($default === NULL) {
