@@ -9,9 +9,6 @@ foreach (glob(__DIR__ . "/tmp/*") as $delete) {
 
 function getConnection()
 {
-    static $zconn;
-    if (!empty($zconn)) return $zconn;
-
     $conf = new \ActiveMongo2\Configuration(__DIR__ . "/tmp/foo.php");
     $conf
         ->addModelPath(__DIR__ . '/docs')

@@ -54,15 +54,19 @@ class Connection
      */
     protected $classes;
     protected $mapper;
-    protected $docs = array();
+    protected static $docs = array();
+    protected static $rand;
     protected $uniq = null;
 
     public function __construct(Configuration $config, MongoClient $conn, $db)
     {
+        if (empty(self::$rand)) {
+            self::$rand = uniqid(true);
+        } 
         $this->mapper = $config->initialize($this);
         $this->conn   = $conn;
         $this->db     = $conn->selectDB($db);
-        $this->uniq   = "__status_" . uniqid(true);
+        $this->uniq   = "__status_" . self::$rand;
     }
     
     public function command($command, $args = array())
@@ -129,21 +133,21 @@ class Connection
             $value = $object->$prop;
         }
         
-        $this->docs[$hash] = array($document, $value);
+        self::$docs[$hash] = array($document, $value);
     }
 
     public function getRawDocument($object, $default = NULL)
     {
         $docid = spl_object_hash($object);
         $prop  = $this->uniq;
-        if (empty($this->docs[$docid])) {
+        if (empty(self::$docs[$docid])) {
             if ($default === NULL) {
                 throw new \RuntimeException("Cannot find document");
             } 
             return $default;
         }
 
-        $doc = $this->docs[$docid];
+        $doc = self::$docs[$docid];
 
         if (empty($object->$prop) || $object->$prop != $doc[1]) {
             if ($default === NULL) {
@@ -166,7 +170,7 @@ class Connection
         $document = $this->mapper->getDocument($obj);
         $hash = spl_object_hash($obj);
 
-        unset($this->docs[$hash]);
+        unset(self::$docs[$hash]);
 
         if (empty($document['_id'])) {
             throw new \RuntimeException("Cannot delete without an id");
