@@ -329,6 +329,25 @@ class Mapper
             @end
             /* }}} */
         @end
+
+        @foreach ($doc['annotation']->getProperties() as $prop)
+            @set($propname, $prop['property'])
+            @if ($prop->has('Id'))
+                @set($propname, '_id')
+            @end
+            @foreach ($defaults as $name => $callback) 
+                @if ($prop->has($name))
+                    // default: {{$name}}
+                    if (empty($doc['{{$propname}}'])) {
+                        if (empty($this->loaded['{{$files[$name]}}'])) {
+                            require_once __DIR__ . '{{$files[$name]}}';
+                            $this->loaded['{{$files[$name]}}'] = true;
+                        }
+                        $doc['{{$propname}}'] = {{$callback}}($doc, {{{ var_export($prop->getOne($name)) }}}, $this->connection, $this); 
+                    }
+                @end
+            @end
+        @end
         return $doc;
     }
 

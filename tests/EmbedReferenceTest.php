@@ -42,6 +42,9 @@ class EmbedReferenceTest extends \phpunit_framework_testcase
         $zuser[0]->visits = 499;
         $conn->save($zpost);
 
+        // test AutoincrementBy
+        $this->assertEquals(1, $zpost->post_by_user_id);
+
         $zuser = $this->getPost()->readers_1;
         $this->assertNotEquals($zuser[0]->visits, $zuser[1]->visits);
 

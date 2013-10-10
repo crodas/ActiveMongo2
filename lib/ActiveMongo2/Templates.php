@@ -205,6 +205,20 @@ namespace {
                     }
                     echo "            /* }}} */\n";
                 }
+                echo "\n";
+                foreach($doc['annotation']->getProperties() as $prop) {
+                    $propname = $prop['property'];
+                    if ($prop->has('Id')) {
+                        $propname = '_id';
+                    }
+                    foreach($defaults as $name => $callback) {
+                        if ($prop->has($name)) {
+                            echo "                    // default: " . ($name) . "\n                    if (empty(\$doc['" . ($propname) . "'])) {\n                        if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n                            require_once __DIR__ . '" . ($files[$name]) . "';\n                            \$this->loaded['" . ($files[$name]) . "'] = true;\n                        }\n                        \$doc['" . ($propname) . "'] = " . ($callback) . "(\$doc, ";
+                            echo htmlentities( var_export($prop->getOne($name)) , ENT_QUOTES, 'UTF-8', false);
+                            echo ", \$this->connection, \$this); \n                    }\n";
+                        }
+                    }
+                }
                 echo "        return \$doc;\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function validate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n        \$doc = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
                     $propname = $prop['property'];
