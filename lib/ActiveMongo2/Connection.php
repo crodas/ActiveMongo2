@@ -68,6 +68,20 @@ class Connection
         $this->db     = $conn->selectDB($db);
         $this->uniq   = "__status_" . self::$rand;
     }
+
+    /**
+     *  Clone a document 
+     *  
+     *  Clones a document and removed internals variables
+     *
+     *  @return object
+     */
+    public function cloneDocument($doc)
+    {
+        $tmp = clone $doc;
+        unset($tmp->{$this->uniq});
+        return $tmp;
+    }
     
     public function command($command, $args = array())
     {

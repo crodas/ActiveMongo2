@@ -38,6 +38,7 @@
 namespace ActiveMongo2\Plugin;
 
 use ActiveMongo2\Plugin\Autoincrement;
+use ActiveMongo2\DocumentProxy;
 
 /** @DefaultValue(AutoincrementBy) */
 function __autoincrement_field(Array $docs, Array $args, $conn)
@@ -51,6 +52,13 @@ function __autoincrement_field(Array $docs, Array $args, $conn)
             throw new \Exception("Cannot find {$value} property");
         }
         $ns[$value] = $docs[$value];
+        if ($ns[$value] instanceof DocumentProxy) {
+            $ns[$value] = $ns[$value]->getObject();
+        }
+        if (is_object($ns[$value])) {
+            // remove silly 
+            $ns[$value] = $conn->cloneDocument($ns[$value]);
+        }
     }
 
     return Autoincrement::getId($conn, json_encode($ns));
