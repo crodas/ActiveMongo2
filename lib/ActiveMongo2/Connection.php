@@ -54,20 +54,43 @@ class Connection
      */
     protected $classes;
     protected $mapper;
-    protected $docs = array();
+    protected static $docs = array();
+    protected static $rand;
     protected $uniq = null;
 
     public function __construct(Configuration $config, MongoClient $conn, $db)
     {
+        if (empty(self::$rand)) {
+            self::$rand = uniqid(true);
+        } 
         $this->mapper = $config->initialize($this);
         $this->conn   = $conn;
         $this->db     = $conn->selectDB($db);
-        $this->uniq   = "__status_" . uniqid(true);
+        $this->uniq   = "__status_" . self::$rand;
+    }
+
+    /**
+     *  Clone a document 
+     *  
+     *  Clones a document and removed internals variables
+     *
+     *  @return object
+     */
+    public function cloneDocument($doc)
+    {
+        $tmp = clone $doc;
+        unset($tmp->{$this->uniq});
+        return $tmp;
     }
     
     public function command($command, $args = array())
     {
         return $this->db->command($command, $args);
+    }
+
+    public function getDatabase()
+    {
+        return $this->db;
     }
 
     public function getConnection()
@@ -123,22 +146,22 @@ class Connection
         } else {
             $value = $object->$prop;
         }
-
-        $this->docs[$hash] = array($document, $value);
+        
+        self::$docs[$hash] = array($document, $value);
     }
 
     public function getRawDocument($object, $default = NULL)
     {
         $docid = spl_object_hash($object);
-        if (empty($this->docs[$docid])) {
+        $prop  = $this->uniq;
+        if (empty(self::$docs[$docid])) {
             if ($default === NULL) {
                 throw new \RuntimeException("Cannot find document");
             } 
             return $default;
         }
 
-        $doc  = $this->docs[$docid];
-        $prop = $this->uniq;
+        $doc = self::$docs[$docid];
 
         if (empty($object->$prop) || $object->$prop != $doc[1]) {
             if ($default === NULL) {
@@ -161,7 +184,7 @@ class Connection
         $document = $this->mapper->getDocument($obj);
         $hash = spl_object_hash($obj);
 
-        unset($this->docs[$hash]);
+        unset(self::$docs[$hash]);
 
         if (empty($document['_id'])) {
             throw new \RuntimeException("Cannot delete without an id");
@@ -223,7 +246,7 @@ class Connection
                 );
             }
 
-            $this->mapper->trigger('postUpdate', $obj, array($this));
+            $this->mapper->trigger('postUpdate', $obj, array($this, $update, $oldDoc['_id']));
 
             $this->setObjectDocument($obj, $document);
 

@@ -34,54 +34,32 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
+
 namespace ActiveMongo2\Plugin;
 
-use Notoj\Annotation;
-use ActiveMongo2\Runtime\Utils;
+use ActiveMongo2\Plugin\Autoincrement;
+use ActiveMongo2\DocumentProxy;
 
-/** @Persist(table="universal") */
-class UniversalDocument
+/** @DefaultValue(AutoincrementBy) */
+function __autoincrement_field(Array $docs, Array $args, $conn)
 {
-    /** @Id */
-    public $id;
-
-    /** @Reference */
-    public $object;
-
-}
-
-/**
- *  @Plugin(Universal)
- */
-class Universal
-{
-    /**
-     *  @preCreate
-     */
-    public function createId($doc, Array &$args, $conn, $annotation_args, $mapper)
-    {
-        if (!empty($annotation_args['set_id']) && !empty($annotation_args['auto_increment'])) {
-            $args[0]['_id'] = Autoincrement::getId($conn, __NAMESPACE__ . "\\UniversalDocument");
+    if (empty($args)) {
+        throw new \Exception("@DefaultType expects at least one argument");
+    }
+    $ns = [];
+    foreach ($args as $value) {
+        if (empty($docs[$value])) {
+            throw new \Exception("Cannot find {$value} property");
+        }
+        $ns[$value] = $docs[$value];
+        if ($ns[$value] instanceof DocumentProxy) {
+            $ns[$value] = $ns[$value]->getObject();
+        }
+        if (is_object($ns[$value])) {
+            // remove silly 
+            $ns[$value] = $conn->cloneDocument($ns[$value]);
         }
     }
 
-    /**
-     *  @postCreate
-     */
-    public function postCreateId($doc, Array $args, $conn, $annotation_args, $mapper)
-    {
-        $uuid = new UniversalDocument;
-        $uuid->object = $doc;
-
-        if (!empty($annotation_args['set_id'])) {
-            $uuid->id = $args[0]['_id'];
-        } else if (!empty($annotation_args['auto_increment'])) {
-            $uuid->id = Autoincrement::getId($conn, get_class($uuid));
-        }
-
-        $conn->save($uuid);
-
-        $mapper->updateProperty($doc, '@Universal', $uuid->id);
-        $conn->save($doc);
-    }
+    return Autoincrement::getId($conn, json_encode($ns));
 }

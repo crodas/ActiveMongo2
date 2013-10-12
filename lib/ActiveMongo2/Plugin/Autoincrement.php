@@ -50,6 +50,15 @@ class Autoincrement
     /** @Int */
     protected $lastId;
 
+    public static function getId($conn, $namespace)
+    {
+        return $conn->getCollection("_autoincrement")->findAndModify(
+            array('_id' => $namespace),
+            array('$inc' => array('lastId' => 1)),
+            array('upsert' => true, 'new' => true)
+        )->lastId;
+    }
+
     /**
      *  @preCreate
      */
@@ -57,13 +66,7 @@ class Autoincrement
     {
         $document = &$args[0];
         if (empty($document['_id'])) {
-            $doc = $conn->getCollection("_autoincrement")->findAndModify(
-                array('_id' => get_class($object)),
-                array('$inc' => array('lastId' => 1)),
-                array('upsert' => true, 'new' => true)
-            );
-
-            $document['_id'] = $doc->lastId;
+            $document['_id'] = self::getId($conn, get_class($object));
         }
     }
 }

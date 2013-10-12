@@ -80,7 +80,7 @@ function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
     }
 
     $class = $mapper->mapCollection($value['$ref'])['class'];
-    $value = new Reference($value, $class, $conn, empty($value['_data']) ? array() : $value['_data']);
+    $value = new Reference($value, $class, $conn);
 }
 
 /**
@@ -89,21 +89,32 @@ function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
  */
 function _validate_reference_one(&$value, Array $args, $conn, $mapper)
 {
+    if ($value instanceof Reference) {
+        $value = $value->getReference();
+        if (is_array($value)) {
+            return true;
+        }
+    }
+
     $document = $value;
     $conn->save($document);
 
     if (!empty($args) && !$conn->is(current($args), $document)) {
         throw new \RuntimeException("Invalid value");
     }
+    
+    $array = $mapper->validate($document);
+    $value = array(
+        '$id'   => $array['_id'],
+        '$ref'  => $mapper->mapClass(get_class($document))['name'],
+    );
 
-    if ($document instanceof Reference) {
-        $value = $document->getReference();
-    } else {
-        $array = $mapper->validate($document);
-        $value = array(
-            '$id'   => $array['_id'],
-            '$ref'  => $mapper->mapClass(get_class($document))['name'],
-        );
+    if (!empty($args[1])) {
+        foreach ((array)$args[1] as $prop) {
+            if (!empty($array[$prop])) {
+                $value[$prop] = $array[$prop];
+            }
+        }
     }
 
     return true;

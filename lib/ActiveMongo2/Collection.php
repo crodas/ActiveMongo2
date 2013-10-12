@@ -82,6 +82,21 @@ class Collection
         $this->zcol->drop();
     }
 
+    public function aggregate()
+    {
+        $document = call_user_func_array([$this->zcol, 'aggregate'], func_get_args());
+        if (empty($document['ok'])) {
+            throw new \RuntimeException($document['errmsg']);
+        }
+
+        $results = [];
+        foreach ($document['result'] as $res) {
+            $results[] = $this->zconn->registerDocument($this->class, $res);
+        }
+
+        return $results;
+    }
+
     public function findAndModify($query, $update, $options)
     {
         $response = $this->zcol->findAndModify($query, $update, null, $options);

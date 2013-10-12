@@ -32,7 +32,6 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertFalse($user->runEvent);
         $conn->save($user);
         $this->assertTrue($user->runEvent);
-        $this->assertTrue($user->userid instanceof \MongoId);
 
         $find = $conn->getCollection('user')
             ->find(array('_id' => $user->userid));
@@ -52,6 +51,7 @@ class SimpleTest extends \phpunit_framework_testcase
 
         $this->assertEquals(0, $find->count());
     }
+
 
     /** @dependsOn testSimpleFind */
     public function testDrop()
@@ -73,6 +73,8 @@ class SimpleTest extends \phpunit_framework_testcase
         $conn = getConnection();
         $user = new UserDocument;
         $user->username = "crodas-" . rand(0, 0xfffff);
+        $user->addresses[] = new AddressDocument;
+        $user->addresses[] = new AddressDocument;
         $conn->save($user);
 
         $col = getConnection()->getCollection('user');
@@ -83,6 +85,10 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertTrue(count($col->find()->toArray()) > 0);
         $this->assertTrue($col->findOne() instanceof UserDocument);
         $this->assertEquals($col->findOne(array('foo' => 'bar')), NULL);
+
+        $res = $col->aggregate(['$project' => ['username' => 1, 'addresses' => 1]], ['$unwind' => '$addresses']);
+        $this->assertEquals(count($res), 2);
+        $this->assertEquals($res[0]->userid, $res[1]->userid);
     }
 
     public function testPluginAutoincrement()
@@ -106,6 +112,7 @@ class SimpleTest extends \phpunit_framework_testcase
 
         $post = new PostDocument;
         $post->author = $user;
+        $post->collaborators[] = $user;
         $post->title  = "foobar post";
         $post->readers[] = $user;
         $conn->save($post);
@@ -114,6 +121,15 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($savedPost->author->userid, $user->userid);
         $this->assertEquals($savedPost->author->username, $user->username);
         $this->assertEquals($savedPost->uri, "foobar-post");
+
+        $user->username = "foobar";
+        $conn->save($user);
+
+        sleep(1);
+        $savedPost = $conn->getCollection('post')->findOne();
+        $this->assertEquals($savedPost->author->username, $user->username);
+        $this->assertEquals($savedPost->collaborators[0]->username, $user->username);
+
 
     }
 

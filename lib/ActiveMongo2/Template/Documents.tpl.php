@@ -329,6 +329,25 @@ class Mapper
             @end
             /* }}} */
         @end
+
+        @foreach ($doc['annotation']->getProperties() as $prop)
+            @set($propname, $prop['property'])
+            @if ($prop->has('Id'))
+                @set($propname, '_id')
+            @end
+            @foreach ($defaults as $name => $callback) 
+                @if ($prop->has($name))
+                    // default: {{$name}}
+                    if (empty($doc['{{$propname}}'])) {
+                        if (empty($this->loaded['{{$files[$name]}}'])) {
+                            require_once __DIR__ . '{{$files[$name]}}';
+                            $this->loaded['{{$files[$name]}}'] = true;
+                        }
+                        $doc['{{$propname}}'] = {{$callback}}($doc, {{{ var_export($prop->getOne($name)) }}}, $this->connection, $this); 
+                    }
+                @end
+            @end
+        @end
         return $doc;
     }
 
@@ -387,19 +406,44 @@ class Mapper
                 @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'])
             @end
 
+            @if ($ev == "postUpdate" && !empty($references[$doc['name']]))
+                // update all the references!
+                @foreach ($references[$doc['name']] as $ref)
+                    // update {{{$doc['name']}}} references in  {{{$ref['collection']}}} 
+                    $replicate = array();
+                    foreach ($args[1] as $operation => $values) {
+                        @foreach ($ref['update'] as $field)
+                            if (!empty($values["{{{$field}}}"])) {
+                                @if ($ref['multi'])
+                                    $replicate[$operation] = ["{{{$ref['property']}}}.$.{{{$field}}}" => $values["{{{$field}}}"]];
+                                @else
+                                    $replicate[$operation] = ["{{{$ref['property']}}}.{{{$field}}}" => $values["{{{$field}}}"]];
+                                @end
+                            }
+                        @end
+                    }
+
+                    if (!empty($replicate)) {
+                        $args[0]->getCollection("{{{$ref['collection']}}}")
+                            ->update(['{{{$ref['property']}}}.$id' => $args[2]], $replicate, ['w' => 0, 'multi' => true]);
+                    }
+                @end
+            @end
+
             @foreach($doc['annotation']->getAll() as $zmethod)
                 @set($first_time, false)
                 @if (!empty($plugins[$zmethod['method']]))
                     @set($temp, $plugins[$zmethod['method']])
                     @foreach($temp->getMethods() as $method)
                         @if ($method->has($ev) && empty($first_time)) 
-                            if (empty($this->loaded["{{$self->getRelativePath($temp['file'])}}"])) {
-                                require_once __DIR__ .  "{{$self->getRelativePath($temp['file'])}}";
-                                $this->loaded["{{$self->getRelativePath($temp['file'])}}"] = true;
+                            if (empty($this->loaded['{{$self->getRelativePath($temp['file'])}}'])) {
+                                require_once __DIR__ .  '{{$self->getRelativePath($temp['file'])}}';
+                                $this->loaded['{{$self->getRelativePath($temp['file'])}}'] = true;
                             }
+                            // {{$method[0]['method']}}
                             $plugin = new \{{$temp['class']}}({{ var_export($zmethod['args'], true) }});
                             @set($first_time, true)
-                            @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin'])
+                            @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin', 'args' => $zmethod['args']])
                         @end
                     @end
                 @end

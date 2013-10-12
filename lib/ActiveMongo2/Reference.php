@@ -43,20 +43,14 @@ class Reference implements DocumentProxy
     protected $_class;
     protected $doc;
     protected $ref;
-    protected $values;
-    protected $map;
 
     protected static $all_objects = array();
 
-    public function __construct(Array $info, $class, $conn, $map)
+    public function __construct(Array $info, $class, $conn)
     {
         $this->ref    = $info;
         $this->_class = $class;
         $this->class  = $conn->getCollection($class);
-        $this->values = !empty($info['_extra']) ? $info['_extra'] : array();
-        $this->map    = $map;
-
-        $this->values['_id'] = $info['$id'];
     }
 
     public function getObject()
@@ -72,7 +66,7 @@ class Reference implements DocumentProxy
 
     public function getReference()
     {
-        return $this->ref;
+        return $this->doc ?: $this->ref;
     }
 
     private function _loadDocument()
@@ -88,11 +82,8 @@ class Reference implements DocumentProxy
 
     public function __call($name, $args)
     {
-        if (!empty($this->map[$name])) {
-            $zname = $this->map[$name];
-            if (array_key_exists($zname, $this->values)) {
-                return $this->values[$zname];
-            }
+        if (!empty($this->ref[$name])) {
+            return $this->ref[$name];
         }
 
         $this->_loadDocument();
@@ -112,11 +103,8 @@ class Reference implements DocumentProxy
 
     public function __get($name)
     {
-        if (!empty($this->map[$name])) {
-            $zname = $this->map[$name];
-            if (array_key_exists($zname, $this->values)) {
-                return $this->values[$zname];
-            }
+        if (!empty($this->ref[$name])) {
+            return $this->ref[$name];
         }
 
         $this->_loadDocument();

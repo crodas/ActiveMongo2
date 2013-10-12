@@ -5,8 +5,7 @@ namespace ActiveMongo2\Tests\Document;
 /** 
  * @Persist(collection="post")
  * @Sluggable("title", "uri")
- * @Autoincrement
- * @Universal
+ * @Universal(set_id=true, auto_increment=true)
  */
 class PostDocument
 {
@@ -16,8 +15,14 @@ class PostDocument
     /** @Universal */
     public $global_id;
 
-    /** @Reference("user") @Required */
+    /** @Reference("user", [username, email]) @Required */
     public $author;
+
+    /** @AutoincrementBy(author) */
+    public $post_by_user_id;
+
+    /** @ReferenceMany("user", [username, email]) */
+    public $collaborators = array();
 
     /** @Required @String */
     public $title;
