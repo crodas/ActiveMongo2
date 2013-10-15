@@ -5,7 +5,6 @@
         "crodas/notoj": "~0.1",
         "crodas/simple-view-engine": "~0.1",
         "crodas/watch-files": "~0.1",
-        "ircmaxell/password-compat": "*",
         "crodas/path": "*"
     },
     "license": "BSD-4-Clause",

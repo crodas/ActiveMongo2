@@ -39,6 +39,10 @@ namespace ActiveMongo2;
 use MongoClient;
 use MongoId;
 
+if (!is_callable('password_verify')) {
+    require __DIR__ . "/Compat/password/password.php";
+}
+
 class Connection
 {
     protected $conn;
