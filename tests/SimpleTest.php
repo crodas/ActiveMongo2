@@ -29,6 +29,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $conn->getCollection('user')->drop();
         $user = new UserDocument;
         $user->username = "crodas-" . rand(0, 0xfffff);
+        $user->pass     = "foobar";
         $this->assertFalse($user->runEvent);
         $conn->save($user);
         $this->assertTrue($user->runEvent);
@@ -115,6 +116,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $post->collaborators[] = $user;
         $post->title  = "foobar post";
         $post->readers[] = $user;
+        $post->author_id = $user->userid;
         $conn->save($post);
 
         $savedPost = $conn->getCollection('post')->findOne();
@@ -239,6 +241,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $post->title  = "foobar";
 
         $post->tags = array('foobar', 'xx', 'xx');
+        $post->author_id = $user->userid;
         $conn->save($post);
         $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
         $this->assertEquals($zpost->tags, $post->tags);

@@ -179,6 +179,7 @@ class Mapper
             @if ($prop->has('Id'))
                 @set($propname, '_id')
             @end
+            @set($var, "current")
 
             if (array_key_exists('{{$propname}}', $current)
                 || array_key_exists('{{$propname}}', $old)) {
@@ -263,7 +264,6 @@ class Mapper
 
                     @else
                         $change['$set']['{{$propname}}'] = $current['{{$propname}}'];
-                        @include('validate', compact('propname', 'validators', 'files', 'prop'));
                     @end
                 }
             }

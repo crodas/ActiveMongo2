@@ -28,12 +28,14 @@ class SluggableTest extends \phpunit_framework_testcase
 
         $post1 = new PostDocument;
         $post1->author = $user;
+        $post1->author_id = $user->userid;
         $post1->title  = "something random";
         $post1->readers[] = $user;
         $conn->save($post1);
 
         $post2 = new PostDocument;
         $post2->author = $user;
+        $post2->author_id = $user->userid;
         $post2->title  = "something random";
         $post2->readers[] = $user;
         $conn->save($post2);

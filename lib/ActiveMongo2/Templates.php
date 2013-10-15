@@ -109,7 +109,15 @@ namespace {
             }
             foreach($validators as $name => $callback) {
                 if ($prop->has($name)) {
-                    echo "        /* " . ($prop['property']) . " - " . ($name) . " " . ( '{{{' ) . " */\n        if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n            require_once __DIR__ . '" . ($files[$name]) . "';\n            \$this->loaded['" . ($files[$name]) . "'] = true;\n        }\n        if (!empty(\$" . ($var) . "['" . ($propname) . "']) && !" . ($callback) . "(\$" . ($var) . "['" . ($propname) . "'], " . (var_export(($prop[0]['args']) ?: [],  true)) . ", \$this->connection, \$this)) {\n            throw new \\RuntimeException(\"Validation failed for " . ($name) . "\");\n        }\n        /* }}} */\n\n";
+                    echo "        /* " . ($prop['property']) . " - " . ($name) . " " . ( '{{{' ) . " */\n        if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n            require_once __DIR__ . '" . ($files[$name]) . "';\n            \$this->loaded['" . ($files[$name]) . "'] = true;\n        }\n\n        \$args = " . (var_export(($prop[0]['args']) ?: [],  true)) . ";\n";
+                    if (!empty($prop[0]['args'])) {
+                        foreach($prop[0]['args'] as $i => $val) {
+                            if ($val[0] == '$') {
+                                echo "                    \$args[" . ($i) . "] = \$" . ($var) . "[\"" . (substr($val,1)) . "\"];\n";
+                            }
+                        }
+                    }
+                    echo "\n        if (!empty(\$" . ($var) . "['" . ($propname) . "']) && !" . ($callback) . "(\$" . ($var) . "['" . ($propname) . "'], \$args, \$this->connection, \$this)) {\n            throw new \\RuntimeException(\"Validation failed for " . ($name) . "\");\n        }\n        /* }}} */\n\n";
                 }
             }
 
@@ -147,6 +155,7 @@ namespace {
                     if ($prop->has('Id')) {
                         $propname = '_id';
                     }
+                    $var = "current";
                     echo "\n            if (array_key_exists('" . ($propname) . "', \$current)\n                || array_key_exists('" . ($propname) . "', \$old)) {\n\n                if (!array_key_exists('" . ($propname) . "', \$current)) {\n                    \$change['\$unset']['" . ($propname) . "'] = 1;\n                } else if (!array_key_exists('" . ($propname) . "', \$old)) {\n                    \$change['\$set']['" . ($propname) . "'] = \$current['" . ($propname) . "'];\n                } else if (\$current['" . ($propname) . "'] !== \$old['" . ($propname) . "']) {\n";
                     if ($prop->has('Inc')) {
                         echo "                        if (empty(\$old['" . ($propname) . "'])) {\n                            \$prev = 0;\n                        } else {\n                            \$prev = \$old['" . ($propname) . "'];\n                        }\n                        \$change['\$inc']['" . ($propname) . "'] = \$current['" . ($propname) . "'] - \$prev;\n";
@@ -162,7 +171,6 @@ namespace {
                     }
                     else {
                         echo "                        \$change['\$set']['" . ($propname) . "'] = \$current['" . ($propname) . "'];\n";
-                        ActiveMongo2\Templates::exec('validate', compact('propname', 'validators', 'files', 'prop'), $this->context);
                     }
 
 

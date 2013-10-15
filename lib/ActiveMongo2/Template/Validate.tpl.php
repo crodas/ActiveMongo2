@@ -8,7 +8,17 @@
             require_once __DIR__ . '{{$files[$name]}}';
             $this->loaded['{{$files[$name]}}'] = true;
         }
-        if (!empty(${{$var}}['{{$propname}}']) && !{{$callback}}(${{$var}}['{{$propname}}'], {{var_export(($prop[0]['args']) ?: [],  true)}}, $this->connection, $this)) {
+
+        $args = {{var_export(($prop[0]['args']) ?: [],  true)}};
+        @if (!empty($prop[0]['args']))
+            @foreach($prop[0]['args'] as $i => $val)
+                @if ($val[0] == '$')
+                    $args[{{$i}}] = ${{$var}}["{{substr($val,1)}}"];
+                @end
+            @end
+        @end
+
+        if (!empty(${{$var}}['{{$propname}}']) && !{{$callback}}(${{$var}}['{{$propname}}'], $args, $this->connection, $this)) {
             throw new \RuntimeException("Validation failed for {{$name}}");
         }
         /* }}} */

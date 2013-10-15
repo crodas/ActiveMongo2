@@ -12,12 +12,20 @@ class EmbedReferenceTest extends \phpunit_framework_testcase
         $conn = getConnection();
         $user = new UserDocument;
         $user->username = "crodas:" . uniqid();
+        $user->pass     = "foobar";
         $conn->save($user);
+
+        $this->assertNotEquals("foobar", $user->pass);
+        $old_pass = $user->pass;
+        $conn->save($user);
+        $this->assertNotEquals($old_pass, $user->pass);
 
         $post = new PostDocument;
         $post->author = $user;
+        $post->author_id = $user->userid;
         $post->title = "some weird title";
         $conn->save($post);
+
 
         // check if $post->author is a reference
         $this->assertTrue($post->author instanceof \ActiveMongo2\Reference);
@@ -76,6 +84,7 @@ class EmbedReferenceTest extends \phpunit_framework_testcase
 
         $post = new PostDocument;
         $post->author = $user;
+        $post->author_id = $user->userid;
         $post->title = "some weird title";
 
         $conn->save($post);

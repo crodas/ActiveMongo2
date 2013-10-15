@@ -22,6 +22,9 @@ class UserDocument
     /** @Embed(class="Address") */
     public $address;
 
+    /** @Password("$username") */
+    public $pass;
+
     /** @EmbedMany(class="Address") */
     public $addresses;
 

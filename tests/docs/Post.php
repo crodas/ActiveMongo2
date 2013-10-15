@@ -18,7 +18,10 @@ class PostDocument
     /** @Reference("user", [username, email]) @Required */
     public $author;
 
-    /** @AutoincrementBy(author) */
+    /** @Int */
+    public $author_id;
+
+    /** @AutoincrementBy(author_id) */
     public $post_by_user_id;
 
     /** @ReferenceMany("user", [username, email]) */
