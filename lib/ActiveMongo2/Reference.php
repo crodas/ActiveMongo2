@@ -37,7 +37,7 @@
 
 namespace ActiveMongo2;
 
-class Reference implements DocumentProxy
+class Reference implements DocumentProxy, \JsonSerializable
 {
     protected $class;
     protected $_class;
@@ -67,6 +67,11 @@ class Reference implements DocumentProxy
     public function getReference()
     {
         return $this->doc ?: $this->ref;
+    }
+
+    public function jsonSerialize() 
+    {
+        return $this->getReference();
     }
 
     private function _loadDocument()
