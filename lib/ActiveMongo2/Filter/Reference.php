@@ -93,6 +93,11 @@ function _validate_reference_one(&$value, Array $args, $conn, $mapper)
     if ($value instanceof Reference) {
         $value = $value->getReference();
         if (is_array($value)) {
+            foreach ((array)$args[1] as $prop) {
+                if (!empty($array[$prop])) {
+                    $value[$prop] = $array[$prop];
+                }
+            }
             return true;
         }
     }
