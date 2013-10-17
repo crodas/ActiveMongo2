@@ -46,4 +46,9 @@ class UserDocument
     {
         $this->runEvent = true; 
     }
+
+    /** @onHydratation */
+    public static function doTest()
+    {
+    }
 }

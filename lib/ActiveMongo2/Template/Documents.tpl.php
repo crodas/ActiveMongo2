@@ -444,9 +444,11 @@ class Mapper
                                 require_once __DIR__ .  '{{$self->getRelativePath($temp['file'])}}';
                                 $this->loaded['{{$self->getRelativePath($temp['file'])}}'] = true;
                             }
-                            // {{$method[0]['method']}}
-                            $plugin = new \{{$temp['class']}}({{ var_export($zmethod['args'], true) }});
-                            @set($first_time, true)
+                            @if (!in_array('static', $temp['visibility']))
+                                // {{$method[0]['method']}}
+                                $plugin = new \{{$temp['class']}}({{ var_export($zmethod['args'], true) }});
+                                @set($first_time, true)
+                            @end
                             @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin', 'args' => $zmethod['args']])
                         @end
                     @end

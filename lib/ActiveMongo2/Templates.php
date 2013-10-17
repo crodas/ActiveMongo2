@@ -74,7 +74,12 @@ namespace {
                     $args = NULL;
                 }
                 if (in_array('public', $method['visibility'])) {
-                    echo "        \$return = " . ($target) . "->" . ($method['function']) . "(\$document, \$args, \$this->connection, " . (var_export($args ?: $method[0]['args'], true)) . ", \$this);\n";
+                    if (in_array('static', $method['visibility'])) {
+                        echo "            \$return = \\" . ($method['class']) . "::" . ($method['function']) . "(\$document, \$args, \$this->connection, " . (var_export($args ?: $method[0]['args'], true)) . ", \$this);\n";
+                    }
+                    else {
+                        echo "            \$return = " . ($target) . "->" . ($method['function']) . "(\$document, \$args, \$this->connection, " . (var_export($args ?: $method[0]['args'], true)) . ", \$this);\n";
+                    }
                 }
                 else {
                     echo "        \$reflection = new ReflectionMethod(\"\\\\" . (addslashes($doc['class'])) . "\", \"" . ($method['function']) . "\");\n        \$return = \$reflection->invoke(\$document, " . ($target) . ", \$args, \$this->connection, " . (var_export($args ?: $method[0]['args'], true)) . ", \$this);\n";
@@ -308,8 +313,11 @@ namespace {
                             $temp = $plugins[$zmethod['method']];
                             foreach($temp->getMethods() as $method) {
                                 if ($method->has($ev) && empty($first_time)) {
-                                    echo "                            if (empty(\$this->loaded['" . ($self->getRelativePath($temp['file'])) . "'])) {\n                                require_once __DIR__ .  '" . ($self->getRelativePath($temp['file'])) . "';\n                                \$this->loaded['" . ($self->getRelativePath($temp['file'])) . "'] = true;\n                            }\n                            // " . ($method[0]['method']) . "\n                            \$plugin = new \\" . ($temp['class']) . "(" . ( var_export($zmethod['args'], true) ) . ");\n";
-                                    $first_time = true;
+                                    echo "                            if (empty(\$this->loaded['" . ($self->getRelativePath($temp['file'])) . "'])) {\n                                require_once __DIR__ .  '" . ($self->getRelativePath($temp['file'])) . "';\n                                \$this->loaded['" . ($self->getRelativePath($temp['file'])) . "'] = true;\n                            }\n";
+                                    if (!in_array('static', $temp['visibility'])) {
+                                        echo "                                // " . ($method[0]['method']) . "\n                                \$plugin = new \\" . ($temp['class']) . "(" . ( var_export($zmethod['args'], true) ) . ");\n";
+                                        $first_time = true;
+                                    }
                                     ActiveMongo2\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin', 'args' => $zmethod['args']], $this->context);
                                 }
                             }
