@@ -134,7 +134,11 @@ class Mapper
 
     public function trigger($event, $object, Array $args = array())
     {
-        $class  = strtolower(get_class($object));
+        if ($object instanceof \ActiveMongo2\Reference) {
+            $class = $object->getClass();
+        } else {
+            $class = strtolower(get_class($object));
+        }
         $method = "event_{$event}_" . sha1($class);
         if (!is_callable(array($this, $method))) {
             throw new \RuntimeException("Cannot trigger {$event} event on '$class' objects");
@@ -400,7 +404,7 @@ class Mapper
     /**
      *  Code for {{$ev}} events for objects {{$doc['class']}}
      */
-        protected function event_{{$ev}}_{{sha1($doc['class'])}}(\{{$doc['class']}} $document, Array $args)
+        protected function event_{{$ev}}_{{sha1($doc['class'])}}($document, Array $args)
         {
             @foreach($doc['annotation']->getMethods() as $method)
                 @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'])

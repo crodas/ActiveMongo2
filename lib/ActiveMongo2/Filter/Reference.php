@@ -81,6 +81,7 @@ function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
 
     $class = $mapper->mapCollection($value['$ref'])['class'];
     $value = new Reference($value, $class, $conn);
+    $mapper->trigger('onHydratation', $value);
 }
 
 /**
