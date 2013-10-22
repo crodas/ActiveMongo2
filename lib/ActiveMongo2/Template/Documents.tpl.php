@@ -4,10 +4,14 @@ namespace ActiveMongo2\Generated{{$namespace}};
 
 use ActiveMongo2\Connection;
 
+use {{$val[0]}} as val;
+
+require_once __DIR__ . {{@$val[1]}};
+
 class Mapper
 {
-    protected $mapper = {{ var_export($mapper, true) }};
-    protected $class_mapper = {{ var_export($class_mapper, true) }};
+    protected $mapper = {{ @$mapper }};
+    protected $class_mapper = {{ @$class_mapper}};
     protected $loaded = array();
     protected $connection;
 
@@ -161,7 +165,7 @@ class Mapper
     public function ensureIndex($db)
     {
         @foreach($indexes as $index)
-            $db->{{$index[0]}}->ensureIndex({{var_export($index[1], true)}}, {{var_export($index[2], true)}});
+            $db->{{$index[0]}}->ensureIndex({{@$index[1]}}, {{@$index[2]}});
         @end
     }
 
@@ -294,7 +298,7 @@ class Mapper
                             $this->loaded['{{$files[$zname]}}'] = true;
                         }
                         
-                        {{$callback}}($data['{{$name}}'], {{var_export($prop[0]['args'] ?: [],  true)}}, $this->connection, $this);
+                        {{$callback}}($data['{{$name}}'], {{@$prop[0]['args'] ?: []}}, $this->connection, $this);
                     @end
                 @end
 
@@ -347,7 +351,7 @@ class Mapper
                             require_once __DIR__ . '{{$files[$name]}}';
                             $this->loaded['{{$files[$name]}}'] = true;
                         }
-                        $doc['{{$propname}}'] = {{$callback}}($doc, {{{ var_export($prop->getOne($name)) }}}, $this->connection, $this); 
+                        $doc['{{$propname}}'] = {{$callback}}($doc, {{{ @$prop->getOne($name)}}}, $this->connection, $this); 
                     }
                 @end
             @end
@@ -446,7 +450,7 @@ class Mapper
                             }
                             @if (!in_array('static', $temp['visibility']))
                                 // {{$method[0]['method']}}
-                                $plugin = new \{{$temp['class']}}({{ var_export($zmethod['args'], true) }});
+                                $plugin = new \{{$temp['class']}}({{ @$zmethod['args'] }});
                                 @set($first_time, true)
                             @end
                             @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin', 'args' => $zmethod['args']])

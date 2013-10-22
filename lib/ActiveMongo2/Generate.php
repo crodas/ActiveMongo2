@@ -150,9 +150,14 @@ class Generate
             }
         }   
 
+        $validator = new Validator($docs, $config->getLoader() . '.validate.php', false);
+        $val = $validator->generate();
+        $val[1] = $this->getRelativePath($val[1]);
+
         $self = $this;
         $code = Templates::get('documents')
             ->render(compact(
+                'val',
                 'docs', 'namespace', 'class_mapper', 'events',
                 'validators', 'mapper', 'files', 'indexes',
                 'plugins', 'hydratations', 'self', 'references',
@@ -160,6 +165,8 @@ class Generate
             ), true);
 
         $code = FixCode::fix($code);
+
+
 
         File::write($config->getLoader(), $code);
 

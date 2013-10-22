@@ -114,7 +114,7 @@ namespace {
             }
             foreach($validators as $name => $callback) {
                 if ($prop->has($name)) {
-                    echo "        /* " . ($prop['property']) . " - " . ($name) . " " . ( '{{{' ) . " */\n        if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n            require_once __DIR__ . '" . ($files[$name]) . "';\n            \$this->loaded['" . ($files[$name]) . "'] = true;\n        }\n\n        \$args = " . (var_export(($prop[0]['args']) ?: [],  true)) . ";\n";
+                    echo "        /* " . ($prop['property']) . " - " . ($name) . " " . ('{{{') . " */\n        if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n            require_once __DIR__ . '" . ($files[$name]) . "';\n            \$this->loaded['" . ($files[$name]) . "'] = true;\n        }\n\n        \$args = " . (var_export(($prop[0]['args']) ?: [],  true)) . ";\n";
                     if (!empty($prop[0]['args'])) {
                         foreach($prop[0]['args'] as $i => $val) {
                             if ($val[0] == '$') {
@@ -147,9 +147,19 @@ namespace {
             if ($return) {
                 ob_start();
             }
-            echo "<?php\n\nnamespace ActiveMongo2\\Generated" . ($namespace) . ";\n\nuse ActiveMongo2\\Connection;\n\nclass Mapper\n{\n    protected \$mapper = " . ( var_export($mapper, true) ) . ";\n    protected \$class_mapper = " . ( var_export($class_mapper, true) ) . ";\n    protected \$loaded = array();\n    protected \$connection;\n\n    public function __construct(Connection \$conn)\n    {\n        \$this->connection = \$conn;\n        spl_autoload_register(array(\$this, '__autoloader'));\n    }\n\n    public function __autoloader(\$class)\n    {\n        \$class = strtolower(\$class);\n        if (!empty(\$this->class_mapper[\$class])) {\n            \$this->loaded[\$this->class_mapper[\$class]['file']] = true;\n            require __DIR__ . \$this->class_mapper[\$class]['file'];\n\n            return true;\n        }\n        return false;\n    }\n\n    public function mapCollection(\$col)\n    {\n        if (empty(\$this->mapper[\$col])) {\n            throw new \\RuntimeException(\"Cannot map {\$col} collection to its class\");\n        }\n\n        \$data = \$this->mapper[\$col];\n\n        if (empty(\$this->loaded[\$data['file']])) {\n            require_once __DIR__ .  \$data['file'];\n            \$this->loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    public function mapClass(\$class)\n    {\n        \$class = strtolower(\$class);\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        \$data = \$this->class_mapper[\$class];\n\n        if (empty(\$this->loaded[\$data['file']])) {\n            require_once __DIR__ . \$data['file'];\n            \$this->loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    protected function array_unique(\$array, \$toRemove)\n    {\n        \$return = array();\n        \$count  = array();\n        foreach (\$array as \$key => \$value) {\n            \$val = serialize(\$value);\n            if (empty(\$count[\$val])) {\n                \$count[\$val] = 0;\n            }\n            \$count[\$val]++; \n        }\n        foreach (\$toRemove as \$value) {\n            \$val = serialize(\$value);\n            if (!empty(\$count[\$val]) && \$count[\$val] != 1) {\n                return true;\n            }\n        }\n        return false;\n    }\n\n    public function mapObject(\$object)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->class_mapper[\$class];\n    }\n\n    public function getDocument(\$object)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"get_array_\" . sha1(\$class)}(\$object);\n    }\n\n    public function validate(\$object)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"validate_\" . sha1(\$class)}(\$object);\n    }\n\n    public function update(\$object, Array \$doc, Array \$old)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"update_\" . sha1(\$class)}(\$doc, \$old);\n    }\n\n    public function populate(\$object, Array \$data)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"populate_\" . sha1(\$class)}(\$object, \$data);\n    }\n\n    public function trigger(\$event, \$object, Array \$args = array())\n    {\n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = \$object->getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n        \$method = \"event_{\$event}_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$object, \$args);\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$db)\n    {\n";
+            echo "<?php\n\nnamespace ActiveMongo2\\Generated" . ($namespace) . ";\n\nuse ActiveMongo2\\Connection;\n\nuse " . ($val[0]) . " as val;\n\nrequire_once __DIR__ . ";
+            var_export($val[1]);
+            echo ";\n\nclass Mapper\n{\n    protected \$mapper = ";
+            var_export($mapper);
+            echo ";\n    protected \$class_mapper = ";
+            var_export($class_mapper);
+            echo ";\n    protected \$loaded = array();\n    protected \$connection;\n\n    public function __construct(Connection \$conn)\n    {\n        \$this->connection = \$conn;\n        spl_autoload_register(array(\$this, '__autoloader'));\n    }\n\n    public function __autoloader(\$class)\n    {\n        \$class = strtolower(\$class);\n        if (!empty(\$this->class_mapper[\$class])) {\n            \$this->loaded[\$this->class_mapper[\$class]['file']] = true;\n            require __DIR__ . \$this->class_mapper[\$class]['file'];\n\n            return true;\n        }\n        return false;\n    }\n\n    public function mapCollection(\$col)\n    {\n        if (empty(\$this->mapper[\$col])) {\n            throw new \\RuntimeException(\"Cannot map {\$col} collection to its class\");\n        }\n\n        \$data = \$this->mapper[\$col];\n\n        if (empty(\$this->loaded[\$data['file']])) {\n            require_once __DIR__ .  \$data['file'];\n            \$this->loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    public function mapClass(\$class)\n    {\n        \$class = strtolower(\$class);\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        \$data = \$this->class_mapper[\$class];\n\n        if (empty(\$this->loaded[\$data['file']])) {\n            require_once __DIR__ . \$data['file'];\n            \$this->loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    protected function array_unique(\$array, \$toRemove)\n    {\n        \$return = array();\n        \$count  = array();\n        foreach (\$array as \$key => \$value) {\n            \$val = serialize(\$value);\n            if (empty(\$count[\$val])) {\n                \$count[\$val] = 0;\n            }\n            \$count[\$val]++; \n        }\n        foreach (\$toRemove as \$value) {\n            \$val = serialize(\$value);\n            if (!empty(\$count[\$val]) && \$count[\$val] != 1) {\n                return true;\n            }\n        }\n        return false;\n    }\n\n    public function mapObject(\$object)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->class_mapper[\$class];\n    }\n\n    public function getDocument(\$object)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"get_array_\" . sha1(\$class)}(\$object);\n    }\n\n    public function validate(\$object)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"validate_\" . sha1(\$class)}(\$object);\n    }\n\n    public function update(\$object, Array \$doc, Array \$old)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"update_\" . sha1(\$class)}(\$doc, \$old);\n    }\n\n    public function populate(\$object, Array \$data)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"populate_\" . sha1(\$class)}(\$object, \$data);\n    }\n\n    public function trigger(\$event, \$object, Array \$args = array())\n    {\n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = \$object->getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n        \$method = \"event_{\$event}_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$object, \$args);\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$db)\n    {\n";
             foreach($indexes as $index) {
-                echo "            \$db->" . ($index[0]) . "->ensureIndex(" . (var_export($index[1], true)) . ", " . (var_export($index[2], true)) . ");\n";
+                echo "            \$db->" . ($index[0]) . "->ensureIndex(";
+                var_export($index[1]);
+                echo ", ";
+                var_export($index[2]);
+                echo ");\n";
             }
             echo "    }\n\n";
             foreach($docs as $doc) {
@@ -191,7 +201,9 @@ namespace {
                     echo "            if (array_key_exists(\"" . ($name) . "\", \$data)) {\n";
                     foreach($hydratations as $zname => $callback) {
                         if ($prop->has($zname)) {
-                            echo "                        if (empty(\$this->loaded['" . ($files[$zname]) . "'])) {\n                            require_once __DIR__ .  '" . ($files[$zname]) . "';\n                            \$this->loaded['" . ($files[$zname]) . "'] = true;\n                        }\n                        \n                        " . ($callback) . "(\$data['" . ($name) . "'], " . (var_export($prop[0]['args'] ?: [],  true)) . ", \$this->connection, \$this);\n";
+                            echo "                        if (empty(\$this->loaded['" . ($files[$zname]) . "'])) {\n                            require_once __DIR__ .  '" . ($files[$zname]) . "';\n                            \$this->loaded['" . ($files[$zname]) . "'] = true;\n                        }\n                        \n                        " . ($callback) . "(\$data['" . ($name) . "'], ";
+                            var_export($prop[0]['args'] ?: []);
+                            echo ", \$this->connection, \$this);\n";
                         }
                     }
                     echo "\n";
@@ -199,13 +211,13 @@ namespace {
                         echo "                    \$object->" . ($prop['property']) . " = \$data['" . ($name) . "'];\n";
                     }
                     else {
-                        echo "                    \$property = new \\ReflectionProperty(\$object, \"" . ( $prop['property'] ) . "\");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$object, \$data['" . ($name) . "']);\n";
+                        echo "                    \$property = new \\ReflectionProperty(\$object, \"" . ($prop['property']) . "\");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$object, \$data['" . ($name) . "']);\n";
                     }
                     echo "                \n            }\n";
                 }
                 echo "    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function get_array_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n        \$doc = array();\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
-                    echo "            /* " . ($prop['property']) . " " . ( '{{{' ) . " */\n";
+                    echo "            /* " . ($prop['property']) . " " . ('{{{') . " */\n";
                     $propname = $prop['property'];
                     if ($prop->has('Id')) {
                         $propname = '_id';
@@ -214,7 +226,7 @@ namespace {
                         echo "                if (\$object->" . ($prop['property']) . " !== NULL) {\n                    \$doc['" . ($propname) . "'] = \$object->" . ($prop['property']) . ";\n                }\n";
                     }
                     else {
-                        echo "                \$property = new \\ReflectionProperty(\$object, \"" . ( $prop['property'] ) . "\");\n                \$property->setAccessible(true);\n                \$doc['" . ($propname) . "'] = \$property->getValue(\$object);\n";
+                        echo "                \$property = new \\ReflectionProperty(\$object, \"" . ($prop['property']) . "\");\n                \$property->setAccessible(true);\n                \$doc['" . ($propname) . "'] = \$property->getValue(\$object);\n";
                     }
                     echo "            /* }}} */\n";
                 }
@@ -227,7 +239,7 @@ namespace {
                     foreach($defaults as $name => $callback) {
                         if ($prop->has($name)) {
                             echo "                    // default: " . ($name) . "\n                    if (empty(\$doc['" . ($propname) . "'])) {\n                        if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n                            require_once __DIR__ . '" . ($files[$name]) . "';\n                            \$this->loaded['" . ($files[$name]) . "'] = true;\n                        }\n                        \$doc['" . ($propname) . "'] = " . ($callback) . "(\$doc, ";
-                            echo htmlentities( var_export($prop->getOne($name)) , ENT_QUOTES, 'UTF-8', false);
+                            var_export($prop->getOne($name));
                             echo ", \$this->connection, \$this); \n                    }\n";
                         }
                     }
@@ -256,7 +268,7 @@ namespace {
                         echo "                    \$document->" . ($prop['property']) . " = \$value;\n";
                     }
                     else {
-                        echo "                    \$property = new \\ReflectionProperty(\$object, \"" . ( $prop['property'] ) . "\");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$document, \$value);\n";
+                        echo "                    \$property = new \\ReflectionProperty(\$object, \"" . ($prop['property']) . "\");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$document, \$value);\n";
                     }
                     echo "            }\n";
                 }
@@ -271,38 +283,71 @@ namespace {
                         echo "                // update all the references!\n";
                         foreach($references[$doc['name']] as $ref) {
                             echo "                    // update ";
-                            echo htmlentities($doc['name'], ENT_QUOTES, 'UTF-8', false);
+                            $__temporary = $doc['name'];
+                            if (!empty($__temporary)) {
+                                echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                            }
                             echo " references in  ";
-                            echo htmlentities($ref['collection'], ENT_QUOTES, 'UTF-8', false);
+                            $__temporary = $ref['collection'];
+                            if (!empty($__temporary)) {
+                                echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                            }
                             echo " \n                    \$replicate = array();\n                    foreach (\$args[1] as \$operation => \$values) {\n";
                             foreach($ref['update'] as $field) {
                                 echo "                            if (!empty(\$values[\"";
-                                echo htmlentities($field, ENT_QUOTES, 'UTF-8', false);
+                                $__temporary = $field;
+                                if (!empty($__temporary)) {
+                                    echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                                }
                                 echo "\"])) {\n";
                                 if ($ref['multi']) {
                                     echo "                                    \$replicate[\$operation] = [\"";
-                                    echo htmlentities($ref['property'], ENT_QUOTES, 'UTF-8', false);
+                                    $__temporary = $ref['property'];
+                                    if (!empty($__temporary)) {
+                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                                    }
                                     echo ".\$.";
-                                    echo htmlentities($field, ENT_QUOTES, 'UTF-8', false);
+                                    $__temporary = $field;
+                                    if (!empty($__temporary)) {
+                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                                    }
                                     echo "\" => \$values[\"";
-                                    echo htmlentities($field, ENT_QUOTES, 'UTF-8', false);
+                                    $__temporary = $field;
+                                    if (!empty($__temporary)) {
+                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                                    }
                                     echo "\"]];\n";
                                 }
                                 else {
                                     echo "                                    \$replicate[\$operation] = [\"";
-                                    echo htmlentities($ref['property'], ENT_QUOTES, 'UTF-8', false);
+                                    $__temporary = $ref['property'];
+                                    if (!empty($__temporary)) {
+                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                                    }
                                     echo ".";
-                                    echo htmlentities($field, ENT_QUOTES, 'UTF-8', false);
+                                    $__temporary = $field;
+                                    if (!empty($__temporary)) {
+                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                                    }
                                     echo "\" => \$values[\"";
-                                    echo htmlentities($field, ENT_QUOTES, 'UTF-8', false);
+                                    $__temporary = $field;
+                                    if (!empty($__temporary)) {
+                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                                    }
                                     echo "\"]];\n";
                                 }
                                 echo "                            }\n";
                             }
                             echo "                    }\n\n                    if (!empty(\$replicate)) {\n                        \$args[0]->getCollection(\"";
-                            echo htmlentities($ref['collection'], ENT_QUOTES, 'UTF-8', false);
+                            $__temporary = $ref['collection'];
+                            if (!empty($__temporary)) {
+                                echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                            }
                             echo "\")\n                            ->update(['";
-                            echo htmlentities($ref['property'], ENT_QUOTES, 'UTF-8', false);
+                            $__temporary = $ref['property'];
+                            if (!empty($__temporary)) {
+                                echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                            }
                             echo ".\$id' => \$args[2]], \$replicate, ['w' => 0, 'multi' => true]);\n                    }\n";
                         }
                     }
@@ -315,7 +360,9 @@ namespace {
                                 if ($method->has($ev) && empty($first_time)) {
                                     echo "                            if (empty(\$this->loaded['" . ($self->getRelativePath($temp['file'])) . "'])) {\n                                require_once __DIR__ .  '" . ($self->getRelativePath($temp['file'])) . "';\n                                \$this->loaded['" . ($self->getRelativePath($temp['file'])) . "'] = true;\n                            }\n";
                                     if (!in_array('static', $temp['visibility'])) {
-                                        echo "                                // " . ($method[0]['method']) . "\n                                \$plugin = new \\" . ($temp['class']) . "(" . ( var_export($zmethod['args'], true) ) . ");\n";
+                                        echo "                                // " . ($method[0]['method']) . "\n                                \$plugin = new \\" . ($temp['class']) . "(";
+                                        var_export($zmethod['args']);
+                                        echo ");\n";
                                         $first_time = true;
                                     }
                                     ActiveMongo2\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin', 'args' => $zmethod['args']], $this->context);
