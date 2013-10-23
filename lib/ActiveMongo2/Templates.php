@@ -389,6 +389,15 @@ namespace ActiveMongo2 {
 
     class Templates
     {
+        public static function getAll()
+        {
+            return array (
+                0 => 'trigger',
+                1 => 'validate',
+                2 => 'documents',
+            );
+        }
+
         public static function exec($name, Array $context = array(), Array $global = array())
         {
             $tpl = self::get($name);

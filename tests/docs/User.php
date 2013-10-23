@@ -12,7 +12,7 @@ class UserDocument
     /** @Id */
     public $userid;
 
-    /** @String @Required */
+    /** @String @Required @noWhitespace @Alnum */
     public $username;
 
     /** @Inc */
