@@ -41,7 +41,7 @@ use MongoCollection;
 class Collection 
 {
     protected $zconn;
-    protected $class;
+    protected $mapper;
     protected $zcol;
 
     protected static $defaultOpts = array(
@@ -49,11 +49,11 @@ class Collection
         'multiple' => true,
     );
 
-    public function __construct(Connection $conn, $class, MongoCollection $col)
+    public function __construct(Connection $conn, $mapper, MongoCollection $col)
     {
         $this->zconn  = $conn;
         $this->zcol   = $col;
-        $this->class  = $class;
+        $this->mapper = $mapper;
     }
 
     protected function analizeUpdate($query)
@@ -91,35 +91,22 @@ class Collection
 
         $results = [];
         foreach ($document['result'] as $res) {
-            $results[] = $this->zconn->registerDocument($this->getClass($res), $res);
+            $results[] = $this->zconn->registerDocument($this->mapper->getObjectClass($this->zcol, $res), $res);
         }
 
         return $results;
-    }
-
-    public function getClass(Array $doc)
-    {
-        if (!empty($this->class['class'])) {
-            return $this->class['class'];
-        }
-
-        if (!empty($doc[$this->class['prop']])) {
-            return $doc[$this->class['prop']];
-        }
-
-        throw new \RuntimeException("Cannot map document from {$this->zcol} to its class");
     }
 
     public function findAndModify($query, $update, $options)
     {
         $response = $this->zcol->findAndModify($query, $update, null, $options);
 
-        return $this->zconn->registerDocument($this->getClass($response), $response);
+        return $this->zconn->registerDocument($this->mapper->getObjectClass($this->zcol, $response), $response);
     }
 
     public function find($query = array(), $fields = array())
     {
-        return new Cursor($query, $fields, $this->zconn, $this->zcol, $this);
+        return new Cursor($query, $fields, $this->zconn, $this->zcol, $this->mapper);
     }
 
     public function findOne($query = array(), $fields = array())
@@ -129,6 +116,6 @@ class Collection
             return $doc;
         }
 
-        return $this->zconn->registerDocument($this->getClass($doc), $doc);
+        return $this->zconn->registerDocument($this->mapper->getObjectClass($this->zcol, $doc), $doc);
     }
 }

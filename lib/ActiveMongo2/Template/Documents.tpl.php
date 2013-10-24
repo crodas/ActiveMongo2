@@ -154,6 +154,33 @@ class Mapper
         return $this->$method($object, $args);
     }
 
+    public function getObjectClass($col, Array $array)
+    {
+        if ($col instanceof \MongoCollection) {
+            $col = $col->getName();
+        }
+        $class = NULL;
+        switch ($col) {
+        @foreach ($docs as $doc)
+            case {{@$doc['name']}}:
+                @if (empty($doc['disc']))
+                    $class = {{@$doc['class']}};
+                @else
+                    if (!empty($array[{{@$doc['disc']}}])) {
+                        $class = $array[{{@$doc['disc']}}];
+                    }
+                @end
+                break;
+        @end
+        }
+
+        if (empty($class)) {
+            throw new \RuntimeException("Cannot get class for collection {$col}");
+        }
+
+        return $class;
+    }
+
     public function updateProperty($document, $key, $value)
     {
         $class  = strtolower(get_class($document));

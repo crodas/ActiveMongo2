@@ -41,13 +41,15 @@ use MongoCursor;
 
 class Cursor extends MongoCursor
 {
-    protected $class;
+    protected $mapper;
     protected $conn;
+    protected $col;
 
-    public function __construct(Array $query, Array $fields, Connection $conn, MongoCollection $col, $class)
+    public function __construct(Array $query, Array $fields, Connection $conn, MongoCollection $col, $mapper)
     {
-        $this->conn  = $conn;
-        $this->class = $class;
+        $this->conn   = $conn;
+        $this->col    = $col;
+        $this->mapper = $mapper;
         parent::__construct($conn->getConnection(), (string)$col, $query, $fields);
     }
 
@@ -59,7 +61,8 @@ class Cursor extends MongoCursor
     public function current()
     {
         $current = parent::current();
-        return $this->conn->registerDocument($this->class->getClass($current), $current);
+        $class   = $this->mapper->getObjectClass($this->col, $current);
+        return $this->conn->registerDocument($class, $current);
     }
 
     public function toArray()
