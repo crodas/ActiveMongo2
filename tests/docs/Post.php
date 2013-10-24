@@ -3,15 +3,10 @@
 namespace ActiveMongo2\Tests\Document;
 
 /** 
- * @Persist(collection="post")
- * @Sluggable("title", "uri")
- * @Universal(set_id=true, auto_increment=true)
+ * @Persist
  */
-class PostDocument
+class PostDocument extends BaseDocument
 {
-    /** @Id */
-    public $id;
-
     /** @Universal */
     public $global_id;
 
@@ -26,12 +21,6 @@ class PostDocument
 
     /** @ReferenceMany("user", [username, email]) */
     public $collaborators = array();
-
-    /** @Required @String */
-    public $title;
-
-    /** @String @Unique */
-    public $uri;
 
     /** @ReferenceMany("user") */
     public $readers;

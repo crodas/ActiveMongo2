@@ -49,6 +49,13 @@ class Mapper
     {
         $class = strtolower($class);
         if (empty($this->class_mapper[$class])) {
+            @foreach ($docs as $doc)
+                @if (!empty($doc['disc']))
+                if ($class == {{@$doc['name']}}){
+                    return {{@['name' => $doc['name'], 'dynamic' => true, 'prop' => $doc['disc'], 'class' => NULL]}};
+                }
+                @end
+            @end
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
 
@@ -135,7 +142,7 @@ class Mapper
     public function trigger($event, $object, Array $args = array())
     {
         if ($object instanceof \ActiveMongo2\Reference) {
-            $class = $object->getClass();
+            $class = strtolower($object->getClass());
         } else {
             $class = strtolower(get_class($object));
         }
@@ -175,7 +182,11 @@ class Mapper
             throw new \RuntimeException("document ids cannot be updated");
         }
 
-        $change = array();
+        @if (empty($doc['parent']))
+            $change = array();
+        @else
+            $change = $this->update_{{sha1($doc['parent'])}}($current, $old, $embed);
+        @end
 
         @foreach ($doc['annotation']->getProperties() as $prop)
             @set($propname, $prop['property'])
@@ -281,6 +292,10 @@ class Mapper
      */
     public function populate_{{sha1($doc['class'])}}(\{{$doc['class']}} $object, Array $data)
     {
+        @if (!empty($doc['parent']))
+            $this->populate_{{sha1($doc['parent'])}}($object, $data);
+        @end
+
         @foreach ($doc['annotation']->getProperties() as $prop)
             @set($name, $prop['property'])
             @if ($prop->has('Id'))
@@ -315,7 +330,11 @@ class Mapper
      */
     public function get_array_{{sha1($doc['class'])}}(\{{$doc['class']}} $object)
     {
-        $doc = array();
+        @if (empty($doc['parent']))
+            $doc = array();
+        @else
+            $doc = $this->get_array_{{sha1($doc['parent'])}}($object);
+        @end
         @foreach ($doc['annotation']->getProperties() as $prop)
             /* {{$prop['property']}} {{ '{{{' }} */
             @set($propname, $prop['property'])
@@ -352,6 +371,11 @@ class Mapper
                 @end
             @end
         @end
+
+        @if (!empty($doc['disc']))
+            $doc[{{@$doc['disc']}}] = {{@$doc['class']}};
+        @end
+
         return $doc;
     }
 
@@ -381,6 +405,9 @@ class Mapper
 
     protected function update_property_{{sha1($doc['class'])}}(\{{$doc['class']}} $document, $property, $value)
     {
+        @if ($doc['parent'])
+            $this->update_property_{{sha1($doc['parent'])}}($document, $property, $value);
+        @end
         @foreach ($doc['annotation']->getProperties() as $prop)
             @set($propname, $prop['property'])
             if ($property ==  '{{$propname}}'
@@ -406,6 +433,10 @@ class Mapper
      */
         protected function event_{{$ev}}_{{sha1($doc['class'])}}($document, Array $args)
         {
+            @if (!empty($doc['parent']))
+                $this->event_{{$ev}}_{{sha1($doc['parent'])}}($document, $args);
+            @end
+
             @foreach($doc['annotation']->getMethods() as $method)
                 @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'])
             @end
