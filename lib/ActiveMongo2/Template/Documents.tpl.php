@@ -49,6 +49,13 @@ class Mapper
     {
         $class = strtolower($class);
         if (empty($this->class_mapper[$class])) {
+            @foreach ($docs as $doc)
+                @if (!empty($doc['disc']))
+                if ($class == {{@$doc['name']}}){
+                    return {{@['name' => $doc['name'], 'dynamic' => true, 'prop' => $doc['disc'], 'class' => NULL]}};
+                }
+                @end
+            @end
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
 
@@ -135,7 +142,7 @@ class Mapper
     public function trigger($event, $object, Array $args = array())
     {
         if ($object instanceof \ActiveMongo2\Reference) {
-            $class = $object->getClass();
+            $class = strtolower($object->getClass());
         } else {
             $class = strtolower(get_class($object));
         }
@@ -364,6 +371,11 @@ class Mapper
                 @end
             @end
         @end
+
+        @if (!empty($doc['disc']))
+            $doc[{{@$doc['disc']}}] = {{@$doc['class']}};
+        @end
+
         return $doc;
     }
 

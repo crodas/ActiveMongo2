@@ -79,7 +79,14 @@ function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
         throw new \RuntimeException("Expecting document {$expected} but got {$value['ref']}");
     }
 
-    $class = $mapper->mapCollection($value['$ref'])['class'];
+    try {
+        $class = $mapper->mapCollection($value['$ref'])['class'];
+    } catch (\Exception $e) {
+        if (empty($value['__class'])) {
+            throw $e;
+        }
+        $class = $value['__class'];
+    }
     $value = new Reference($value, $class, $conn);
     $mapper->trigger('onHydratation', $value);
 }
@@ -113,8 +120,9 @@ function _validate_reference_one(&$value, Array $args, $conn, $mapper)
     
     $array = $mapper->validate($document);
     $value = array(
-        '$id'   => $array['_id'],
-        '$ref'  => $mapper->mapClass(get_class($document))['name'],
+        '$id'       => $array['_id'],
+        '$ref'      => $mapper->mapClass(get_class($document))['name'],
+        '__class'   => get_class($document),
     );
 
     if (!empty($args[1])) {

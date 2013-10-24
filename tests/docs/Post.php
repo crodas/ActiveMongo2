@@ -3,7 +3,7 @@
 namespace ActiveMongo2\Tests\Document;
 
 /** 
- * @Persist(collection="post")
+ * @Persist
  */
 class PostDocument extends BaseDocument
 {

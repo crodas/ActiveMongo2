@@ -91,22 +91,35 @@ class Collection
 
         $results = [];
         foreach ($document['result'] as $res) {
-            $results[] = $this->zconn->registerDocument($this->class, $res);
+            $results[] = $this->zconn->registerDocument($this->getClass($res), $res);
         }
 
         return $results;
+    }
+
+    public function getClass(Array $doc)
+    {
+        if (!empty($this->class['class'])) {
+            return $this->class['class'];
+        }
+
+        if (!empty($doc[$this->class['prop']])) {
+            return $doc[$this->class['prop']];
+        }
+
+        throw new \RuntimeException("Cannot map document from {$this->zcol} to its class");
     }
 
     public function findAndModify($query, $update, $options)
     {
         $response = $this->zcol->findAndModify($query, $update, null, $options);
 
-        return $this->zconn->registerDocument($this->class, $response);
+        return $this->zconn->registerDocument($this->getClass($response), $response);
     }
 
     public function find($query = array(), $fields = array())
     {
-        return new Cursor($query, $fields, $this->zconn, $this->zcol, $this->class);
+        return new Cursor($query, $fields, $this->zconn, $this->zcol, $this);
     }
 
     public function findOne($query = array(), $fields = array())
@@ -116,6 +129,6 @@ class Collection
             return $doc;
         }
 
-        return $this->zconn->registerDocument($this->class, $doc);
+        return $this->zconn->registerDocument($this->getClass($doc), $doc);
     }
 }

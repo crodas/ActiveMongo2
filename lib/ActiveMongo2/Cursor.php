@@ -59,7 +59,7 @@ class Cursor extends MongoCursor
     public function current()
     {
         $current = parent::current();
-        return $this->conn->registerDocument($this->class, $current);
+        return $this->conn->registerDocument($this->class->getClass($current), $current);
     }
 
     public function toArray()
