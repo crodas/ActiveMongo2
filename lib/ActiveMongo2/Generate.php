@@ -68,11 +68,21 @@ class Generate
         foreach (array('Persist', 'Embeddable') as $type) {
             foreach ($annotations->get($type) as $object) {
                 if (!$object->isClass()) continue;
+                $parent = $object->getParent();
+
                 $data = array(
                     'class' => strtolower($object['class']), 
                     'file'  => $this->getRelativePath($object['file']),
                     'annotation' => $object,
+                    'parent'    => [],
                 );
+
+
+                while ($parent) {
+                    $data['parent'][] = strtolower($parent['class']);
+                    $parent = $parent->getParent();
+                }
+                $data['parent'] = array_reverse($data['parent']);
 
                 foreach ($object->get($type) as $ann) {
                     $data['name'] = $ann['args'] ? current($ann['args']) : null;

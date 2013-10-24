@@ -175,7 +175,16 @@ class Mapper
             throw new \RuntimeException("document ids cannot be updated");
         }
 
-        $change = array();
+        @if (empty($doc['parent']))
+            $change = array();
+        @else
+            $change = array_merge(
+            @foreach ($doc['parent'] as $parent) 
+                $this->update_{{sha1($parent)}}($current, $old, $embed),
+            @end
+                []
+            );
+        @end
 
         @foreach ($doc['annotation']->getProperties() as $prop)
             @set($propname, $prop['property'])
@@ -281,6 +290,10 @@ class Mapper
      */
     public function populate_{{sha1($doc['class'])}}(\{{$doc['class']}} $object, Array $data)
     {
+        @foreach ($doc['parent'] as $parent) 
+            $this->populate_{{sha1($parent)}}($object, $data);
+        @end
+
         @foreach ($doc['annotation']->getProperties() as $prop)
             @set($name, $prop['property'])
             @if ($prop->has('Id'))
@@ -315,7 +328,16 @@ class Mapper
      */
     public function get_array_{{sha1($doc['class'])}}(\{{$doc['class']}} $object)
     {
-        $doc = array();
+        @if (empty($doc['parent']))
+            $doc = array();
+        @else
+            $doc = array_merge(
+            @foreach ($doc['parent'] as $parent) 
+                $this->get_array_{{sha1($parent)}}($object),
+            @end
+                []
+            );
+        @end
         @foreach ($doc['annotation']->getProperties() as $prop)
             /* {{$prop['property']}} {{ '{{{' }} */
             @set($propname, $prop['property'])
@@ -406,6 +428,10 @@ class Mapper
      */
         protected function event_{{$ev}}_{{sha1($doc['class'])}}($document, Array $args)
         {
+            @foreach ($doc['parent'] as $parent)
+                $this->event_{{$ev}}_{{sha1($parent)}}($document, $args);
+            @end
+
             @foreach($doc['annotation']->getMethods() as $method)
                 @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'])
             @end
