@@ -265,6 +265,9 @@ namespace {
                     ActiveMongo2\Templates::exec('validate', compact('propname', 'validators', 'files', 'prop'), $this->context);
                 }
                 echo "\n        return \$doc;\n    }\n\n    protected function update_property_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$document, \$property, \$value)\n    {\n";
+                if ($doc['parent']) {
+                    echo "            \$this->update_property_" . (sha1($doc['parent'])) . "(\$document, \$property, \$value);\n";
+                }
                 foreach($doc['annotation']->getProperties() as $prop) {
                     $propname = $prop['property'];
                     echo "            if (\$property ==  '" . ($propname) . "'\n";

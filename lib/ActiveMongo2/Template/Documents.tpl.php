@@ -393,6 +393,9 @@ class Mapper
 
     protected function update_property_{{sha1($doc['class'])}}(\{{$doc['class']}} $document, $property, $value)
     {
+        @if ($doc['parent'])
+            $this->update_property_{{sha1($doc['parent'])}}($document, $property, $value);
+        @end
         @foreach ($doc['annotation']->getProperties() as $prop)
             @set($propname, $prop['property'])
             if ($property ==  '{{$propname}}'
