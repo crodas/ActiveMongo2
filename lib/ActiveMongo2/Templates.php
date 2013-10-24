@@ -158,11 +158,7 @@ namespace {
                     echo "            \$change = array();\n";
                 }
                 else {
-                    echo "            \$change = array_merge(\n";
-                    foreach($doc['parent'] as $parent) {
-                        echo "                \$this->update_" . (sha1($parent)) . "(\$current, \$old, \$embed),\n";
-                    }
-                    echo "                []\n            );\n";
+                    echo "            \$change = \$this->update_" . (sha1($doc['parent'])) . "(\$current, \$old, \$embed);\n";
                 }
                 echo "\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
@@ -194,8 +190,8 @@ namespace {
                     echo "                }\n            }\n";
                 }
                 echo "\n        return \$change;\n    }\n\n    /**\n     *  Populate objects " . ($doc['class']) . " \n     */\n    public function populate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, Array \$data)\n    {\n";
-                foreach($doc['parent'] as $parent) {
-                    echo "            \$this->populate_" . (sha1($parent)) . "(\$object, \$data);\n";
+                if (!empty($doc['parent'])) {
+                    echo "            \$this->populate_" . (sha1($doc['parent'])) . "(\$object, \$data);\n";
                 }
                 echo "\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
@@ -223,11 +219,7 @@ namespace {
                     echo "            \$doc = array();\n";
                 }
                 else {
-                    echo "            \$doc = array_merge(\n";
-                    foreach($doc['parent'] as $parent) {
-                        echo "                \$this->get_array_" . (sha1($parent)) . "(\$object),\n";
-                    }
-                    echo "                []\n            );\n";
+                    echo "            \$doc = \$this->get_array_" . (sha1($doc['parent'])) . "(\$object);\n";
                 }
                 foreach($doc['annotation']->getProperties() as $prop) {
                     echo "            /* " . ($prop['property']) . " " . ('{{{') . " */\n";
@@ -291,8 +283,8 @@ namespace {
                 echo "    }\n\n\n";
                 foreach($events as $ev) {
                     echo "    /**\n     *  Code for " . ($ev) . " events for objects " . ($doc['class']) . "\n     */\n        protected function event_" . ($ev) . "_" . (sha1($doc['class'])) . "(\$document, Array \$args)\n        {\n";
-                    foreach($doc['parent'] as $parent) {
-                        echo "                \$this->event_" . ($ev) . "_" . (sha1($parent)) . "(\$document, \$args);\n";
+                    if (!empty($doc['parent'])) {
+                        echo "                \$this->event_" . ($ev) . "_" . (sha1($doc['parent'])) . "(\$document, \$args);\n";
                     }
                     echo "\n";
                     foreach($doc['annotation']->getMethods() as $method) {

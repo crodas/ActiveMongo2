@@ -74,15 +74,8 @@ class Generate
                     'class' => strtolower($object['class']), 
                     'file'  => $this->getRelativePath($object['file']),
                     'annotation' => $object,
-                    'parent'    => [],
+                    'parent'     => $parent ? strtolower($parent['class']) : NULL,
                 );
-
-
-                while ($parent) {
-                    $data['parent'][] = strtolower($parent['class']);
-                    $parent = $parent->getParent();
-                }
-                $data['parent'] = array_reverse($data['parent']);
 
                 foreach ($object->get($type) as $ann) {
                     $data['name'] = $ann['args'] ? current($ann['args']) : null;

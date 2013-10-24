@@ -178,12 +178,7 @@ class Mapper
         @if (empty($doc['parent']))
             $change = array();
         @else
-            $change = array_merge(
-            @foreach ($doc['parent'] as $parent) 
-                $this->update_{{sha1($parent)}}($current, $old, $embed),
-            @end
-                []
-            );
+            $change = $this->update_{{sha1($doc['parent'])}}($current, $old, $embed);
         @end
 
         @foreach ($doc['annotation']->getProperties() as $prop)
@@ -290,8 +285,8 @@ class Mapper
      */
     public function populate_{{sha1($doc['class'])}}(\{{$doc['class']}} $object, Array $data)
     {
-        @foreach ($doc['parent'] as $parent) 
-            $this->populate_{{sha1($parent)}}($object, $data);
+        @if (!empty($doc['parent']))
+            $this->populate_{{sha1($doc['parent'])}}($object, $data);
         @end
 
         @foreach ($doc['annotation']->getProperties() as $prop)
@@ -331,12 +326,7 @@ class Mapper
         @if (empty($doc['parent']))
             $doc = array();
         @else
-            $doc = array_merge(
-            @foreach ($doc['parent'] as $parent) 
-                $this->get_array_{{sha1($parent)}}($object),
-            @end
-                []
-            );
+            $doc = $this->get_array_{{sha1($doc['parent'])}}($object);
         @end
         @foreach ($doc['annotation']->getProperties() as $prop)
             /* {{$prop['property']}} {{ '{{{' }} */
@@ -428,8 +418,8 @@ class Mapper
      */
         protected function event_{{$ev}}_{{sha1($doc['class'])}}($document, Array $args)
         {
-            @foreach ($doc['parent'] as $parent)
-                $this->event_{{$ev}}_{{sha1($parent)}}($document, $args);
+            @if (!empty($doc['parent']))
+                $this->event_{{$ev}}_{{sha1($doc['parent'])}}($document, $args);
             @end
 
             @foreach($doc['annotation']->getMethods() as $method)
