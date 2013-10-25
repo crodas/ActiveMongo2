@@ -56,6 +56,11 @@ class Collection
         $this->mapper = $mapper;
     }
 
+    public function rawCollection()
+    {
+        return $this->zcol;
+    }
+
     protected function analizeUpdate($query)
     {
     }
