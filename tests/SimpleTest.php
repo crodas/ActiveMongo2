@@ -132,6 +132,12 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($savedPost->author->username, $user->username);
         $this->assertEquals($savedPost->collaborators[0]->username, $user->username);
 
+        $post->tmp = 0;
+        $conn->delete($post);
+        $this->assertEquals(2, $post->tmp);
+        $savedPost = $conn->getCollection('post')->findOne();
+        $this->assertEquals(null, $savedPost);
+
 
     }
 

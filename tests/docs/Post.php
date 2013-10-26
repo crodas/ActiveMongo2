@@ -40,4 +40,15 @@ class PostDocument extends BaseDocument
     public function __do_something()
     {
     }
+
+    /**
+     *  @postDelete
+     *  @preDelete
+     */
+    public function delete($object)
+    {
+        if ($this == $object) {
+            $this->tmp++;
+        }
+    }
 }

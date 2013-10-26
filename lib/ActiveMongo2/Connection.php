@@ -187,14 +187,17 @@ class Connection
 
         $document = $this->mapper->getDocument($obj);
         $hash = spl_object_hash($obj);
-
-        unset(self::$docs[$hash]);
-
         if (empty($document['_id'])) {
             throw new \RuntimeException("Cannot delete without an id");
         }
 
+        unset(self::$docs[$hash]);
+
+        $this->mapper->trigger('preDelete', $obj, array($document));
+
         $this->classes[$class]->remove(array('_id' => $document['_id']));
+
+        $this->mapper->trigger('postDelete', $obj, array($document));
     }
 
     protected function array_diff_ex($arr1, $arr2)
