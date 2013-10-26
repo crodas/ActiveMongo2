@@ -47,7 +47,7 @@ class PostDocument extends BaseDocument
      */
     public function delete($object)
     {
-        if ($this == $object) {
+        if ($this == $object && isset($this->tmp)) {
             $this->tmp++;
         }
     }
