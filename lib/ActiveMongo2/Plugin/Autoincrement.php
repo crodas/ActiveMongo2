@@ -62,11 +62,11 @@ class Autoincrement
     /**
      *  @preCreate
      */
-    public static function setCollectionId($object, Array &$args, $conn, $extra)
+    public static function setCollectionId($object, Array &$args, $conn, $extra, $mapper)
     {
         $document = &$args[0];
         if (empty($document['_id'])) {
-            $document['_id'] = self::getId($conn, get_class($object));
+            $document['_id'] = self::getId($conn, $mapper->mapClass($object)['class']);
         }
     }
 }

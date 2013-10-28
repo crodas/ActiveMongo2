@@ -47,6 +47,9 @@ class Mapper
 
     public function mapClass($class)
     {
+        if (is_object($class)) {
+            $class = get_class($class);
+        }
         $class = strtolower($class);
         if (empty($this->class_mapper[$class])) {
             @foreach ($docs as $doc)
