@@ -66,7 +66,7 @@ class Autoincrement
     {
         $document = &$args[0];
         if (empty($document['_id'])) {
-            $document['_id'] = self::getId($conn, $mapper->mapClass($object)['class']);
+            $document['_id'] = self::getId($conn, $mapper->mapClass($object)['name']);
         }
     }
 }
