@@ -1,4 +1,4 @@
-ActiveMongo2
+ActiveMongo2 [![Build Status](https://travis-ci.org/crodas/ActiveMongo2.png?branch=develop)](https://travis-ci.org/crodas/ActiveMongo2)
 ============
 
 ActiveMongo2 is a very simple, efficient and developer friendly PHP abstraction for MongoDB.
