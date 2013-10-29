@@ -45,8 +45,6 @@ class Reference implements DocumentProxy, \JsonSerializable
     protected $ref;
     protected $map;
 
-    protected static $all_objects = array();
-
     public function __construct(Array $info, $class, $conn, Array $map)
     {
         $this->ref    = $info;
@@ -79,11 +77,7 @@ class Reference implements DocumentProxy, \JsonSerializable
     private function _loadDocument()
     {
         if (!$this->doc) {
-            $id = $this->ref['$ref'] . ':' . $this->ref['$id'];
-            if (empty(self::$all_objects[$id])) {
-                self::$all_objects[$id] = $this->class->findOne(array('_id' => $this->ref['$id']));
-            }
-            $this->doc = self::$all_objects[$id];
+            $this->doc = $this->class->getById($this->ref['$id']);
         }
     }
 

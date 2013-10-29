@@ -277,4 +277,34 @@ class SimpleTest extends \phpunit_framework_testcase
         $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
         $this->assertEquals($zpost->tags, array_values($post->tags));
     }
+
+    /** 
+     * @dependsOn testArray1 
+     * @expectedException RuntimeException
+     * @expectedExceptionMessage Cannot
+     */
+    public function testGetByIdNotFound()
+    {
+        $conn = getConnection();
+        $doc = $conn->getCollection('post')
+            ->getById(0xffffff);
+    }
+
+    /** @dependsOn testArray1 */
+    public function testGetById()
+    {
+        $conn = getConnection();
+        $post = $conn->getCollection('post')
+            ->findOne();
+
+        $doc = $conn->getCollection('post')
+            ->getById($post->id);
+        $doc->foobar = "sss";
+
+        $doc1 = $conn->getCollection('post')
+            ->getById($post->id);
+
+        $this->assertEquals($doc->foobar, $doc1->foobar);
+        $this->assertEquals($doc, $doc1);
+    }
 }

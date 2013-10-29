@@ -43,6 +43,7 @@ class Collection
     protected $zconn;
     protected $mapper;
     protected $zcol;
+    protected static $list = array();
 
     protected static $defaultOpts = array(
         'w' => 1,
@@ -112,6 +113,18 @@ class Collection
     public function find($query = array(), $fields = array())
     {
         return new Cursor($query, $fields, $this->zconn, $this->zcol, $this->mapper);
+    }
+
+    public function getById($id)
+    {
+        $zid = $this->zcol . ':' . serialize($id);
+        if (empty(self::$list[$zid])) {
+            self::$list[$zid] = $this->findOne(['_id' => $id]);
+            if (empty(self::$list[$zid])) {
+                throw new \RuntimeException("Cannot find object with _id $id");
+            }
+        }
+        return self::$list[$zid];
     }
 
     public function findOne($query = array(), $fields = array())
