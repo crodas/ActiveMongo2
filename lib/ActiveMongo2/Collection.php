@@ -41,19 +41,25 @@ use MongoCollection;
 class Collection 
 {
     protected $zconn;
-    protected $class;
+    protected $mapper;
     protected $zcol;
+    protected static $list = array();
 
     protected static $defaultOpts = array(
         'w' => 1,
         'multiple' => true,
     );
 
-    public function __construct(Connection $conn, $class, MongoCollection $col)
+    public function __construct(Connection $conn, $mapper, MongoCollection $col)
     {
         $this->zconn  = $conn;
         $this->zcol   = $col;
-        $this->class  = $class;
+        $this->mapper = $mapper;
+    }
+
+    public function rawCollection()
+    {
+        return $this->zcol;
     }
 
     protected function analizeUpdate($query)
@@ -91,7 +97,7 @@ class Collection
 
         $results = [];
         foreach ($document['result'] as $res) {
-            $results[] = $this->zconn->registerDocument($this->class, $res);
+            $results[] = $this->zconn->registerDocument($this->mapper->getObjectClass($this->zcol, $res), $res);
         }
 
         return $results;
@@ -101,12 +107,24 @@ class Collection
     {
         $response = $this->zcol->findAndModify($query, $update, null, $options);
 
-        return $this->zconn->registerDocument($this->class, $response);
+        return $this->zconn->registerDocument($this->mapper->getObjectClass($this->zcol, $response), $response);
     }
 
     public function find($query = array(), $fields = array())
     {
-        return new Cursor($query, $fields, $this->zconn, $this->zcol, $this->class);
+        return new Cursor($query, $fields, $this->zconn, $this->zcol, $this->mapper);
+    }
+
+    public function getById($id)
+    {
+        $zid = $this->zcol . ':' . serialize($id);
+        if (empty(self::$list[$zid])) {
+            self::$list[$zid] = $this->findOne(['_id' => $id]);
+            if (empty(self::$list[$zid])) {
+                throw new \RuntimeException("Cannot find object with _id $id");
+            }
+        }
+        return self::$list[$zid];
     }
 
     public function findOne($query = array(), $fields = array())
@@ -116,6 +134,6 @@ class Collection
             return $doc;
         }
 
-        return $this->zconn->registerDocument($this->class, $doc);
+        return $this->zconn->registerDocument($this->mapper->getObjectClass($this->zcol, $doc), $doc);
     }
 }

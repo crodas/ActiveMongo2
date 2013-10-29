@@ -37,18 +37,18 @@
 
 namespace ActiveMongo2;
 
-class Reference implements DocumentProxy
+class Reference implements DocumentProxy, \JsonSerializable
 {
     protected $class;
     protected $_class;
     protected $doc;
     protected $ref;
+    protected $map;
 
-    protected static $all_objects = array();
-
-    public function __construct(Array $info, $class, $conn)
+    public function __construct(Array $info, $class, $conn, Array $map)
     {
         $this->ref    = $info;
+        $this->map    = $map;
         $this->_class = $class;
         $this->class  = $conn->getCollection($class);
     }
@@ -69,14 +69,15 @@ class Reference implements DocumentProxy
         return $this->doc ?: $this->ref;
     }
 
+    public function jsonSerialize() 
+    {
+        return $this->getReference();
+    }
+
     private function _loadDocument()
     {
         if (!$this->doc) {
-            $id = $this->ref['$ref'] . ':' . $this->ref['$id'];
-            if (empty(self::$all_objects[$id])) {
-                self::$all_objects[$id] = $this->class->findOne(array('_id' => $this->ref['$id']));
-            }
-            $this->doc = self::$all_objects[$id];
+            $this->doc = $this->class->getById($this->ref['$id']);
         }
     }
 
@@ -103,8 +104,16 @@ class Reference implements DocumentProxy
 
     public function __get($name)
     {
-        if (!empty($this->ref[$name])) {
-            return $this->ref[$name];
+        if (!empty($this->map[$name])) {
+            $expected = $this->map[$name];
+            if (!empty($this->ref[$expected])) {
+                return $this->ref[$expected];
+            }
+
+            if ($expected == '_id') {
+                // avoid one query!
+                return $this->ref['$id'];
+            }
         }
 
         $this->_loadDocument();

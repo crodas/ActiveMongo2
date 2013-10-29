@@ -39,6 +39,10 @@ namespace ActiveMongo2;
 use MongoClient;
 use MongoId;
 
+if (!is_callable('password_verify')) {
+    require __DIR__ . "/Compat/password/password.php";
+}
+
 class Connection
 {
     protected $conn;
@@ -116,7 +120,7 @@ class Connection
         }
 
         $mongoCol = $this->db->selectCollection($data['name']);
-        $this->collections[$data['name']] = new Collection($this, $data['class'], $mongoCol);
+        $this->collections[$data['name']] = new Collection($this, $this->mapper, $mongoCol);
         return $this->collections[$data['name']];
     }
 
@@ -183,14 +187,17 @@ class Connection
 
         $document = $this->mapper->getDocument($obj);
         $hash = spl_object_hash($obj);
-
-        unset(self::$docs[$hash]);
-
         if (empty($document['_id'])) {
             throw new \RuntimeException("Cannot delete without an id");
         }
 
+        unset(self::$docs[$hash]);
+
+        $this->mapper->trigger('preDelete', $obj, array($document));
+
         $this->classes[$class]->remove(array('_id' => $document['_id']));
+
+        $this->mapper->trigger('postDelete', $obj, array($document));
     }
 
     protected function array_diff_ex($arr1, $arr2)

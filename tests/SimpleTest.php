@@ -29,6 +29,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $conn->getCollection('user')->drop();
         $user = new UserDocument;
         $user->username = "crodas-" . rand(0, 0xfffff);
+        $user->pass     = "foobar";
         $this->assertFalse($user->runEvent);
         $conn->save($user);
         $this->assertTrue($user->runEvent);
@@ -115,11 +116,18 @@ class SimpleTest extends \phpunit_framework_testcase
         $post->collaborators[] = $user;
         $post->title  = "foobar post";
         $post->readers[] = $user;
+        $post->author_id = $user->userid;
         $conn->save($post);
 
         $savedPost = $conn->getCollection('post')->findOne();
         $this->assertEquals($savedPost->author->userid, $user->userid);
+
+        // test that no request has been made
+        $this->AssertTrue(is_array($savedPost->author->getReference()));
         $this->assertEquals($savedPost->author->username, $user->username);
+
+        // test that no request has been made
+        $this->AssertTrue(is_array($savedPost->author->getReference()));
         $this->assertEquals($savedPost->uri, "foobar-post");
 
         $user->username = "foobar";
@@ -129,6 +137,12 @@ class SimpleTest extends \phpunit_framework_testcase
         $savedPost = $conn->getCollection('post')->findOne();
         $this->assertEquals($savedPost->author->username, $user->username);
         $this->assertEquals($savedPost->collaborators[0]->username, $user->username);
+
+        $post->tmp = 0;
+        $conn->delete($post);
+        $this->assertEquals(2, $post->tmp);
+        $savedPost = $conn->getCollection('post')->findOne();
+        $this->assertEquals(null, $savedPost);
 
 
     }
@@ -239,6 +253,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $post->title  = "foobar";
 
         $post->tags = array('foobar', 'xx', 'xx');
+        $post->author_id = $user->userid;
         $conn->save($post);
         $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
         $this->assertEquals($zpost->tags, $post->tags);
@@ -261,5 +276,35 @@ class SimpleTest extends \phpunit_framework_testcase
 
         $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
         $this->assertEquals($zpost->tags, array_values($post->tags));
+    }
+
+    /** 
+     * @dependsOn testArray1 
+     * @expectedException RuntimeException
+     * @expectedExceptionMessage Cannot
+     */
+    public function testGetByIdNotFound()
+    {
+        $conn = getConnection();
+        $doc = $conn->getCollection('post')
+            ->getById(0xffffff);
+    }
+
+    /** @dependsOn testArray1 */
+    public function testGetById()
+    {
+        $conn = getConnection();
+        $post = $conn->getCollection('post')
+            ->findOne();
+
+        $doc = $conn->getCollection('post')
+            ->getById($post->id);
+        $doc->foobar = "sss";
+
+        $doc1 = $conn->getCollection('post')
+            ->getById($post->id);
+
+        $this->assertEquals($doc->foobar, $doc1->foobar);
+        $this->assertEquals($doc, $doc1);
     }
 }

@@ -64,21 +64,51 @@ class Generate
             $dir->getAnnotations($annotations);
         }
 
-        $docs = array();
+        $docs    = [];
+        $parents = [];
+        foreach ($annotations->get('Persist') as $object) {
+            if (!$object->isClass()) continue;
+            $parents[strtolower($object['class'])] = $object;
+        }
+
         foreach (array('Persist', 'Embeddable') as $type) {
             foreach ($annotations->get($type) as $object) {
                 if (!$object->isClass()) continue;
+                $parent = $object->getParent();
+
                 $data = array(
                     'class' => strtolower($object['class']), 
                     'file'  => $this->getRelativePath($object['file']),
                     'annotation' => $object,
+                    'parent'     => $parent ? strtolower($parent['class']) : NULL,
                 );
+
+                if ($object->has('SingleCollection')) {
+                    $data['disc'] = $object->getOne('SingleCollection') ?: ['__type'];
+                    $data['disc'] = current($data['disc']);
+                }
 
                 foreach ($object->get($type) as $ann) {
                     $data['name'] = $ann['args'] ? current($ann['args']) : null;
+                    while ($parent) {
+                        $class = strtolower($parent['class']);
+                        if (empty($parents[$class])) break;
+                        if ($parents[$class]->has('SingleCollection') || empty($data['name'])) {
+                            $data['name'] = current($parents[$class]->getOne('Persist'));
+                            $data['disc'] = $parents[$class]->getOne('SingleCollection') ?: ['__type'];
+                            $data['disc'] = current($data['disc']);
+                        }
+                        $parent = $parent->GetParent();
+                    } 
+
                     if (empty($data['name'])) continue;
 
-                    $docs[ $data['name'] ] = $data;
+                    if (!empty($data['disc'])) {
+                        // give them some weird name
+                        $docs[$data['class']] = $data;
+                    } else {
+                        $docs[$data['name']] = $data;
+                    }
                 }
             }
         }
@@ -107,7 +137,10 @@ class Generate
         $namespace    = sha1($config->getLoader());
         $mapper       = $this->getDocumentMapper($docs);
         $class_mapper = $this->getClassMapper($docs);
-        $events       = array('preSave', 'postSave', 'preCreate', 'postCreate', 'onHydratation', 'preUpdate', 'postUpdate');
+        $events       = array(
+            'preSave', 'postSave', 'preCreate', 'postCreate', 'onHydratation', 
+            'preUpdate', 'postUpdate', 'preDelete', 'postDelete'
+        );
         $indexes      = array();
         $plugins      = array();
 
@@ -122,6 +155,9 @@ class Generate
 
         foreach ($annotations->get('Unique') as $prop) {
             if (!$prop->isProperty()) continue;
+            if (empty($class_mapper[strtolower($prop['class'])])) {
+                continue;
+            }
             $collection = $class_mapper[strtolower($prop['class'])]['name'];
             foreach ($prop->get('Unique') as $anno) {
                 $indexes[] = array($collection,  array($prop['property'] => 1), array('unique' => 1));

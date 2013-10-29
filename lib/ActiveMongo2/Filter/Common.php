@@ -61,3 +61,12 @@ function _validate_integer(&$value)
     return true;
 }
 
+
+/**
+ *  @Validate(Password)
+ */
+function _validate_password(&$value, $args)
+{
+    $value = password_hash($value, PASSWORD_BCRYPT, ["cost" => 7, "salt" => sha1(implode(",", $args))]);
+    return true;
+}
