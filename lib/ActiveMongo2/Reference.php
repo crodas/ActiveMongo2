@@ -43,12 +43,14 @@ class Reference implements DocumentProxy, \JsonSerializable
     protected $_class;
     protected $doc;
     protected $ref;
+    protected $map;
 
     protected static $all_objects = array();
 
-    public function __construct(Array $info, $class, $conn)
+    public function __construct(Array $info, $class, $conn, Array $map)
     {
         $this->ref    = $info;
+        $this->map    = $map;
         $this->_class = $class;
         $this->class  = $conn->getCollection($class);
     }
@@ -108,8 +110,16 @@ class Reference implements DocumentProxy, \JsonSerializable
 
     public function __get($name)
     {
-        if (!empty($this->ref[$name])) {
-            return $this->ref[$name];
+        if (!empty($this->map[$name])) {
+            $expected = $this->map[$name];
+            if (!empty($this->ref[$expected])) {
+                return $this->ref[$expected];
+            }
+
+            if ($expected == '_id') {
+                // avoid one query!
+                return $this->ref['$id'];
+            }
         }
 
         $this->_loadDocument();

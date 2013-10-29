@@ -157,6 +157,18 @@ class Mapper
         return $this->$method($object, $args);
     }
 
+    public function getMapping($class)
+    {
+        if (is_object($class)) {
+            $class = get_class($class);
+        }
+        $func  = "get_mapping_" . sha1($class);
+        if (!is_callable(array($this, $func))) {
+            throw new \Exception("Cannot map $class");
+        }
+        return $this->$func();
+    }
+
     public function getObjectClass($col, Array $array)
     {
         if ($col instanceof \MongoCollection) {
@@ -315,6 +327,19 @@ class Mapper
         @end
 
         return $change;
+    }
+
+    public function get_mapping_{{sha1($doc['class'])}}() 
+    {
+        return array(
+            @foreach ($doc['annotation']->getProperties() as $prop)
+                @set($name, $prop['property'])
+                @if ($prop->has('Id'))
+                    @set($name, '_id')
+                @end
+                {{@$prop['property']}} => {{@$name}},
+            @end
+        );
     }
 
     /**

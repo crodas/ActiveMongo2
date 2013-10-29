@@ -121,7 +121,13 @@ class SimpleTest extends \phpunit_framework_testcase
 
         $savedPost = $conn->getCollection('post')->findOne();
         $this->assertEquals($savedPost->author->userid, $user->userid);
+
+        // test that no request has been made
+        $this->AssertTrue(is_array($savedPost->author->getReference()));
         $this->assertEquals($savedPost->author->username, $user->username);
+
+        // test that no request has been made
+        $this->AssertTrue(is_array($savedPost->author->getReference()));
         $this->assertEquals($savedPost->uri, "foobar-post");
 
         $user->username = "foobar";
