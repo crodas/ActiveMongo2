@@ -176,7 +176,9 @@ class Generate
                 if (!$prop->isProperty()) continue;
                 foreach ($prop as $ann) {
                     if (empty($ann['args']) || count($ann['args']) < 2) continue;
-                    $references[$ann['args'][0]][] = array(
+                    $zclass = $docs[$ann['args'][0]]['class'];
+                    $references[$zclass][] = array(
+                        'class'         => strtolower($prop['class']),
                         'property'      => $prop['property'],
                         'collection'    => $class_mapper[strtolower($prop['class'])]['name'],
                         'update'        => $ann['args'][1],

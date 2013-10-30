@@ -347,7 +347,7 @@ namespace {
                         echo "                \$col = \$args[1]->getDatabase()->references_queue;\n";
                         foreach($references as $col => $refs) {
                             foreach($refs as $ref) {
-                                if ($ref['collection'] == $doc['name'] && !$ref['multi']) {
+                                if ($ref['class'] == $doc['class'] && !$ref['multi']) {
                                     if ($ev == "postCreate") {
                                         echo "                            if (!empty(\$args[0][";
                                         var_export($ref['property']);
@@ -381,9 +381,9 @@ namespace {
                         }
                     }
                     echo "\n";
-                    if ($ev == "postUpdate" && !empty($references[$doc['name']])) {
+                    if ($ev == "postUpdate" && !empty($references[$doc['class']])) {
                         echo "                // update all the references!\n";
-                        foreach($references[$doc['name']] as $ref) {
+                        foreach($references[$doc['class']] as $ref) {
                             echo "                    // update ";
                             $__temporary = $doc['name'];
                             if (!empty($__temporary)) {

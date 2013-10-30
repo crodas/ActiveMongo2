@@ -500,7 +500,7 @@ class Mapper
                 $col = $args[1]->getDatabase()->references_queue;
                 @foreach ($references as $col => $refs)
                     @foreach ($refs as $ref)
-                        @if ($ref['collection'] == $doc['name'] && !$ref['multi'])
+                        @if ($ref['class'] == $doc['class'] && !$ref['multi'])
                             @if ($ev == "postCreate")
                             if (!empty($args[0][{{@$ref['property']}}])) {
                             @else
@@ -525,9 +525,9 @@ class Mapper
                 @end
             @end
 
-            @if ($ev == "postUpdate" && !empty($references[$doc['name']]))
+            @if ($ev == "postUpdate" && !empty($references[$doc['class']]))
                 // update all the references!
-                @foreach ($references[$doc['name']] as $ref)
+                @foreach ($references[$doc['class']] as $ref)
                     // update {{{$doc['name']}}} references in  {{{$ref['collection']}}} 
                     $replicate = array();
                     foreach ($args[0] as $operation => $values) {
