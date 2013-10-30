@@ -78,7 +78,6 @@ class Cache
 
     public function set($index, Array $value)
     {
-        $index = self::id($index);
         $this->storage->set(self::id($index), $value);
     }
 }
