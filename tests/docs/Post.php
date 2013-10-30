@@ -4,6 +4,7 @@ namespace ActiveMongo2\Tests\Document;
 
 /** 
  * @Persist
+ * @SplittedEmbed("embed")
  */
 class PostDocument extends BaseDocument
 {
@@ -33,6 +34,9 @@ class PostDocument extends BaseDocument
 
     /** @Array */
     public $tags;
+
+    /** @SplittedEmbed */
+    public $embed;
 
     /**
      *  @preSave
