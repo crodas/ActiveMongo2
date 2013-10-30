@@ -34,72 +34,19 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2;
+namespace ActiveMongo2\Cache\Storage;
 
-use Notoj\Notoj;
-use WatchFiles\Watch;
+use ActiveMongo2\Cache\Storage;
 
-class Configuration
+class None implements Storage
 {
-    protected $loader;
-    protected $path;
-    protected $devel = false;
-    protected $cache;
-
-    public function __construct($loader)
+    public function get($index)
     {
-        $this->loader = $loader;
-        $this->cache  = new Cache\Cache;
     }
 
-    public function setCacheStorage(Cache\Storage $storage)
+    public function set($index, $value)
     {
-        $this->cache->setStorage($storage);
     }
 
-    public function getCache()
-    {
-        return $this->cache;
-    }
-
-    public function getModelPath()
-    {
-        return $this->path;
-    }
-
-    public function getLoader()
-    {
-        return $this->loader;
-    }
-
-    public function addModelPath($path)
-    {
-        $this->path[] = $path;
-        return $this;
-    }
-
-    public function initialize(Connection $conn)
-    {
-        Notoj::enableCache($this->loader . ".tmp");
-
-        if ($this->devel || !is_file($this->loader)) {
-            $watcher = new Watch($this->loader . ".lock");
-            if (!$watcher->isWatching() || $watcher->hasChanged()) {
-                new Generate($this, $watcher);
-            }
-        }
-        
-        
-        $class = "\\ActiveMongo2\\Generated" . sha1($this->GetLoader()) . "\\Mapper";
-        if (!class_exists($class, false)) {
-            require $this->getLoader();
-        }
-        return new $class($conn);
-    }
-
-    public function development()
-    {
-        $this->devel = true;
-        return $this;
-    }
 }
+
