@@ -506,11 +506,11 @@ class Mapper
                             @else
                             if (!empty($args[0]['$set'][{{@$ref['property']}}])) {
                             @end
-                                /**/
+                                /* Keep in track of the reference */
                                 $col->save(array(
                                     'collection'    => {{@$doc['name']}},
                                     @if ($ev == "postCreate")
-                                    'global_id'     => {{@$col . '::'}} . serialize($args[0]['_id']),
+                                    'global_id'     => {{@$ref['target'] . '::'}} . serialize($args[0]['_id']),
                                     'id'            => $args[0][{{@$ref['property']}}]['$id'],
                                     @else
                                     'global_id'     => $args[2],
@@ -544,6 +544,7 @@ class Mapper
 
                     if (!empty($replicate)) {
                         @if ($ref['deferred']) 
+                            // queue the updates!
                             $data = array(
                                 'update'    => $replicate,
                                 'processed' => false,
@@ -560,6 +561,7 @@ class Mapper
                                 ->deferred_queue
                                 ->save($data);
                         @else
+                            // do the update
                             $args[1]->getCollection({{{@$ref['collection']}}})
                                 ->update([
                                     '{{{$ref['property']}}}.$id' => $args[2]], 

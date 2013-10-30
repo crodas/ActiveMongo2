@@ -180,6 +180,7 @@ class Generate
                     $references[$zclass][] = array(
                         'class'         => strtolower($prop['class']),
                         'property'      => $prop['property'],
+                        'target'        =>  $class_mapper[$zclass]['name'],
                         'collection'    => $class_mapper[strtolower($prop['class'])]['name'],
                         'update'        => $ann['args'][1],
                         'multi'         => $multi,

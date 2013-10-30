@@ -358,12 +358,12 @@ namespace {
                                         var_export($ref['property']);
                                         echo "])) {\n";
                                     }
-                                    echo "                                /**/\n                                \$col->save(array(\n                                    'collection'    => ";
+                                    echo "                                /* Keep in track of the reference */\n                                \$col->save(array(\n                                    'collection'    => ";
                                     var_export($doc['name']);
                                     echo ",\n";
                                     if ($ev == "postCreate") {
                                         echo "                                    'global_id'     => ";
-                                        var_export($col . '::');
+                                        var_export($ref['target'] . '::');
                                         echo " . serialize(\$args[0]['_id']),\n                                    'id'            => \$args[0][";
                                         var_export($ref['property']);
                                         echo "]['\$id'],\n";
@@ -442,7 +442,7 @@ namespace {
                             }
                             echo "                    }\n\n                    if (!empty(\$replicate)) {\n";
                             if ($ref['deferred']) {
-                                echo "                            \$data = array(\n                                'update'    => \$replicate,\n                                'processed' => false,\n                                'created'   => new \\DateTime,\n                                'type'      => array(\n                                    'source'    => ";
+                                echo "                            // queue the updates!\n                            \$data = array(\n                                'update'    => \$replicate,\n                                'processed' => false,\n                                'created'   => new \\DateTime,\n                                'type'      => array(\n                                    'source'    => ";
                                 var_export($doc['name']);
                                 echo ",\n                                    'id'        => \$args[2],\n                                    'target'    => ";
                                 var_export($ref['collection']);
@@ -451,7 +451,7 @@ namespace {
                                 echo ",\n                                ),\n                            );\n                            \$args[1]\n                                ->getDatabase()\n                                ->deferred_queue\n                                ->save(\$data);\n";
                             }
                             else {
-                                echo "                            \$args[1]->getCollection(";
+                                echo "                            // do the update\n                            \$args[1]->getCollection(";
                                 var_export($ref['collection']);
                                 echo ")\n                                ->update([\n                                    '";
                                 $__temporary = $ref['property'];
