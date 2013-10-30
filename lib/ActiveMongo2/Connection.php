@@ -253,7 +253,8 @@ class Connection
                 );
             }
 
-            $this->mapper->trigger('postUpdate', $obj, array($this, $update, $oldDoc['_id']));
+            $this->mapper->trigger('postUpdate', $obj, array($update, $this,$oldDoc['_id']));
+            $this->mapper->trigger('postSave', $obj, array($update, $this));
 
             $this->setObjectDocument($obj, $document);
 
@@ -268,7 +269,8 @@ class Connection
         $this->setObjectDocument($obj, $document);
 
         $ret = $this->classes[$class]->save($document, array('w' => 1));
-        $this->mapper->trigger('postCreate', $obj, array($document));
+        $this->mapper->trigger('postCreate', $obj, array($document, $this));
+        $this->mapper->trigger('postSave', $obj, array($document, $this));
 
         return $this;
     }

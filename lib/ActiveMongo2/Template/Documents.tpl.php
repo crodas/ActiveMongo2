@@ -496,12 +496,41 @@ class Mapper
                 @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'])
             @end
 
+            @if ($ev =="postCreate" || $ev == "postUpdate")
+                $col = $args[1]->getDatabase()->references_queue;
+                @foreach ($references as $col => $refs)
+                    @foreach ($refs as $ref)
+                        @if ($ref['collection'] == $doc['name'] && !$ref['multi'])
+                            @if ($ev == "postCreate")
+                            if (!empty($args[0][{{@$ref['property']}}])) {
+                            @else
+                            if (!empty($args[0]['$set'][{{@$ref['property']}}])) {
+                            @end
+                                /**/
+                                $col->save(array(
+                                    'collection'    => {{@$doc['name']}},
+                                    @if ($ev == "postCreate")
+                                    'global_id'     => {{@$col . '::'}} . serialize($args[0]['_id']),
+                                    'id'            => $args[0][{{@$ref['property']}}]['$id'],
+                                    @else
+                                    'global_id'     => $args[2],
+                                    'id'            => $args[0]['$set'][{{@$ref['property']}}]['$id'],
+                                    @end
+                                    'multi'         => {{@$ref['multi']}},
+                                ));
+                                /**/
+                            }
+                        @end
+                    @end
+                @end
+            @end
+
             @if ($ev == "postUpdate" && !empty($references[$doc['name']]))
                 // update all the references!
                 @foreach ($references[$doc['name']] as $ref)
                     // update {{{$doc['name']}}} references in  {{{$ref['collection']}}} 
                     $replicate = array();
-                    foreach ($args[1] as $operation => $values) {
+                    foreach ($args[0] as $operation => $values) {
                         @foreach ($ref['update'] as $field)
                             if (!empty($values["{{{$field}}}"])) {
                                 @if ($ref['multi'])
@@ -514,8 +543,30 @@ class Mapper
                     }
 
                     if (!empty($replicate)) {
-                        $args[0]->getCollection("{{{$ref['collection']}}}")
-                            ->update(['{{{$ref['property']}}}.$id' => $args[2]], $replicate, ['w' => 0, 'multi' => true]);
+                        @if ($ref['deferred']) 
+                            $data = array(
+                                'update'    => $replicate,
+                                'processed' => false,
+                                'created'   => new \DateTime,
+                                'type'      => array(
+                                    'source'    => {{@$doc['name']}},
+                                    'id'        => $args[2],
+                                    'target'    => {{@$ref['collection']}},
+                                    'property'  => {{@$ref['property']}},
+                                ),
+                            );
+                            $args[1]
+                                ->getDatabase()
+                                ->deferred_queue
+                                ->save($data);
+                        @else
+                            $args[1]->getCollection({{{@$ref['collection']}}})
+                                ->update([
+                                    '{{{$ref['property']}}}.$id' => $args[2]], 
+                                    $replicate, 
+                                    ['w' => 0, 'multi' => true]
+                                );
+                        @end
                     }
                 @end
             @end

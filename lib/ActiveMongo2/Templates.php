@@ -343,6 +343,44 @@ namespace {
                         ActiveMongo2\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'], $this->context);
                     }
                     echo "\n";
+                    if ($ev =="postCreate" || $ev == "postUpdate") {
+                        echo "                \$col = \$args[1]->getDatabase()->references_queue;\n";
+                        foreach($references as $col => $refs) {
+                            foreach($refs as $ref) {
+                                if ($ref['collection'] == $doc['name'] && !$ref['multi']) {
+                                    if ($ev == "postCreate") {
+                                        echo "                            if (!empty(\$args[0][";
+                                        var_export($ref['property']);
+                                        echo "])) {\n";
+                                    }
+                                    else {
+                                        echo "                            if (!empty(\$args[0]['\$set'][";
+                                        var_export($ref['property']);
+                                        echo "])) {\n";
+                                    }
+                                    echo "                                /**/\n                                \$col->save(array(\n                                    'collection'    => ";
+                                    var_export($doc['name']);
+                                    echo ",\n";
+                                    if ($ev == "postCreate") {
+                                        echo "                                    'global_id'     => ";
+                                        var_export($col . '::');
+                                        echo " . serialize(\$args[0]['_id']),\n                                    'id'            => \$args[0][";
+                                        var_export($ref['property']);
+                                        echo "]['\$id'],\n";
+                                    }
+                                    else {
+                                        echo "                                    'global_id'     => \$args[2],\n                                    'id'            => \$args[0]['\$set'][";
+                                        var_export($ref['property']);
+                                        echo "]['\$id'],\n";
+                                    }
+                                    echo "                                    'multi'         => ";
+                                    var_export($ref['multi']);
+                                    echo ",\n                                ));\n                                /**/\n                            }\n";
+                                }
+                            }
+                        }
+                    }
+                    echo "\n";
                     if ($ev == "postUpdate" && !empty($references[$doc['name']])) {
                         echo "                // update all the references!\n";
                         foreach($references[$doc['name']] as $ref) {
@@ -356,7 +394,7 @@ namespace {
                             if (!empty($__temporary)) {
                                 echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
                             }
-                            echo " \n                    \$replicate = array();\n                    foreach (\$args[1] as \$operation => \$values) {\n";
+                            echo " \n                    \$replicate = array();\n                    foreach (\$args[0] as \$operation => \$values) {\n";
                             foreach($ref['update'] as $field) {
                                 echo "                            if (!empty(\$values[\"";
                                 $__temporary = $field;
@@ -402,17 +440,27 @@ namespace {
                                 }
                                 echo "                            }\n";
                             }
-                            echo "                    }\n\n                    if (!empty(\$replicate)) {\n                        \$args[0]->getCollection(\"";
-                            $__temporary = $ref['collection'];
-                            if (!empty($__temporary)) {
-                                echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                            echo "                    }\n\n                    if (!empty(\$replicate)) {\n";
+                            if ($ref['deferred']) {
+                                echo "                            \$data = array(\n                                'update'    => \$replicate,\n                                'processed' => false,\n                                'created'   => new \\DateTime,\n                                'type'      => array(\n                                    'source'    => ";
+                                var_export($doc['name']);
+                                echo ",\n                                    'id'        => \$args[2],\n                                    'target'    => ";
+                                var_export($ref['collection']);
+                                echo ",\n                                    'property'  => ";
+                                var_export($ref['property']);
+                                echo ",\n                                ),\n                            );\n                            \$args[1]\n                                ->getDatabase()\n                                ->deferred_queue\n                                ->save(\$data);\n";
                             }
-                            echo "\")\n                            ->update(['";
-                            $__temporary = $ref['property'];
-                            if (!empty($__temporary)) {
-                                echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                            else {
+                                echo "                            \$args[1]->getCollection(";
+                                var_export($ref['collection']);
+                                echo ")\n                                ->update([\n                                    '";
+                                $__temporary = $ref['property'];
+                                if (!empty($__temporary)) {
+                                    echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                                }
+                                echo ".\$id' => \$args[2]], \n                                    \$replicate, \n                                    ['w' => 0, 'multi' => true]\n                                );\n";
                             }
-                            echo ".\$id' => \$args[2]], \$replicate, ['w' => 0, 'multi' => true]);\n                    }\n";
+                            echo "                    }\n";
                         }
                     }
                     echo "\n";

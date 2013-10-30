@@ -181,6 +181,7 @@ class Generate
                         'collection'    => $class_mapper[strtolower($prop['class'])]['name'],
                         'update'        => $ann['args'][1],
                         'multi'         => $multi,
+                        'deferred'      => $prop->has('Deferred'),
                     );
                 }
             }
