@@ -22,7 +22,7 @@
                 'update'    => $replicate,
                 'processed' => false,
                 'created'   => new \DateTime,
-                'source_id' => {{@$doc['name'].'::'}}  . $args[2],
+                'source_id' => {{@$doc['name'].'::'}}  . serialize($args[2]),
                 'type'      => array(
                     'source'    => {{@$doc['name']}},
                     'target'    => {{@$ref['collection']}},

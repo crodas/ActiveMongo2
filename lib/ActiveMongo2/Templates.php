@@ -147,9 +147,9 @@ namespace {
             if ($return) {
                 ob_start();
             }
-            echo "                // update all the references!\n";
+            echo "// update all the references!\n";
             foreach($references[$doc['class']] as $ref) {
-                echo "                    // update ";
+                echo "    // update ";
                 $__temporary = $doc['name'];
                 if (!empty($__temporary)) {
                     echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
@@ -159,13 +159,13 @@ namespace {
                 if (!empty($__temporary)) {
                     echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
                 }
-                echo " \n                    \$replicate = array();\n                    \$target_id = array();\n                    foreach (\$args[0] as \$operation => \$values) {\n";
+                echo " \n    \$replicate = array();\n    \$target_id = array();\n    foreach (\$args[0] as \$operation => \$values) {\n";
                 foreach($ref['update'] as $field) {
-                    echo "                            if (!empty(\$values[";
+                    echo "            if (!empty(\$values[";
                     var_export($field);
                     echo "])) {\n";
                     if ($ref['multi']) {
-                        echo "                                    \$replicate[\$operation] = [\"";
+                        echo "                    \$replicate[\$operation] = [\"";
                         $__temporary = $ref['property'];
                         if (!empty($__temporary)) {
                             echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
@@ -183,7 +183,7 @@ namespace {
                         echo "\"]];\n";
                     }
                     else {
-                        echo "                                    \$replicate[\$operation] = [\"";
+                        echo "                    \$replicate[\$operation] = [\"";
                         $__temporary = $ref['property'];
                         if (!empty($__temporary)) {
                             echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
@@ -200,29 +200,29 @@ namespace {
                         }
                         echo "\"]];\n";
                     }
-                    echo "                            }\n";
+                    echo "            }\n";
                 }
-                echo "                    }\n\n                    if (!empty(\$replicate)) {\n";
+                echo "    }\n\n    if (!empty(\$replicate)) {\n";
                 if ($ref['deferred']) {
-                    echo "                            // queue the updates!\n                            \$data = array(\n                                'update'    => \$replicate,\n                                'processed' => false,\n                                'created'   => new \\DateTime,\n                                'source_id' => ";
+                    echo "            // queue the updates!\n            \$data = array(\n                'update'    => \$replicate,\n                'processed' => false,\n                'created'   => new \\DateTime,\n                'source_id' => ";
                     var_export($doc['name'].'::');
-                    echo "  . \$args[2],\n                                'type'      => array(\n                                    'source'    => ";
+                    echo "  . serialize(\$args[2]),\n                'type'      => array(\n                    'source'    => ";
                     var_export($doc['name']);
-                    echo ",\n                                    'target'    => ";
+                    echo ",\n                    'target'    => ";
                     var_export($ref['collection']);
-                    echo ",\n                                ),\n                            );\n                            \$args[1]\n                                ->getDatabase()\n                                ->deferred_queue\n                                ->save(\$data, array('w' => 0));\n";
+                    echo ",\n                ),\n            );\n            \$args[1]\n                ->getDatabase()\n                ->deferred_queue\n                ->save(\$data, array('w' => 0));\n";
                 }
                 else {
-                    echo "                            // do the update\n                            \$args[1]->getCollection(";
+                    echo "            // do the update\n            \$args[1]->getCollection(";
                     var_export($ref['collection']);
-                    echo ")\n                                ->update([\n                                    '";
+                    echo ")\n                ->update([\n                    '";
                     $__temporary = $ref['property'];
                     if (!empty($__temporary)) {
                         echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
                     }
-                    echo ".\$id' => \$args[2]], \n                                    \$replicate, \n                                    ['w' => 0, 'multi' => true]\n                                );\n";
+                    echo ".\$id' => \$args[2]], \n                    \$replicate, \n                    ['w' => 0, 'multi' => true]\n                );\n";
                 }
-                echo "                    }\n";
+                echo "    }\n";
             }
 
             if ($return) {

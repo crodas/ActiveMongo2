@@ -211,9 +211,32 @@ class Connection
         return $diff;
     }
 
-    public function worker()
+    public function worker($daemon = true)
     {
-        die('here');
+        $queue = $this->db->deferred_queue;
+        $refs  = $this->db->references_queue;
+
+        $queue->ensureIndex(['processed' => 1]);
+        $refs->ensureIndex(['source_id' => 1]);
+
+        do {
+            $work = $queue->findAndModify(['processed' => false], ['$set' => ['processed' => true, 'started' => new \MongoDate]]);
+            if (empty($work)) {
+                if ($daemon) {
+                    usleep(200000);
+                    continue;
+                }
+                break;
+            }
+            $all  = $refs->find(['source_id' => $work['source_id']]);
+            foreach ($all as $row) {
+                $col = $this->db->{$row['collection']};
+                $col->update(
+                    array('_id' => $row['id']),
+                    $work['update']
+                );
+            }
+        } while (true);
     }
 
     public function is($collection, $object)
