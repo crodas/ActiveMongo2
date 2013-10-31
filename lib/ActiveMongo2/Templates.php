@@ -134,6 +134,81 @@ namespace {
     }
 
     /** 
+     *  Template class generated from Reference/Update.tpl.php
+     */
+    class class_f8c39509b1fb331e8b8ef22a135640af98725ce5 extends base_template_46ff768978a6897199daa478860b8cd25af655b1
+    {
+
+        public function render(Array $vars = array(), $return = false)
+        {
+            $this->context = $vars;
+
+            extract($vars);
+            if ($return) {
+                ob_start();
+            }
+            echo "// <?php\n// update all the references!\n";
+            foreach($references[$doc['class']] as $ref) {
+                echo "    // update " . ($doc['name']) . " references in  " . ($ref['collection']) . " \n    \$replicate = array();\n    \$target_id = array();\n";
+                if ($ref['deferred']) {
+                    if (!empty($deferred_done)) {
+                        continue;
+                    }
+                    $deferred_done = true;
+                }
+                echo "    foreach (\$args[0] as \$operation => \$values) {\n";
+                foreach($ref['update'] as $field) {
+                    echo "            if (!empty(\$values[";
+                    var_export($field);
+                    echo "])) {\n";
+                    if ($ref['deferred']) {
+                        echo "                    \$replicate[\$operation] = [";
+                        var_export($field);
+                        echo "  => \$values[";
+                        var_export($field);
+                        echo "]];\n";
+                    }
+                    else if ($ref['multi']) {
+                        echo "                    \$replicate[\$operation] = [";
+                        var_export($ref['property'].'.$.'.$field);
+                        echo "  => \$values[";
+                        var_export($field);
+                        echo "]];\n";
+                    }
+                    else {
+                        echo "                    \$replicate[\$operation] = [";
+                        var_export($ref['property'].'.'.$field);
+                        echo " => \$values[";
+                        var_export($field);
+                        echo "]];\n";
+                    }
+
+                    echo "            }\n";
+                }
+                echo "    }\n\n\n";
+                if ($ref['deferred']) {
+                    echo "        if (!empty(\$replicate)) {\n            // queue the updates!\n            \$data = array(\n                'update'    => \$replicate,\n                'processed' => false,\n                'created'   => new \\DateTime,\n                'source_id' => ";
+                    var_export($doc['name'].'::');
+                    echo "  . serialize(\$args[2]),\n                'type'      => array(\n                    'source'    => ";
+                    var_export($doc['name']);
+                    echo ",\n                    'target'    => ";
+                    var_export($ref['collection']);
+                    echo ",\n                ),\n            );\n            \$args[1]\n                ->getDatabase()\n                ->deferred_queue\n                ->save(\$data, array('w' => 0));\n\n        }\n";
+                    continue;
+                }
+                echo "\n    if (!empty(\$replicate)) {\n        // do the update\n        \$args[1]->getCollection(";
+                var_export($ref['collection']);
+                echo ")\n            ->update([\n                '" . ($ref['property']) . ".\$id' => \$args[2]], \n                \$replicate, \n                ['w' => 0, 'multi' => true]\n            );\n    }\n";
+            }
+
+            if ($return) {
+                return ob_get_clean();
+            }
+
+        }
+    }
+
+    /** 
      *  Template class generated from Documents.tpl.php
      */
     class class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b extends base_template_46ff768978a6897199daa478860b8cd25af655b1
@@ -197,7 +272,15 @@ namespace {
                         $propname = '_id';
                     }
                     $var = "current";
-                    echo "\n            if (array_key_exists('" . ($propname) . "', \$current)\n                || array_key_exists('" . ($propname) . "', \$old)) {\n\n                if (!array_key_exists('" . ($propname) . "', \$current)) {\n                    \$change['\$unset']['" . ($propname) . "'] = 1;\n                } else if (!array_key_exists('" . ($propname) . "', \$old)) {\n                    \$change['\$set']['" . ($propname) . "'] = \$current['" . ($propname) . "'];\n                } else if (\$current['" . ($propname) . "'] !== \$old['" . ($propname) . "']) {\n";
+                    echo "\n            if (array_key_exists(";
+                    var_export($propname);
+                    echo ", \$current)\n                || array_key_exists(";
+                    var_export($propname);
+                    echo ", \$old)) {\n\n                if (!array_key_exists(";
+                    var_export($propname);
+                    echo ", \$current)) {\n                    \$change['\$unset'][";
+                    var_export($propname);
+                    echo "] = 1;\n                } else if (!array_key_exists('" . ($propname) . "', \$old)) {\n                    \$change['\$set']['" . ($propname) . "'] = \$current['" . ($propname) . "'];\n                } else if (\$current['" . ($propname) . "'] !== \$old['" . ($propname) . "']) {\n";
                     if ($prop->has('Inc')) {
                         echo "                        if (empty(\$old['" . ($propname) . "'])) {\n                            \$prev = 0;\n                        } else {\n                            \$prev = \$old['" . ($propname) . "'];\n                        }\n                        \$change['\$inc']['" . ($propname) . "'] = \$current['" . ($propname) . "'] - \$prev;\n";
                     }
@@ -208,10 +291,16 @@ namespace {
                         echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old['" . ($propname) . "'], \$current['" . ($propname) . "']);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old['" . ($propname) . "'], \$toRemove)) {\n                            \$change['\$set']['" . ($propname) . "'] = array_values(\$current['" . ($propname) . "']);\n                        } else {\n                            foreach (\$current['" . ($propname) . "'] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old['" . ($propname) . "'])) {\n                                    \$change['\$push']['" . ($propname) . "'] = \$value;\n                                    continue;\n                                }\n                                if (\$value['__embed_class'] != \$old['" . ($propname) . "'][\$index]['__embed_class']) {\n                                    \$change['\$set']['" . ($propname) . ".' . \$index] = \$value;\n                                } else {\n                                    \$update = 'update_' . sha1(\$value['__embed_class']);\n                                    \$diff = \$this->\$update(\$value, \$old['" . ($propname) . "'][\$index], true);\n                                    foreach (\$diff as \$op => \$value) {\n                                        foreach (\$value as \$p => \$val) {\n                                            \$change[\$op]['" . ($propname) . ".' . \$index . '.' . \$p] = \$val;\n                                        }\n                                    }\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                \$change['\$pull']['" . ($propname) . "'] = \$value;\n                            }\n                        }\n\n\n\n";
                     }
                     else if ($prop->has('ReferenceMany') || $prop->has('Array')) {
-                        echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old['" . ($propname) . "'], \$current['" . ($propname) . "']);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old['" . ($propname) . "'], \$toRemove)) {\n                            \$change['\$set']['" . ($propname) . "'] = array_values(\$current['" . ($propname) . "']);\n                        } else {\n                            foreach (\$current['" . ($propname) . "'] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old['" . ($propname) . "'])) {\n                                    \$change['\$push']['" . ($propname) . "'] = \$value;\n                                    continue;\n                                }\n                                if (\$old['" . ($propname) . "'][\$index] != \$value) {\n                                    \$change['\$set']['" . ($propname) . ".' . \$index] = \$value;\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                \$change['\$pull']['" . ($propname) . "'] = \$value;\n                            }\n                        }\n\n";
+                        echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old['" . ($propname) . "'], \$current['" . ($propname) . "']);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old['" . ($propname) . "'], \$toRemove)) {\n                            \$change['\$set']['" . ($propname) . "'] = array_values(\$current['" . ($propname) . "']);\n                        } else {\n                            foreach (\$current['" . ($propname) . "'] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old['" . ($propname) . "'])) {\n                                    \$change['\$push']['" . ($propname) . "'] = \$value;\n                                    continue;\n                                }\n                                if (\$old['" . ($propname) . "'][\$index] != \$value) {\n                                    \$change['\$set']['" . ($propname) . ".' . \$index] = \$value;\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                \$change['\$pull'][";
+                        var_export($propname);
+                        echo "] = \$value;\n                            }\n                        }\n\n";
                     }
                     else {
-                        echo "                        \$change['\$set']['" . ($propname) . "'] = \$current['" . ($propname) . "'];\n";
+                        echo "                        \$change['\$set'][";
+                        var_export($propname);
+                        echo "] = \$current[";
+                        var_export($propname);
+                        echo "];\n";
                     }
 
 
@@ -263,7 +352,7 @@ namespace {
                     echo "            \$doc = \$this->get_array_" . (sha1($doc['parent'])) . "(\$object);\n";
                 }
                 foreach($doc['annotation']->getProperties() as $prop) {
-                    echo "            /* " . ($prop['property']) . " " . ('{{{') . " */\n";
+                    echo "            /* " . ($prop['property']) . " */\n";
                     $propname = $prop['property'];
                     if ($prop->has('Id')) {
                         $propname = '_id';
@@ -272,9 +361,10 @@ namespace {
                         echo "                if (\$object->" . ($prop['property']) . " !== NULL) {\n                    \$doc['" . ($propname) . "'] = \$object->" . ($prop['property']) . ";\n                }\n";
                     }
                     else {
-                        echo "                \$property = new \\ReflectionProperty(\$object, \"" . ($prop['property']) . "\");\n                \$property->setAccessible(true);\n                \$doc['" . ($propname) . "'] = \$property->getValue(\$object);\n";
+                        echo "                \$property = new \\ReflectionProperty(\$object, ";
+                        var_export($prop['property']);
+                        echo ");\n                \$property->setAccessible(true);\n                \$doc['" . ($propname) . "'] = \$property->getValue(\$object);\n";
                     }
-                    echo "            /* }}} */\n";
                 }
                 echo "\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
@@ -285,10 +375,7 @@ namespace {
                     foreach($defaults as $name => $callback) {
                         if ($prop->has($name)) {
                             echo "                    // default: " . ($name) . "\n                    if (empty(\$doc['" . ($propname) . "'])) {\n                        if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n                            require_once __DIR__ . '" . ($files[$name]) . "';\n                            \$this->loaded['" . ($files[$name]) . "'] = true;\n                        }\n                        \$doc['" . ($propname) . "'] = " . ($callback) . "(\$doc, ";
-                            $__temporary = var_export($prop->getOne($name));
-                            if (!empty($__temporary)) {
-                                echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                            }
+                            var_export($prop->getOne($name));
                             echo ", \$this->connection, \$this); \n                    }\n";
                         }
                     }
@@ -343,77 +430,79 @@ namespace {
                         ActiveMongo2\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'], $this->context);
                     }
                     echo "\n";
-                    if ($ev == "postUpdate" && !empty($references[$doc['name']])) {
-                        echo "                // update all the references!\n";
-                        foreach($references[$doc['name']] as $ref) {
-                            echo "                    // update ";
-                            $__temporary = $doc['name'];
-                            if (!empty($__temporary)) {
-                                echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                            }
-                            echo " references in  ";
-                            $__temporary = $ref['collection'];
-                            if (!empty($__temporary)) {
-                                echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                            }
-                            echo " \n                    \$replicate = array();\n                    foreach (\$args[1] as \$operation => \$values) {\n";
-                            foreach($ref['update'] as $field) {
-                                echo "                            if (!empty(\$values[\"";
-                                $__temporary = $field;
-                                if (!empty($__temporary)) {
-                                    echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                    if ($ev =="postCreate" || $ev == "postUpdate") {
+                        echo "                \$col = \$args[1]->getDatabase()->references_queue;\n";
+                        foreach($references as $col => $refs) {
+                            foreach($refs as $ref) {
+                                if ($ref['class'] == $doc['class'] && $ref['deferred']) {
+                                    if ($ev == "postCreate") {
+                                        echo "                            if (!empty(\$args[0][";
+                                        var_export($ref['property']);
+                                        echo "])) {\n";
+                                    }
+                                    else {
+                                        echo "                            if (!empty(\$args[0]['\$set'][";
+                                        var_export($ref['property']);
+                                        echo "])) {\n";
+                                    }
+                                    echo "                                /* Keep in track of the reference */\n";
+                                    if ($ref['multi']) {
+                                        echo "                                    \$data = [];\n";
+                                        if ($ev == "postCreate") {
+                                            echo "                                    foreach (\$args[0][";
+                                            var_export($ref['property']);
+                                            echo "] as \$id => \$row) {\n";
+                                        }
+                                        else {
+                                            echo "                                    foreach (\$args[0]['\$set'][";
+                                            var_export($ref['property']);
+                                            echo "] as \$id => \$row) {\n";
+                                        }
+                                        echo "                                        \$data[] = [\n";
+                                        if ($ev == "postCreate") {
+                                            echo "                                            'source_id'     => ";
+                                            var_export($ref['target'] . '::');
+                                            echo " . serialize(\$row['\$id']),\n                                            'id'            => \$args[0]['_id'],\n";
+                                        }
+                                        else {
+                                            echo "                                            'source_id'     => ";
+                                            var_export($ref['target'] . '::');
+                                            echo " . serialize(\$row['\$id']),\n                                            'id'            => \$args[2],\n";
+                                        }
+                                        echo "                                            'property'      => ";
+                                        var_export($ref['property'] . '.');
+                                        echo " . \$id,\n                                        ];\n                                    }\n";
+                                    }
+                                    else {
+                                        echo "                                    \$data = [[\n";
+                                        if ($ev == "postCreate") {
+                                            echo "                                        'source_id'     => ";
+                                            var_export($ref['target'] . '::');
+                                            echo " . serialize(\$args[0][";
+                                            var_export($ref['property']);
+                                            echo "]['\$id']),\n                                        'id'            => \$args[0]['_id'],\n";
+                                        }
+                                        else {
+                                            echo "                                        'source_id'     => ";
+                                            var_export($ref['target'] . '::');
+                                            echo " . serialize(\$args[0]['\$set'][";
+                                            var_export($ref['property']);
+                                            echo "]['\$id']),\n                                        'id'            => \$args[2],\n";
+                                        }
+                                        echo "                                        'property'      => ";
+                                        var_export($ref['property']);
+                                        echo ",\n                                ]];\n";
+                                    }
+                                    echo "                                foreach (\$data as \$row) {\n                                    \$row['collection'] = ";
+                                    var_export($ref['collection']);
+                                    echo ";\n                                    \$row['_id'] = array(\n                                        'source' => \$row['source_id'], \n                                        'target_id' => \$row['id'], \n                                        'target_col' => \$row['collection'], \n                                        'target_prop' => \$row['property']\n                                    );\n                                    \$col->save(\$row, array('w' => 1));\n                                }\n                            }\n";
                                 }
-                                echo "\"])) {\n";
-                                if ($ref['multi']) {
-                                    echo "                                    \$replicate[\$operation] = [\"";
-                                    $__temporary = $ref['property'];
-                                    if (!empty($__temporary)) {
-                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                                    }
-                                    echo ".\$.";
-                                    $__temporary = $field;
-                                    if (!empty($__temporary)) {
-                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                                    }
-                                    echo "\" => \$values[\"";
-                                    $__temporary = $field;
-                                    if (!empty($__temporary)) {
-                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                                    }
-                                    echo "\"]];\n";
-                                }
-                                else {
-                                    echo "                                    \$replicate[\$operation] = [\"";
-                                    $__temporary = $ref['property'];
-                                    if (!empty($__temporary)) {
-                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                                    }
-                                    echo ".";
-                                    $__temporary = $field;
-                                    if (!empty($__temporary)) {
-                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                                    }
-                                    echo "\" => \$values[\"";
-                                    $__temporary = $field;
-                                    if (!empty($__temporary)) {
-                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                                    }
-                                    echo "\"]];\n";
-                                }
-                                echo "                            }\n";
                             }
-                            echo "                    }\n\n                    if (!empty(\$replicate)) {\n                        \$args[0]->getCollection(\"";
-                            $__temporary = $ref['collection'];
-                            if (!empty($__temporary)) {
-                                echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                            }
-                            echo "\")\n                            ->update(['";
-                            $__temporary = $ref['property'];
-                            if (!empty($__temporary)) {
-                                echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                            }
-                            echo ".\$id' => \$args[2]], \$replicate, ['w' => 0, 'multi' => true]);\n                    }\n";
                         }
+                    }
+                    echo "\n";
+                    if ($ev == "postUpdate" && !empty($references[$doc['class']])) {
+                        ActiveMongo2\Templates::exec('reference/update.tpl.php', compact('doc', 'references'), $this->context);
                     }
                     echo "\n";
                     foreach($doc['annotation']->getAll() as $zmethod) {
@@ -456,7 +545,8 @@ namespace ActiveMongo2 {
             return array (
                 0 => 'trigger',
                 1 => 'validate',
-                2 => 'documents',
+                2 => 'reference/update',
+                3 => 'documents',
             );
         }
 
@@ -473,6 +563,8 @@ namespace ActiveMongo2 {
                 'trigger' => 'class_11ca6999533bd9c460f246ff122fc6c9341f7a1f',
                 'validate.tpl.php' => 'class_9e8794c44ad8c1631f7e215c9edaf7dbac875fb4',
                 'validate' => 'class_9e8794c44ad8c1631f7e215c9edaf7dbac875fb4',
+                'reference/update.tpl.php' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
+                'reference/update' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
                 'documents.tpl.php' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
                 'documents' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
             );

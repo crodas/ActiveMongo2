@@ -238,11 +238,11 @@ class Mapper
             @end
             @set($var, "current")
 
-            if (array_key_exists('{{$propname}}', $current)
-                || array_key_exists('{{$propname}}', $old)) {
+            if (array_key_exists({{@$propname}}, $current)
+                || array_key_exists({{@$propname}}, $old)) {
 
-                if (!array_key_exists('{{$propname}}', $current)) {
-                    $change['$unset']['{{$propname}}'] = 1;
+                if (!array_key_exists({{@$propname}}, $current)) {
+                    $change['$unset'][{{@$propname}}] = 1;
                 } else if (!array_key_exists('{{$propname}}', $old)) {
                     $change['$set']['{{$propname}}'] = $current['{{$propname}}'];
                 } else if ($current['{{$propname}}'] !== $old['{{$propname}}']) {
@@ -315,12 +315,12 @@ class Mapper
                             }
 
                             foreach ($toRemove as $value) {
-                                $change['$pull']['{{$propname}}'] = $value;
+                                $change['$pull'][{{@$propname}}] = $value;
                             }
                         }
 
                     @else
-                        $change['$set']['{{$propname}}'] = $current['{{$propname}}'];
+                        $change['$set'][{{@$propname}}] = $current[{{@$propname}}];
                     @end
                 }
             }
@@ -391,7 +391,7 @@ class Mapper
             $doc = $this->get_array_{{sha1($doc['parent'])}}($object);
         @end
         @foreach ($doc['annotation']->getProperties() as $prop)
-            /* {{$prop['property']}} {{ '{{{' }} */
+            /* {{$prop['property']}} */
             @set($propname, $prop['property'])
             @if ($prop->has('Id'))
                 @set($propname, '_id')
@@ -401,11 +401,10 @@ class Mapper
                     $doc['{{$propname}}'] = $object->{{$prop['property']}};
                 }
             @else
-                $property = new \ReflectionProperty($object, "{{ $prop['property'] }}");
+                $property = new \ReflectionProperty($object, {{ @$prop['property'] }});
                 $property->setAccessible(true);
                 $doc['{{$propname}}'] = $property->getValue($object);
             @end
-            /* }}} */
         @end
 
         @foreach ($doc['annotation']->getProperties() as $prop)
@@ -421,7 +420,7 @@ class Mapper
                             require_once __DIR__ . '{{$files[$name]}}';
                             $this->loaded['{{$files[$name]}}'] = true;
                         }
-                        $doc['{{$propname}}'] = {{$callback}}($doc, {{{ var_export($prop->getOne($name)) }}}, $this->connection, $this); 
+                        $doc['{{$propname}}'] = {{$callback}}($doc, {{@$prop->getOne($name)}}, $this->connection, $this); 
                     }
                 @end
             @end
@@ -496,28 +495,65 @@ class Mapper
                 @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'])
             @end
 
-            @if ($ev == "postUpdate" && !empty($references[$doc['name']]))
-                // update all the references!
-                @foreach ($references[$doc['name']] as $ref)
-                    // update {{{$doc['name']}}} references in  {{{$ref['collection']}}} 
-                    $replicate = array();
-                    foreach ($args[1] as $operation => $values) {
-                        @foreach ($ref['update'] as $field)
-                            if (!empty($values["{{{$field}}}"])) {
+            @if ($ev =="postCreate" || $ev == "postUpdate")
+                $col = $args[1]->getDatabase()->references_queue;
+                @foreach ($references as $col => $refs)
+                    @foreach ($refs as $ref)
+                        @if ($ref['class'] == $doc['class'] && $ref['deferred'])
+                            @if ($ev == "postCreate")
+                            if (!empty($args[0][{{@$ref['property']}}])) {
+                            @else
+                            if (!empty($args[0]['$set'][{{@$ref['property']}}])) {
+                            @end
+                                /* Keep in track of the reference */
                                 @if ($ref['multi'])
-                                    $replicate[$operation] = ["{{{$ref['property']}}}.$.{{{$field}}}" => $values["{{{$field}}}"]];
+                                    $data = [];
+                                    @if ($ev == "postCreate")
+                                    foreach ($args[0][{{@$ref['property']}}] as $id => $row) {
+                                    @else
+                                    foreach ($args[0]['$set'][{{@$ref['property']}}] as $id => $row) {
+                                    @end
+                                        $data[] = [
+                                            @if ($ev == "postCreate")
+                                            'source_id'     => {{@$ref['target'] . '::'}} . serialize($row['$id']),
+                                            'id'            => $args[0]['_id'],
+                                            @else
+                                            'source_id'     => {{@$ref['target'] . '::'}} . serialize($row['$id']),
+                                            'id'            => $args[2],
+                                            @end
+                                            'property'      => {{@$ref['property'] . '.'}} . $id,
+                                        ];
+                                    }
                                 @else
-                                    $replicate[$operation] = ["{{{$ref['property']}}}.{{{$field}}}" => $values["{{{$field}}}"]];
+                                    $data = [[
+                                        @if ($ev == "postCreate")
+                                        'source_id'     => {{@$ref['target'] . '::'}} . serialize($args[0][{{@$ref['property']}}]['$id']),
+                                        'id'            => $args[0]['_id'],
+                                        @else
+                                        'source_id'     => {{@$ref['target'] . '::'}} . serialize($args[0]['$set'][{{@$ref['property']}}]['$id']),
+                                        'id'            => $args[2],
+                                        @end
+                                        'property'      => {{@$ref['property']}},
+                                ]];
                                 @end
+                                foreach ($data as $row) {
+                                    $row['collection'] = {{@$ref['collection']}};
+                                    $row['_id'] = array(
+                                        'source' => $row['source_id'], 
+                                        'target_id' => $row['id'], 
+                                        'target_col' => $row['collection'], 
+                                        'target_prop' => $row['property']
+                                    );
+                                    $col->save($row, array('w' => 1));
+                                }
                             }
                         @end
-                    }
-
-                    if (!empty($replicate)) {
-                        $args[0]->getCollection("{{{$ref['collection']}}}")
-                            ->update(['{{{$ref['property']}}}.$id' => $args[2]], $replicate, ['w' => 0, 'multi' => true]);
-                    }
+                    @end
                 @end
+            @end
+
+            @if ($ev == "postUpdate" && !empty($references[$doc['class']]))
+                @include('reference/update.tpl.php', compact('doc', 'references'))
             @end
 
             @foreach($doc['annotation']->getAll() as $zmethod)

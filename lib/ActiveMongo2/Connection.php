@@ -211,6 +211,45 @@ class Connection
         return $diff;
     }
 
+    public function worker($daemon = true)
+    {
+        $queue = $this->db->deferred_queue;
+        $refs  = $this->db->references_queue;
+
+        $queue->ensureIndex(['processed' => 1]);
+        $refs->ensureIndex(['source_id' => 1]);
+
+        $done = 0;
+        do {
+            $work = $queue->findAndModify(['processed' => false], ['$set' => ['processed' => true, 'started' => new \MongoDate]]);
+            if (empty($work)) {
+                if ($daemon) {
+                    usleep(200000);
+                    continue;
+                }
+                break;
+            }
+            $all  = $refs->find(['source_id' => $work['source_id']]);
+            $update = $work['update'];
+            foreach ($update as $op => $fields) {
+                foreach ($fields as $field => $value) {
+                    unset($update[$op][$field]);
+                    foreach ($all as $row) {
+                        $update[$op][$row['property'] . '.' . $field] = $value;
+                    }
+                }
+            }
+            $col = $this->db->{$row['collection']};
+            $col->update(
+                ['_id' => $row['id']],
+                $update
+            );
+            $done++;
+            $queue->remove(['_id' => $work['_id']]);
+        } while (true);
+        return $done;
+    }
+
     public function is($collection, $object)
     {
         $class = $this->mapper->mapCollection($collection)['class'];
@@ -253,9 +292,10 @@ class Connection
                 );
             }
 
-            $this->mapper->trigger('postUpdate', $obj, array($this, $update, $oldDoc['_id']));
-
             $this->setObjectDocument($obj, $document);
+
+            $this->mapper->trigger('postUpdate', $obj, array($update, $this,$oldDoc['_id']));
+            $this->mapper->trigger('postSave', $obj, array($update, $this));
 
             return $this;
         }
@@ -268,7 +308,8 @@ class Connection
         $this->setObjectDocument($obj, $document);
 
         $ret = $this->classes[$class]->save($document, array('w' => 1));
-        $this->mapper->trigger('postCreate', $obj, array($document));
+        $this->mapper->trigger('postCreate', $obj, array($document, $this));
+        $this->mapper->trigger('postSave', $obj, array($document, $this));
 
         return $this;
     }
