@@ -134,6 +134,105 @@ namespace {
     }
 
     /** 
+     *  Template class generated from Reference/Update.tpl.php
+     */
+    class class_f8c39509b1fb331e8b8ef22a135640af98725ce5 extends base_template_46ff768978a6897199daa478860b8cd25af655b1
+    {
+
+        public function render(Array $vars = array(), $return = false)
+        {
+            $this->context = $vars;
+
+            extract($vars);
+            if ($return) {
+                ob_start();
+            }
+            echo "                // update all the references!\n";
+            foreach($references[$doc['class']] as $ref) {
+                echo "                    // update ";
+                $__temporary = $doc['name'];
+                if (!empty($__temporary)) {
+                    echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                }
+                echo " references in  ";
+                $__temporary = $ref['collection'];
+                if (!empty($__temporary)) {
+                    echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                }
+                echo " \n                    \$replicate = array();\n                    \$target_id = array();\n                    foreach (\$args[0] as \$operation => \$values) {\n";
+                foreach($ref['update'] as $field) {
+                    echo "                            if (!empty(\$values[";
+                    var_export($field);
+                    echo "])) {\n";
+                    if ($ref['multi']) {
+                        echo "                                    \$replicate[\$operation] = [\"";
+                        $__temporary = $ref['property'];
+                        if (!empty($__temporary)) {
+                            echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                        }
+                        echo ".\$.";
+                        $__temporary = $field;
+                        if (!empty($__temporary)) {
+                            echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                        }
+                        echo "\" => \$values[\"";
+                        $__temporary = $field;
+                        if (!empty($__temporary)) {
+                            echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                        }
+                        echo "\"]];\n";
+                    }
+                    else {
+                        echo "                                    \$replicate[\$operation] = [\"";
+                        $__temporary = $ref['property'];
+                        if (!empty($__temporary)) {
+                            echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                        }
+                        echo ".";
+                        $__temporary = $field;
+                        if (!empty($__temporary)) {
+                            echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                        }
+                        echo "\" => \$values[\"";
+                        $__temporary = $field;
+                        if (!empty($__temporary)) {
+                            echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                        }
+                        echo "\"]];\n";
+                    }
+                    echo "                            }\n";
+                }
+                echo "                    }\n\n                    if (!empty(\$replicate)) {\n";
+                if ($ref['deferred']) {
+                    echo "                            // queue the updates!\n                            \$data = array(\n                                'update'    => \$replicate,\n                                'processed' => false,\n                                'created'   => new \\DateTime,\n                                'source_id' => ";
+                    var_export($doc['name'].'::');
+                    echo "  . \$args[2],\n                                'type'      => array(\n                                    'source'    => ";
+                    var_export($doc['name']);
+                    echo ",\n                                    'target'    => ";
+                    var_export($ref['collection']);
+                    echo ",\n                                ),\n                            );\n                            \$args[1]\n                                ->getDatabase()\n                                ->deferred_queue\n                                ->save(\$data, array('w' => 0));\n";
+                }
+                else {
+                    echo "                            // do the update\n                            \$args[1]->getCollection(";
+                    var_export($ref['collection']);
+                    echo ")\n                                ->update([\n                                    '";
+                    $__temporary = $ref['property'];
+                    if (!empty($__temporary)) {
+                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
+                    }
+                    echo ".\$id' => \$args[2]], \n                                    \$replicate, \n                                    ['w' => 0, 'multi' => true]\n                                );\n";
+                }
+                echo "                    }\n";
+            }
+
+            if ($return) {
+                return ob_get_clean();
+            }
+
+        }
+    }
+
+    /** 
      *  Template class generated from Documents.tpl.php
      */
     class class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b extends base_template_46ff768978a6897199daa478860b8cd25af655b1
@@ -358,110 +457,33 @@ namespace {
                                         var_export($ref['property']);
                                         echo "])) {\n";
                                     }
-                                    echo "                                /* Keep in track of the reference */\n                                \$col->save(array(\n                                    'collection'    => ";
-                                    var_export($doc['name']);
-                                    echo ",\n";
+                                    echo "                                /* Keep in track of the reference */\n                                \$col->save(array(\n";
                                     if ($ev == "postCreate") {
-                                        echo "                                    'global_id'     => ";
+                                        echo "                                    'source_id'     => ";
                                         var_export($ref['target'] . '::');
-                                        echo " . serialize(\$args[0]['_id']),\n                                    'id'            => \$args[0][";
+                                        echo " . serialize(\$args[0][";
                                         var_export($ref['property']);
-                                        echo "]['\$id'],\n";
+                                        echo "]['\$id']),\n                                    'id'            => \$args[0]['_id'],\n";
                                     }
                                     else {
-                                        echo "                                    'global_id'     => \$args[2],\n                                    'id'            => \$args[0]['\$set'][";
+                                        echo "                                    'source_id'     => ";
+                                        var_export($ref['target'] . '::');
+                                        echo " . serialize(\$args[0]['\$set'][";
                                         var_export($ref['property']);
-                                        echo "]['\$id'],\n";
+                                        echo "]['\$id']),\n                                    'id'            => \$args[2],\n";
                                     }
-                                    echo "                                    'multi'         => ";
+                                    echo "                                    'collection'    => ";
+                                    var_export($doc['name']);
+                                    echo ",\n                                    'multi'         => ";
                                     var_export($ref['multi']);
-                                    echo ",\n                                ));\n                                /**/\n                            }\n";
+                                    echo ",\n                                ), array('w' => 0));\n                                /**/\n                            }\n";
                                 }
                             }
                         }
                     }
                     echo "\n";
                     if ($ev == "postUpdate" && !empty($references[$doc['class']])) {
-                        echo "                // update all the references!\n";
-                        foreach($references[$doc['class']] as $ref) {
-                            echo "                    // update ";
-                            $__temporary = $doc['name'];
-                            if (!empty($__temporary)) {
-                                echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                            }
-                            echo " references in  ";
-                            $__temporary = $ref['collection'];
-                            if (!empty($__temporary)) {
-                                echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                            }
-                            echo " \n                    \$replicate = array();\n                    foreach (\$args[0] as \$operation => \$values) {\n";
-                            foreach($ref['update'] as $field) {
-                                echo "                            if (!empty(\$values[\"";
-                                $__temporary = $field;
-                                if (!empty($__temporary)) {
-                                    echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                                }
-                                echo "\"])) {\n";
-                                if ($ref['multi']) {
-                                    echo "                                    \$replicate[\$operation] = [\"";
-                                    $__temporary = $ref['property'];
-                                    if (!empty($__temporary)) {
-                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                                    }
-                                    echo ".\$.";
-                                    $__temporary = $field;
-                                    if (!empty($__temporary)) {
-                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                                    }
-                                    echo "\" => \$values[\"";
-                                    $__temporary = $field;
-                                    if (!empty($__temporary)) {
-                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                                    }
-                                    echo "\"]];\n";
-                                }
-                                else {
-                                    echo "                                    \$replicate[\$operation] = [\"";
-                                    $__temporary = $ref['property'];
-                                    if (!empty($__temporary)) {
-                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                                    }
-                                    echo ".";
-                                    $__temporary = $field;
-                                    if (!empty($__temporary)) {
-                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                                    }
-                                    echo "\" => \$values[\"";
-                                    $__temporary = $field;
-                                    if (!empty($__temporary)) {
-                                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                                    }
-                                    echo "\"]];\n";
-                                }
-                                echo "                            }\n";
-                            }
-                            echo "                    }\n\n                    if (!empty(\$replicate)) {\n";
-                            if ($ref['deferred']) {
-                                echo "                            // queue the updates!\n                            \$data = array(\n                                'update'    => \$replicate,\n                                'processed' => false,\n                                'created'   => new \\DateTime,\n                                'type'      => array(\n                                    'source'    => ";
-                                var_export($doc['name']);
-                                echo ",\n                                    'id'        => \$args[2],\n                                    'target'    => ";
-                                var_export($ref['collection']);
-                                echo ",\n                                    'property'  => ";
-                                var_export($ref['property']);
-                                echo ",\n                                ),\n                            );\n                            \$args[1]\n                                ->getDatabase()\n                                ->deferred_queue\n                                ->save(\$data);\n";
-                            }
-                            else {
-                                echo "                            // do the update\n                            \$args[1]->getCollection(";
-                                var_export($ref['collection']);
-                                echo ")\n                                ->update([\n                                    '";
-                                $__temporary = $ref['property'];
-                                if (!empty($__temporary)) {
-                                    echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                                }
-                                echo ".\$id' => \$args[2]], \n                                    \$replicate, \n                                    ['w' => 0, 'multi' => true]\n                                );\n";
-                            }
-                            echo "                    }\n";
-                        }
+                        ActiveMongo2\Templates::exec('reference/update.tpl.php', compact('doc', 'references'), $this->context);
                     }
                     echo "\n";
                     foreach($doc['annotation']->getAll() as $zmethod) {
@@ -504,7 +526,8 @@ namespace ActiveMongo2 {
             return array (
                 0 => 'trigger',
                 1 => 'validate',
-                2 => 'documents',
+                2 => 'update',
+                3 => 'documents',
             );
         }
 
@@ -521,6 +544,9 @@ namespace ActiveMongo2 {
                 'trigger' => 'class_11ca6999533bd9c460f246ff122fc6c9341f7a1f',
                 'validate.tpl.php' => 'class_9e8794c44ad8c1631f7e215c9edaf7dbac875fb4',
                 'validate' => 'class_9e8794c44ad8c1631f7e215c9edaf7dbac875fb4',
+                'update.tpl.php' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
+                'update' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
+                'reference/update.tpl.php' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
                 'documents.tpl.php' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
                 'documents' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
             );

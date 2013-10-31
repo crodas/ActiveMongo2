@@ -508,16 +508,16 @@ class Mapper
                             @end
                                 /* Keep in track of the reference */
                                 $col->save(array(
-                                    'collection'    => {{@$doc['name']}},
                                     @if ($ev == "postCreate")
-                                    'global_id'     => {{@$ref['target'] . '::'}} . serialize($args[0]['_id']),
-                                    'id'            => $args[0][{{@$ref['property']}}]['$id'],
+                                    'source_id'     => {{@$ref['target'] . '::'}} . serialize($args[0][{{@$ref['property']}}]['$id']),
+                                    'id'            => $args[0]['_id'],
                                     @else
-                                    'global_id'     => $args[2],
-                                    'id'            => $args[0]['$set'][{{@$ref['property']}}]['$id'],
+                                    'source_id'     => {{@$ref['target'] . '::'}} . serialize($args[0]['$set'][{{@$ref['property']}}]['$id']),
+                                    'id'            => $args[2],
                                     @end
+                                    'collection'    => {{@$doc['name']}},
                                     'multi'         => {{@$ref['multi']}},
-                                ));
+                                ), array('w' => 0));
                                 /**/
                             }
                         @end
@@ -526,51 +526,7 @@ class Mapper
             @end
 
             @if ($ev == "postUpdate" && !empty($references[$doc['class']]))
-                // update all the references!
-                @foreach ($references[$doc['class']] as $ref)
-                    // update {{{$doc['name']}}} references in  {{{$ref['collection']}}} 
-                    $replicate = array();
-                    foreach ($args[0] as $operation => $values) {
-                        @foreach ($ref['update'] as $field)
-                            if (!empty($values["{{{$field}}}"])) {
-                                @if ($ref['multi'])
-                                    $replicate[$operation] = ["{{{$ref['property']}}}.$.{{{$field}}}" => $values["{{{$field}}}"]];
-                                @else
-                                    $replicate[$operation] = ["{{{$ref['property']}}}.{{{$field}}}" => $values["{{{$field}}}"]];
-                                @end
-                            }
-                        @end
-                    }
-
-                    if (!empty($replicate)) {
-                        @if ($ref['deferred']) 
-                            // queue the updates!
-                            $data = array(
-                                'update'    => $replicate,
-                                'processed' => false,
-                                'created'   => new \DateTime,
-                                'type'      => array(
-                                    'source'    => {{@$doc['name']}},
-                                    'id'        => $args[2],
-                                    'target'    => {{@$ref['collection']}},
-                                    'property'  => {{@$ref['property']}},
-                                ),
-                            );
-                            $args[1]
-                                ->getDatabase()
-                                ->deferred_queue
-                                ->save($data);
-                        @else
-                            // do the update
-                            $args[1]->getCollection({{{@$ref['collection']}}})
-                                ->update([
-                                    '{{{$ref['property']}}}.$id' => $args[2]], 
-                                    $replicate, 
-                                    ['w' => 0, 'multi' => true]
-                                );
-                        @end
-                    }
-                @end
+                @include('reference/update.tpl.php', compact('doc', 'references'))
             @end
 
             @foreach($doc['annotation']->getAll() as $zmethod)

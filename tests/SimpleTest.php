@@ -112,6 +112,7 @@ class SimpleTest extends \phpunit_framework_testcase
 
 
         $post = new PostDocument;
+        $post->author_ref = $user;
         $post->author = $user;
         $post->collaborators[] = $user;
         $post->title  = "foobar post";

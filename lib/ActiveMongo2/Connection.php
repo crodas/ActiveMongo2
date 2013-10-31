@@ -211,6 +211,11 @@ class Connection
         return $diff;
     }
 
+    public function worker()
+    {
+        die('here');
+    }
+
     public function is($collection, $object)
     {
         $class = $this->mapper->mapCollection($collection)['class'];
