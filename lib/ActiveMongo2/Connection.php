@@ -221,7 +221,12 @@ class Connection
 
         $done = 0;
         do {
-            $work = $queue->findAndModify(['processed' => false], ['$set' => ['processed' => true, 'started' => new \MongoDate]]);
+            $work = $queue->findAndModify(
+                ['processed' => false], 
+                ['$set' => ['processed' => true, 'started' => new \MongoDate]], 
+                null, 
+                ['sort' => ['$natural' => -1]]
+            );
             if (empty($work)) {
                 if ($daemon) {
                     usleep(200000);
