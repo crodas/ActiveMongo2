@@ -127,7 +127,7 @@ function _validate_reference_one(&$value, Array $args, $conn, $mapper)
 
     if (!empty($args[1])) {
         foreach ((array)$args[1] as $prop) {
-            if (!empty($array[$prop])) {
+            if (array_key_exists($prop, $array)) {
                 $value[$prop] = $array[$prop];
             }
         }
