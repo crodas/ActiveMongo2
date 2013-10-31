@@ -110,16 +110,16 @@
         },
         {
             "name": "crodas/simple-view-engine",
-            "version": "v0.1.9",
+            "version": "v0.1.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/SimpleView.git",
-                "reference": "0f38e5b7d90b693754a59fd3cc8b2c29c92f679f"
+                "reference": "af553b6de533f3ce15505af094239cda3c668e93"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/SimpleView/zipball/0f38e5b7d90b693754a59fd3cc8b2c29c92f679f",
-                "reference": "0f38e5b7d90b693754a59fd3cc8b2c29c92f679f",
+                "url": "https://api.github.com/repos/crodas/SimpleView/zipball/af553b6de533f3ce15505af094239cda3c668e93",
+                "reference": "af553b6de533f3ce15505af094239cda3c668e93",
                 "shasum": ""
             },
             "require": {
@@ -144,7 +144,7 @@
                 }
             ],
             "description": "Simple View engine designed to generate code. Based on Laravel's 4 Blade.",
-            "time": "2013-10-25 19:42:43"
+            "time": "2013-10-31 05:10:06"
         },
         {
             "name": "crodas/watch-files",

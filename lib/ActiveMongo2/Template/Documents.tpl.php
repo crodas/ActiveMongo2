@@ -499,25 +499,53 @@ class Mapper
                 $col = $args[1]->getDatabase()->references_queue;
                 @foreach ($references as $col => $refs)
                     @foreach ($refs as $ref)
-                        @if ($ref['class'] == $doc['class'] && !$ref['multi'])
+                        @if ($ref['class'] == $doc['class'] && $ref['deferred'])
                             @if ($ev == "postCreate")
                             if (!empty($args[0][{{@$ref['property']}}])) {
                             @else
                             if (!empty($args[0]['$set'][{{@$ref['property']}}])) {
                             @end
                                 /* Keep in track of the reference */
-                                $col->ensureIndex(['source_id' => 1, 'post' => 1, 'id' => 1], ['unique' => true]);
-                                $col->save(array(
+                                @if ($ref['multi'])
+                                    $data = [];
                                     @if ($ev == "postCreate")
-                                    'source_id'     => {{@$ref['target'] . '::'}} . serialize($args[0][{{@$ref['property']}}]['$id']),
-                                    'id'            => $args[0]['_id'],
+                                    foreach ($args[0][{{@$ref['property']}}] as $id => $row) {
                                     @else
-                                    'source_id'     => {{@$ref['target'] . '::'}} . serialize($args[0]['$set'][{{@$ref['property']}}]['$id']),
-                                    'id'            => $args[2],
+                                    foreach ($args[0]['$set'][{{@$ref['property']}}] as $id => $row) {
                                     @end
-                                    'collection'    => {{@$doc['name']}},
-                                    'multi'         => {{@$ref['multi']}},
-                                ), array('w' => 0));
+                                        $data[] = [
+                                            @if ($ev == "postCreate")
+                                            'source_id'     => {{@$ref['target'] . '::'}} . serialize($row['$id']),
+                                            'id'            => $args[0]['_id'],
+                                            @else
+                                            'source_id'     => {{@$ref['target'] . '::'}} . serialize($row['$id']),
+                                            'id'            => $args[2],
+                                            @end
+                                            'property'      => {{@$ref['property'] . '.'}} . $id,
+                                        ];
+                                    }
+                                @else
+                                    $data = [[
+                                        @if ($ev == "postCreate")
+                                        'source_id'     => {{@$ref['target'] . '::'}} . serialize($args[0][{{@$ref['property']}}]['$id']),
+                                        'id'            => $args[0]['_id'],
+                                        @else
+                                        'source_id'     => {{@$ref['target'] . '::'}} . serialize($args[0]['$set'][{{@$ref['property']}}]['$id']),
+                                        'id'            => $args[2],
+                                        @end
+                                        'property'      => {{@$ref['property']}},
+                                ]];
+                                @end
+                                foreach ($data as $row) {
+                                    $row['collection'] = {{@$ref['collection']}};
+                                    $row['_id'] = array(
+                                        'source' => $row['source_id'], 
+                                        'target_id' => $row['id'], 
+                                        'target_col' => $row['collection'], 
+                                        'target_prop' => $row['property']
+                                    );
+                                    $col->save($row, array('w' => 1));
+                                }
                             }
                         @end
                     @end

@@ -4,7 +4,7 @@ use ActiveMongo2\Tests\Document\UserDocument;
 
 class DeferredTest extends \phpunit_framework_testcase
 {
-    public function testReferenceMany()
+    public function testDeferredReferences()
     {
         $conn = getConnection(true);
         $user = new UserDocument;
@@ -14,6 +14,8 @@ class DeferredTest extends \phpunit_framework_testcase
         $post = new PostDocument;
         $post->author = $user;
         $post->author_ref = $user;
+        $post->author_refs[] = $user;
+        $post->author_refs[] = $user;
         $post->author_id = $user->userid;
         $post->title = "some weird title";
 
@@ -27,11 +29,13 @@ class DeferredTest extends \phpunit_framework_testcase
         $this->user = $user->userid;
 
         $this->assertNotEquals($this->getUser()->visits, $this->getPost()->author_ref->visits);
+        $this->assertNotEquals($this->getUser()->visits, $this->getPost()->author_refs[0]->visits);
 
         $done = getConnection()->worker(false);
         $this->assertEquals(1, $done);
 
         $this->assertEquals($this->getUser()->visits, $this->getPost()->author_ref->visits);
+        $this->assertEquals($this->getUser()->visits, $this->getPost()->author_refs[0]->visits);
 
         $conn->delete($this->getUser());
         $conn->delete($post);

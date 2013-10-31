@@ -230,14 +230,21 @@ class Connection
                 break;
             }
             $all  = $refs->find(['source_id' => $work['source_id']]);
-            foreach ($all as $row) {
-                $col = $this->db->{$row['collection']};
-                $col->update(
-                    ['_id' => $row['id']],
-                    $work['update']
-                );
-                $done++;
+            $update = $work['update'];
+            foreach ($update as $op => $fields) {
+                foreach ($fields as $field => $value) {
+                    unset($update[$op][$field]);
+                    foreach ($all as $row) {
+                        $update[$op][$row['property'] . '.' . $field] = $value;
+                    }
+                }
             }
+            $col = $this->db->{$row['collection']};
+            $col->update(
+                ['_id' => $row['id']],
+                $update
+            );
+            $done++;
             $queue->remove(['_id' => $work['_id']]);
         } while (true);
         return $done;
@@ -285,10 +292,10 @@ class Connection
                 );
             }
 
+            $this->setObjectDocument($obj, $document);
+
             $this->mapper->trigger('postUpdate', $obj, array($update, $this,$oldDoc['_id']));
             $this->mapper->trigger('postSave', $obj, array($update, $this));
-
-            $this->setObjectDocument($obj, $document);
 
             return $this;
         }

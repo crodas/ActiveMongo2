@@ -13,6 +13,9 @@ class PostDocument extends BaseDocument
     /** @Reference("user", [username, email, visits]) @Deferred */
     public $author_ref;
 
+    /** @ReferenceMany("user", [username, email, visits]) @Deferred */
+    public $author_refs;
+
     /** @Reference("user", [username, email]) @Required */
     public $author;
 
