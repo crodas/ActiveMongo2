@@ -238,11 +238,11 @@ class Mapper
             @end
             @set($var, "current")
 
-            if (array_key_exists('{{$propname}}', $current)
-                || array_key_exists('{{$propname}}', $old)) {
+            if (array_key_exists({{@$propname}}, $current)
+                || array_key_exists({{@$propname}}, $old)) {
 
-                if (!array_key_exists('{{$propname}}', $current)) {
-                    $change['$unset']['{{$propname}}'] = 1;
+                if (!array_key_exists({{@$propname}}, $current)) {
+                    $change['$unset'][{{@$propname}}] = 1;
                 } else if (!array_key_exists('{{$propname}}', $old)) {
                     $change['$set']['{{$propname}}'] = $current['{{$propname}}'];
                 } else if ($current['{{$propname}}'] !== $old['{{$propname}}']) {
@@ -315,12 +315,12 @@ class Mapper
                             }
 
                             foreach ($toRemove as $value) {
-                                $change['$pull']['{{$propname}}'] = $value;
+                                $change['$pull'][{{@$propname}}] = $value;
                             }
                         }
 
                     @else
-                        $change['$set']['{{$propname}}'] = $current['{{$propname}}'];
+                        $change['$set'][{{@$propname}}] = $current[{{@$propname}}];
                     @end
                 }
             }
@@ -391,7 +391,7 @@ class Mapper
             $doc = $this->get_array_{{sha1($doc['parent'])}}($object);
         @end
         @foreach ($doc['annotation']->getProperties() as $prop)
-            /* {{$prop['property']}} {{ '{{{' }} */
+            /* {{$prop['property']}} */
             @set($propname, $prop['property'])
             @if ($prop->has('Id'))
                 @set($propname, '_id')
@@ -401,11 +401,10 @@ class Mapper
                     $doc['{{$propname}}'] = $object->{{$prop['property']}};
                 }
             @else
-                $property = new \ReflectionProperty($object, "{{ $prop['property'] }}");
+                $property = new \ReflectionProperty($object, {{ @$prop['property'] }});
                 $property->setAccessible(true);
                 $doc['{{$propname}}'] = $property->getValue($object);
             @end
-            /* }}} */
         @end
 
         @foreach ($doc['annotation']->getProperties() as $prop)
@@ -421,7 +420,7 @@ class Mapper
                             require_once __DIR__ . '{{$files[$name]}}';
                             $this->loaded['{{$files[$name]}}'] = true;
                         }
-                        $doc['{{$propname}}'] = {{$callback}}($doc, {{{ var_export($prop->getOne($name)) }}}, $this->connection, $this); 
+                        $doc['{{$propname}}'] = {{$callback}}($doc, {{@$prop->getOne($name)}}, $this->connection, $this); 
                     }
                 @end
             @end
@@ -507,6 +506,7 @@ class Mapper
                             if (!empty($args[0]['$set'][{{@$ref['property']}}])) {
                             @end
                                 /* Keep in track of the reference */
+                                $col->ensureIndex(['source_id' => 1, 'post' => 1, 'id' => 1], ['unique' => true]);
                                 $col->save(array(
                                     @if ($ev == "postCreate")
                                     'source_id'     => {{@$ref['target'] . '::'}} . serialize($args[0][{{@$ref['property']}}]['$id']),
@@ -518,7 +518,6 @@ class Mapper
                                     'collection'    => {{@$doc['name']}},
                                     'multi'         => {{@$ref['multi']}},
                                 ), array('w' => 0));
-                                /**/
                             }
                         @end
                     @end

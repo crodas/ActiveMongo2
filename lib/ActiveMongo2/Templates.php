@@ -147,58 +147,26 @@ namespace {
             if ($return) {
                 ob_start();
             }
-            echo "// update all the references!\n";
+            echo "// <?php\n// update all the references!\n";
             foreach($references[$doc['class']] as $ref) {
-                echo "    // update ";
-                $__temporary = $doc['name'];
-                if (!empty($__temporary)) {
-                    echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                }
-                echo " references in  ";
-                $__temporary = $ref['collection'];
-                if (!empty($__temporary)) {
-                    echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                }
-                echo " \n    \$replicate = array();\n    \$target_id = array();\n    foreach (\$args[0] as \$operation => \$values) {\n";
+                echo "    // update " . ($doc['name']) . " references in  " . ($ref['collection']) . " \n    \$replicate = array();\n    \$target_id = array();\n    foreach (\$args[0] as \$operation => \$values) {\n";
                 foreach($ref['update'] as $field) {
                     echo "            if (!empty(\$values[";
                     var_export($field);
                     echo "])) {\n";
                     if ($ref['multi']) {
-                        echo "                    \$replicate[\$operation] = [\"";
-                        $__temporary = $ref['property'];
-                        if (!empty($__temporary)) {
-                            echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                        }
-                        echo ".\$.";
-                        $__temporary = $field;
-                        if (!empty($__temporary)) {
-                            echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                        }
-                        echo "\" => \$values[\"";
-                        $__temporary = $field;
-                        if (!empty($__temporary)) {
-                            echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                        }
-                        echo "\"]];\n";
+                        echo "                    \$replicate[\$operation] = [";
+                        var_export($ref['property'].'.$.'.$field);
+                        echo "  => \$values[";
+                        var_export($field);
+                        echo "]];\n";
                     }
                     else {
-                        echo "                    \$replicate[\$operation] = [\"";
-                        $__temporary = $ref['property'];
-                        if (!empty($__temporary)) {
-                            echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                        }
-                        echo ".";
-                        $__temporary = $field;
-                        if (!empty($__temporary)) {
-                            echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                        }
-                        echo "\" => \$values[\"";
-                        $__temporary = $field;
-                        if (!empty($__temporary)) {
-                            echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                        }
-                        echo "\"]];\n";
+                        echo "                    \$replicate[\$operation] = [";
+                        var_export($ref['property'].'.'.$field);
+                        echo " => \$values[";
+                        var_export($field);
+                        echo "]];\n";
                     }
                     echo "            }\n";
                 }
@@ -215,12 +183,7 @@ namespace {
                 else {
                     echo "            // do the update\n            \$args[1]->getCollection(";
                     var_export($ref['collection']);
-                    echo ")\n                ->update([\n                    '";
-                    $__temporary = $ref['property'];
-                    if (!empty($__temporary)) {
-                        echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                    }
-                    echo ".\$id' => \$args[2]], \n                    \$replicate, \n                    ['w' => 0, 'multi' => true]\n                );\n";
+                    echo ")\n                ->update([\n                    '" . ($ref['property']) . ".\$id' => \$args[2]], \n                    \$replicate, \n                    ['w' => 0, 'multi' => true]\n                );\n";
                 }
                 echo "    }\n";
             }
@@ -296,7 +259,15 @@ namespace {
                         $propname = '_id';
                     }
                     $var = "current";
-                    echo "\n            if (array_key_exists('" . ($propname) . "', \$current)\n                || array_key_exists('" . ($propname) . "', \$old)) {\n\n                if (!array_key_exists('" . ($propname) . "', \$current)) {\n                    \$change['\$unset']['" . ($propname) . "'] = 1;\n                } else if (!array_key_exists('" . ($propname) . "', \$old)) {\n                    \$change['\$set']['" . ($propname) . "'] = \$current['" . ($propname) . "'];\n                } else if (\$current['" . ($propname) . "'] !== \$old['" . ($propname) . "']) {\n";
+                    echo "\n            if (array_key_exists(";
+                    var_export($propname);
+                    echo ", \$current)\n                || array_key_exists(";
+                    var_export($propname);
+                    echo ", \$old)) {\n\n                if (!array_key_exists(";
+                    var_export($propname);
+                    echo ", \$current)) {\n                    \$change['\$unset'][";
+                    var_export($propname);
+                    echo "] = 1;\n                } else if (!array_key_exists('" . ($propname) . "', \$old)) {\n                    \$change['\$set']['" . ($propname) . "'] = \$current['" . ($propname) . "'];\n                } else if (\$current['" . ($propname) . "'] !== \$old['" . ($propname) . "']) {\n";
                     if ($prop->has('Inc')) {
                         echo "                        if (empty(\$old['" . ($propname) . "'])) {\n                            \$prev = 0;\n                        } else {\n                            \$prev = \$old['" . ($propname) . "'];\n                        }\n                        \$change['\$inc']['" . ($propname) . "'] = \$current['" . ($propname) . "'] - \$prev;\n";
                     }
@@ -307,10 +278,16 @@ namespace {
                         echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old['" . ($propname) . "'], \$current['" . ($propname) . "']);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old['" . ($propname) . "'], \$toRemove)) {\n                            \$change['\$set']['" . ($propname) . "'] = array_values(\$current['" . ($propname) . "']);\n                        } else {\n                            foreach (\$current['" . ($propname) . "'] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old['" . ($propname) . "'])) {\n                                    \$change['\$push']['" . ($propname) . "'] = \$value;\n                                    continue;\n                                }\n                                if (\$value['__embed_class'] != \$old['" . ($propname) . "'][\$index]['__embed_class']) {\n                                    \$change['\$set']['" . ($propname) . ".' . \$index] = \$value;\n                                } else {\n                                    \$update = 'update_' . sha1(\$value['__embed_class']);\n                                    \$diff = \$this->\$update(\$value, \$old['" . ($propname) . "'][\$index], true);\n                                    foreach (\$diff as \$op => \$value) {\n                                        foreach (\$value as \$p => \$val) {\n                                            \$change[\$op]['" . ($propname) . ".' . \$index . '.' . \$p] = \$val;\n                                        }\n                                    }\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                \$change['\$pull']['" . ($propname) . "'] = \$value;\n                            }\n                        }\n\n\n\n";
                     }
                     else if ($prop->has('ReferenceMany') || $prop->has('Array')) {
-                        echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old['" . ($propname) . "'], \$current['" . ($propname) . "']);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old['" . ($propname) . "'], \$toRemove)) {\n                            \$change['\$set']['" . ($propname) . "'] = array_values(\$current['" . ($propname) . "']);\n                        } else {\n                            foreach (\$current['" . ($propname) . "'] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old['" . ($propname) . "'])) {\n                                    \$change['\$push']['" . ($propname) . "'] = \$value;\n                                    continue;\n                                }\n                                if (\$old['" . ($propname) . "'][\$index] != \$value) {\n                                    \$change['\$set']['" . ($propname) . ".' . \$index] = \$value;\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                \$change['\$pull']['" . ($propname) . "'] = \$value;\n                            }\n                        }\n\n";
+                        echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old['" . ($propname) . "'], \$current['" . ($propname) . "']);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old['" . ($propname) . "'], \$toRemove)) {\n                            \$change['\$set']['" . ($propname) . "'] = array_values(\$current['" . ($propname) . "']);\n                        } else {\n                            foreach (\$current['" . ($propname) . "'] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old['" . ($propname) . "'])) {\n                                    \$change['\$push']['" . ($propname) . "'] = \$value;\n                                    continue;\n                                }\n                                if (\$old['" . ($propname) . "'][\$index] != \$value) {\n                                    \$change['\$set']['" . ($propname) . ".' . \$index] = \$value;\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                \$change['\$pull'][";
+                        var_export($propname);
+                        echo "] = \$value;\n                            }\n                        }\n\n";
                     }
                     else {
-                        echo "                        \$change['\$set']['" . ($propname) . "'] = \$current['" . ($propname) . "'];\n";
+                        echo "                        \$change['\$set'][";
+                        var_export($propname);
+                        echo "] = \$current[";
+                        var_export($propname);
+                        echo "];\n";
                     }
 
 
@@ -362,7 +339,7 @@ namespace {
                     echo "            \$doc = \$this->get_array_" . (sha1($doc['parent'])) . "(\$object);\n";
                 }
                 foreach($doc['annotation']->getProperties() as $prop) {
-                    echo "            /* " . ($prop['property']) . " " . ('{{{') . " */\n";
+                    echo "            /* " . ($prop['property']) . " */\n";
                     $propname = $prop['property'];
                     if ($prop->has('Id')) {
                         $propname = '_id';
@@ -371,9 +348,10 @@ namespace {
                         echo "                if (\$object->" . ($prop['property']) . " !== NULL) {\n                    \$doc['" . ($propname) . "'] = \$object->" . ($prop['property']) . ";\n                }\n";
                     }
                     else {
-                        echo "                \$property = new \\ReflectionProperty(\$object, \"" . ($prop['property']) . "\");\n                \$property->setAccessible(true);\n                \$doc['" . ($propname) . "'] = \$property->getValue(\$object);\n";
+                        echo "                \$property = new \\ReflectionProperty(\$object, ";
+                        var_export($prop['property']);
+                        echo ");\n                \$property->setAccessible(true);\n                \$doc['" . ($propname) . "'] = \$property->getValue(\$object);\n";
                     }
-                    echo "            /* }}} */\n";
                 }
                 echo "\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
@@ -384,10 +362,7 @@ namespace {
                     foreach($defaults as $name => $callback) {
                         if ($prop->has($name)) {
                             echo "                    // default: " . ($name) . "\n                    if (empty(\$doc['" . ($propname) . "'])) {\n                        if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n                            require_once __DIR__ . '" . ($files[$name]) . "';\n                            \$this->loaded['" . ($files[$name]) . "'] = true;\n                        }\n                        \$doc['" . ($propname) . "'] = " . ($callback) . "(\$doc, ";
-                            $__temporary = var_export($prop->getOne($name));
-                            if (!empty($__temporary)) {
-                                echo htmlentities($__temporary, ENT_QUOTES, 'UTF-8', false);
-                            }
+                            var_export($prop->getOne($name));
                             echo ", \$this->connection, \$this); \n                    }\n";
                         }
                     }
@@ -457,7 +432,7 @@ namespace {
                                         var_export($ref['property']);
                                         echo "])) {\n";
                                     }
-                                    echo "                                /* Keep in track of the reference */\n                                \$col->save(array(\n";
+                                    echo "                                /* Keep in track of the reference */\n                                \$col->ensureIndex(['source_id' => 1, 'post' => 1, 'id' => 1], ['unique' => true]);\n                                \$col->save(array(\n";
                                     if ($ev == "postCreate") {
                                         echo "                                    'source_id'     => ";
                                         var_export($ref['target'] . '::');
@@ -476,7 +451,7 @@ namespace {
                                     var_export($doc['name']);
                                     echo ",\n                                    'multi'         => ";
                                     var_export($ref['multi']);
-                                    echo ",\n                                ), array('w' => 0));\n                                /**/\n                            }\n";
+                                    echo ",\n                                ), array('w' => 0));\n                            }\n";
                                 }
                             }
                         }

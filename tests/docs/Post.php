@@ -10,7 +10,7 @@ class PostDocument extends BaseDocument
     /** @Universal */
     public $global_id;
 
-    /** @Reference("user", [username, email]) @Deferred */
+    /** @Reference("user", [username, email, visits]) @Deferred */
     public $author_ref;
 
     /** @Reference("user", [username, email]) @Required */

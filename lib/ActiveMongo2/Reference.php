@@ -104,9 +104,9 @@ class Reference implements DocumentProxy, \JsonSerializable
 
     public function __get($name)
     {
-        if (!empty($this->map[$name])) {
+        if (array_key_exists($name, $this->map)) {
             $expected = $this->map[$name];
-            if (!empty($this->ref[$expected])) {
+            if (array_key_exists($expected, $this->ref)) {
                 return $this->ref[$expected];
             }
 
