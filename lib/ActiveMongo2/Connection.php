@@ -219,6 +219,7 @@ class Connection
         $queue->ensureIndex(['processed' => 1]);
         $refs->ensureIndex(['source_id' => 1]);
 
+        $done = 0;
         do {
             $work = $queue->findAndModify(['processed' => false], ['$set' => ['processed' => true, 'started' => new \MongoDate]]);
             if (empty($work)) {
@@ -232,11 +233,14 @@ class Connection
             foreach ($all as $row) {
                 $col = $this->db->{$row['collection']};
                 $col->update(
-                    array('_id' => $row['id']),
+                    ['_id' => $row['id']],
                     $work['update']
                 );
+                $done++;
             }
+            $queue->remove(['_id' => $work['_id']]);
         } while (true);
+        return $done;
     }
 
     public function is($collection, $object)
