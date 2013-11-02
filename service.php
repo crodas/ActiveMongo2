@@ -9,8 +9,8 @@ namespace ActiveMongo2\Service;
  *      pass: {default: NULL},
  *      db: {required: true},
  *      opts: { default:{}, type: 'hash'},
- *      path: { require: true},
- *      temp_dir: { default: '/tmp' },
+ *      path: { require: true, type: dir},
+ *      temp_dir: { default: '/tmp', type: dir },
  *      devel: {default: true}
  *  }, { shared: true })
  */
