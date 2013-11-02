@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "6fce15185aeb895b298179badb3754b8",
+    "hash": "d34bcfa180c7d0a319d57c7c99053ced",
     "packages": [
         {
             "name": "crodas/class-info",
@@ -77,16 +77,16 @@
         },
         {
             "name": "crodas/path",
-            "version": "dev-master",
+            "version": "v0.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/Path.git",
-                "reference": "142275ba3647b1a34a16dba1954999821f701804"
+                "reference": "15ef24c4b2b81d8e5148406012af0a633126b3d5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/Path/zipball/142275ba3647b1a34a16dba1954999821f701804",
-                "reference": "142275ba3647b1a34a16dba1954999821f701804",
+                "url": "https://api.github.com/repos/crodas/Path/zipball/15ef24c4b2b81d8e5148406012af0a633126b3d5",
+                "reference": "15ef24c4b2b81d8e5148406012af0a633126b3d5",
                 "shasum": ""
             },
             "type": "library",
@@ -106,20 +106,20 @@
                 }
             ],
             "description": "Library to manipulate paths",
-            "time": "2013-10-23 16:48:19"
+            "time": "2013-10-23 16:48:11"
         },
         {
             "name": "crodas/simple-view-engine",
-            "version": "v0.1.10",
+            "version": "v0.1.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/SimpleView.git",
-                "reference": "af553b6de533f3ce15505af094239cda3c668e93"
+                "reference": "c68dcccc2e39039b202fe1a8c3c996ee2844391e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/SimpleView/zipball/af553b6de533f3ce15505af094239cda3c668e93",
-                "reference": "af553b6de533f3ce15505af094239cda3c668e93",
+                "url": "https://api.github.com/repos/crodas/SimpleView/zipball/c68dcccc2e39039b202fe1a8c3c996ee2844391e",
+                "reference": "c68dcccc2e39039b202fe1a8c3c996ee2844391e",
                 "shasum": ""
             },
             "require": {
@@ -144,7 +144,7 @@
                 }
             ],
             "description": "Simple View engine designed to generate code. Based on Laravel's 4 Blade.",
-            "time": "2013-10-31 05:10:06"
+            "time": "2013-11-01 05:18:28"
         },
         {
             "name": "crodas/watch-files",
