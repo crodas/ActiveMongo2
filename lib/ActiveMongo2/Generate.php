@@ -64,11 +64,25 @@ class Generate
             $dir->getAnnotations($annotations);
         }
 
-        $docs    = [];
-        $parents = [];
+        $docs     = [];
+        $parents  = [];
+        $refCache = [];
         foreach ($annotations->get('Persist') as $object) {
             if (!$object->isClass()) continue;
-            $parents[strtolower($object['class'])] = $object;
+            $class = strtolower($object['class']);
+            $parents[$class]  = $object;
+            $refCache[$class] = [];
+            if ($object->has('RefCache')) {
+                foreach ($object->get('RefCache') as $args) {
+                    $args = $args['args'];
+                    if (empty($args)) {
+                        throw new \Exception("@RefCache expects at least one argument");
+                    }
+                    foreach ($args as $p) {
+                        $refCache[$class][$p] = 1;
+                    }
+                }
+            }
         }
 
         foreach (array('Persist', 'Embeddable') as $type) {
@@ -196,7 +210,7 @@ class Generate
                 'docs', 'namespace', 'class_mapper', 'events',
                 'validators', 'mapper', 'files', 'indexes',
                 'plugins', 'hydratations', 'self', 'references',
-                'defaults'
+                'defaults', 'refCache'
             ), true);
 
         $code = FixCode::fix($code);

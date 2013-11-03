@@ -102,6 +102,16 @@ class Mapper
         return $this->class_mapper[$class];
     }
 
+    public function getReference($object, Array $extra = array())
+    {
+        $class = strtolower(get_class($object));
+        if (empty($this->class_mapper[$class])) {
+            throw new \RuntimeException("Cannot map class {$class} to its document");
+        }
+
+        return $this->{"get_reference_" . sha1($class)}($object, $extra);
+    }
+
     public function getDocument($object)
     {
         $class = strtolower(get_class($object));
@@ -378,6 +388,33 @@ class Mapper
                 
             }
         @end
+    }
+
+    /**
+     *  Get reference of  {{$doc['class']}} object
+     */
+    public function get_reference_{{sha1($doc['class'])}}(\{{$doc['class']}} $object, $include = Array())
+    {
+        $document = $this->get_array_{{sha1($doc['class'])}}($object);
+        $extra    = array();
+        if ($include) {
+            $extra  = array_intersect_key($document, $include);
+        }
+
+        return array_merge(array(
+                '$id'   => $document['_id'],
+                '$ref'  => {{@$doc['name']}}, 
+                '__class' => {{@$doc['class']}},
+            )
+            , $extra
+            @if (!empty($refCache[$doc['class']]))
+            , array_intersect_key(
+                $document, 
+                {{@$refCache[$doc['class']]}}
+            )
+            @end
+        );
+
     }
 
     /**

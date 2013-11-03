@@ -3,7 +3,8 @@
 namespace ActiveMongo2\Tests\Document;
 
 /** 
- * @Persist
+ *  @Persist
+ *  @RefCache('title', 'tags', 'author')
  */
 class PostDocument extends BaseDocument
 {

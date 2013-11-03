@@ -118,20 +118,7 @@ function _validate_reference_one(&$value, Array $args, $conn, $mapper)
         throw new \RuntimeException("Invalid value");
     }
     
-    $array = $mapper->validate($document);
-    $value = array(
-        '$id'       => $array['_id'],
-        '$ref'      => $mapper->mapClass(get_class($document))['name'],
-        '__class'   => get_class($document),
-    );
-
-    if (!empty($args[1])) {
-        foreach ((array)$args[1] as $prop) {
-            if (array_key_exists($prop, $array)) {
-                $value[$prop] = $array[$prop];
-            }
-        }
-    }
+    $value = $mapper->getReference($document, empty($args[1]) ? [] : array_flip($args[1]));
 
     return true;
 }
