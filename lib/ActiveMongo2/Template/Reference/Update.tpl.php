@@ -14,11 +14,11 @@
         @foreach ($ref['update'] as $field)
             if (!empty($values[{{@$field}}])) {
                 @if ($ref['deferred'])
-                    $replicate[$operation] = [{{@$field}}  => $values[{{@$field}}]];
+                    $replicate[$operation][{{@$field}}]  = $values[{{@$field}}];
                 @elif ($ref['multi'])
-                    $replicate[$operation] = [{{@$ref['property'].'.$.'.$field}}  => $values[{{@$field}}]];
+                    $replicate[$operation][{{@$ref['property'].'.$.'.$field}}] = $values[{{@$field}}];
                 @else
-                    $replicate[$operation] = [{{@$ref['property'].'.'.$field}} => $values[{{@$field}}]];
+                    $replicate[$operation][{{@$ref['property'].'.'.$field}}] = $values[{{@$field}}];
                 @end
             }
         @end

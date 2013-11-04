@@ -70,3 +70,20 @@ function _validate_password(&$value, $args)
     $value = password_hash($value, PASSWORD_BCRYPT, ["cost" => 7, "salt" => sha1(implode(",", $args))]);
     return true;
 }
+
+/** 
+ * @Validate(Array) 
+ */
+function _validate_array(&$value)
+{
+    if (!is_array($value)) {
+        return false;
+    }
+    foreach ($value as &$v) {
+        if (is_array($v) && empty($v['__instance'])) {
+            $v['__instance'] = uniqid(true);
+        }
+    }
+    return true;
+}
+

@@ -301,7 +301,13 @@ class Mapper
                             }
 
                             foreach ($toRemove as $value) {
-                                $change['$pull']['{{$propname}}'] = $value;
+                                if (!empty($value['__instance'])) {
+                                    $change['$pull'][{{@$propname}}] = array(
+                                        '__instance' => $value['__instance'],
+                                    );
+                                } else {
+                                    $change['$pull'][{{@$propname}}] = $value;
+                                }
                             }
                         }
 
@@ -309,23 +315,29 @@ class Mapper
 
                     @elif ($prop->has('ReferenceMany') || $prop->has('Array'))
                         // add things to the array
-                        $toRemove = array_diff_key($old['{{$propname}}'], $current['{{$propname}}']);
+                        $toRemove = array_diff_key($old[{{@$propname}}], $current[{{@$propname}}]);
 
                         if (count($toRemove) > 0 && $this->array_unique($old['{{$propname}}'], $toRemove)) {
-                            $change['$set']['{{$propname}}'] = array_values($current['{{$propname}}']);
+                            $change['$set'][{{@$propname}}] = array_values($current[@{{$propname}}]);
                         } else {
-                            foreach ($current['{{$propname}}'] as $index => $value) {
-                                if (!array_key_exists($index, $old['{{$propname}}'])) {
-                                    $change['$push']['{{$propname}}'] = $value;
+                            foreach ($current[{{@$propname}}] as $index => $value) {
+                                if (!array_key_exists($index, $old[{{@$propname}}])) {
+                                    $change['$push'][{{@$propname}}] = $value;
                                     continue;
                                 }
-                                if ($old['{{$propname}}'][$index] != $value) {
-                                    $change['$set']['{{$propname}}.' . $index] = $value;
+                                if ($old[{{@$propname}}][$index] != $value) {
+                                    $change['$set'][{{@$propname . '.'}} . $index] = $value;
                                 }
                             }
 
                             foreach ($toRemove as $value) {
-                                $change['$pull'][{{@$propname}}] = $value;
+                                if (!empty($value['__instance'])) {
+                                    $change['$pull'][{{@$propname}}] = array(
+                                        '__instance' => $value['__instance'],
+                                    );
+                                } else {
+                                    $change['$pull'][{{@$propname}}] = $value;
+                                }
                             }
                         }
 
@@ -410,7 +422,7 @@ class Mapper
             @if (!empty($refCache[$doc['class']]))
             , array_intersect_key(
                 $document, 
-                {{@$refCache[$doc['class']]}}
+                {{@array_combine($refCache[$doc['class']], $refCache[$doc['class']])}}
             )
             @end
         );

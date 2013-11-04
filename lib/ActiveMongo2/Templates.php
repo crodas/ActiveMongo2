@@ -162,25 +162,25 @@ namespace {
                     var_export($field);
                     echo "])) {\n";
                     if ($ref['deferred']) {
-                        echo "                    \$replicate[\$operation] = [";
+                        echo "                    \$replicate[\$operation][";
                         var_export($field);
-                        echo "  => \$values[";
+                        echo "]  = \$values[";
                         var_export($field);
-                        echo "]];\n";
+                        echo "];\n";
                     }
                     else if ($ref['multi']) {
-                        echo "                    \$replicate[\$operation] = [";
+                        echo "                    \$replicate[\$operation][";
                         var_export($ref['property'].'.$.'.$field);
-                        echo "  => \$values[";
+                        echo "] = \$values[";
                         var_export($field);
-                        echo "]];\n";
+                        echo "];\n";
                     }
                     else {
-                        echo "                    \$replicate[\$operation] = [";
+                        echo "                    \$replicate[\$operation][";
                         var_export($ref['property'].'.'.$field);
-                        echo " => \$values[";
+                        echo "] = \$values[";
                         var_export($field);
-                        echo "]];\n";
+                        echo "];\n";
                     }
 
                     echo "            }\n";
@@ -288,12 +288,34 @@ namespace {
                         echo "                        if (\$current['" . ($propname) . "']['__embed_class'] != \$old['" . ($propname) . "']['__embed_class']) {\n                            \$change['\$set']['" . ($propname) . ".' . \$index] = \$current['" . ($propname) . "'];\n                        } else {\n                            \$update = 'update_' . sha1(\$current['" . ($propname) . "']['__embed_class']);\n                            \$diff = \$this->\$update(\$current['" . ($propname) . "'], \$old['" . ($propname) . "'], true);\n                            foreach (\$diff as \$op => \$value) {\n                                foreach (\$value as \$p => \$val) {\n                                    \$change[\$op]['" . ($propname) . ".' . \$p] = \$val;\n                                }\n                            }\n                        }\n";
                     }
                     else if ($prop->has('EmbedMany')) {
-                        echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old['" . ($propname) . "'], \$current['" . ($propname) . "']);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old['" . ($propname) . "'], \$toRemove)) {\n                            \$change['\$set']['" . ($propname) . "'] = array_values(\$current['" . ($propname) . "']);\n                        } else {\n                            foreach (\$current['" . ($propname) . "'] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old['" . ($propname) . "'])) {\n                                    \$change['\$push']['" . ($propname) . "'] = \$value;\n                                    continue;\n                                }\n                                if (\$value['__embed_class'] != \$old['" . ($propname) . "'][\$index]['__embed_class']) {\n                                    \$change['\$set']['" . ($propname) . ".' . \$index] = \$value;\n                                } else {\n                                    \$update = 'update_' . sha1(\$value['__embed_class']);\n                                    \$diff = \$this->\$update(\$value, \$old['" . ($propname) . "'][\$index], true);\n                                    foreach (\$diff as \$op => \$value) {\n                                        foreach (\$value as \$p => \$val) {\n                                            \$change[\$op]['" . ($propname) . ".' . \$index . '.' . \$p] = \$val;\n                                        }\n                                    }\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                \$change['\$pull']['" . ($propname) . "'] = \$value;\n                            }\n                        }\n\n\n\n";
+                        echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old['" . ($propname) . "'], \$current['" . ($propname) . "']);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old['" . ($propname) . "'], \$toRemove)) {\n                            \$change['\$set']['" . ($propname) . "'] = array_values(\$current['" . ($propname) . "']);\n                        } else {\n                            foreach (\$current['" . ($propname) . "'] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old['" . ($propname) . "'])) {\n                                    \$change['\$push']['" . ($propname) . "'] = \$value;\n                                    continue;\n                                }\n                                if (\$value['__embed_class'] != \$old['" . ($propname) . "'][\$index]['__embed_class']) {\n                                    \$change['\$set']['" . ($propname) . ".' . \$index] = \$value;\n                                } else {\n                                    \$update = 'update_' . sha1(\$value['__embed_class']);\n                                    \$diff = \$this->\$update(\$value, \$old['" . ($propname) . "'][\$index], true);\n                                    foreach (\$diff as \$op => \$value) {\n                                        foreach (\$value as \$p => \$val) {\n                                            \$change[\$op]['" . ($propname) . ".' . \$index . '.' . \$p] = \$val;\n                                        }\n                                    }\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                if (!empty(\$value['__instance'])) {\n                                    \$change['\$pull'][";
+                        var_export($propname);
+                        echo "] = array(\n                                        '__instance' => \$value['__instance'],\n                                    );\n                                } else {\n                                    \$change['\$pull'][";
+                        var_export($propname);
+                        echo "] = \$value;\n                                }\n                            }\n                        }\n\n\n\n";
                     }
                     else if ($prop->has('ReferenceMany') || $prop->has('Array')) {
-                        echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old['" . ($propname) . "'], \$current['" . ($propname) . "']);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old['" . ($propname) . "'], \$toRemove)) {\n                            \$change['\$set']['" . ($propname) . "'] = array_values(\$current['" . ($propname) . "']);\n                        } else {\n                            foreach (\$current['" . ($propname) . "'] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old['" . ($propname) . "'])) {\n                                    \$change['\$push']['" . ($propname) . "'] = \$value;\n                                    continue;\n                                }\n                                if (\$old['" . ($propname) . "'][\$index] != \$value) {\n                                    \$change['\$set']['" . ($propname) . ".' . \$index] = \$value;\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                \$change['\$pull'][";
+                        echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old[";
                         var_export($propname);
-                        echo "] = \$value;\n                            }\n                        }\n\n";
+                        echo "], \$current[";
+                        var_export($propname);
+                        echo "]);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old['" . ($propname) . "'], \$toRemove)) {\n                            \$change['\$set'][";
+                        var_export($propname);
+                        echo "] = array_values(\$current[" . "@" . ($propname) . "]);\n                        } else {\n                            foreach (\$current[";
+                        var_export($propname);
+                        echo "] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old[";
+                        var_export($propname);
+                        echo "])) {\n                                    \$change['\$push'][";
+                        var_export($propname);
+                        echo "] = \$value;\n                                    continue;\n                                }\n                                if (\$old[";
+                        var_export($propname);
+                        echo "][\$index] != \$value) {\n                                    \$change['\$set'][";
+                        var_export($propname . '.');
+                        echo " . \$index] = \$value;\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                if (!empty(\$value['__instance'])) {\n                                    \$change['\$pull'][";
+                        var_export($propname);
+                        echo "] = array(\n                                        '__instance' => \$value['__instance'],\n                                    );\n                                } else {\n                                    \$change['\$pull'][";
+                        var_export($propname);
+                        echo "] = \$value;\n                                }\n                            }\n                        }\n\n";
                     }
                     else {
                         echo "                        \$change['\$set'][";
@@ -351,7 +373,7 @@ namespace {
                 echo ",\n            )\n            , \$extra\n";
                 if (!empty($refCache[$doc['class']])) {
                     echo "            , array_intersect_key(\n                \$document, \n                ";
-                    var_export($refCache[$doc['class']]);
+                    var_export(array_combine($refCache[$doc['class']], $refCache[$doc['class']]));
                     echo "\n            )\n";
                 }
                 echo "        );\n\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function get_array_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n";

@@ -35,7 +35,7 @@
   +---------------------------------------------------------------------------------+
 */
 
-namespace ActiveMongo2\Plugin;
+namespace ActiveMongo2\Filter;
 
 /**
  *  @Hydratate(EmbedOne)
@@ -74,7 +74,7 @@ function _do_embed_many(&$value, $args, $conn, $mapper)
         }
     }
 
-    return true;
+    return _validate_array($value, $args, $conn, $mapper);
 }
 
 /**

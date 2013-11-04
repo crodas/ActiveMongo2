@@ -79,7 +79,7 @@ class Generate
                         throw new \Exception("@RefCache expects at least one argument");
                     }
                     foreach ($args as $p) {
-                        $refCache[$class][$p] = 1;
+                        $refCache[$class][] = $p;
                     }
                 }
             }
@@ -188,13 +188,26 @@ class Generate
         foreach ($vars as $type => $multi) {
             foreach ($annotations->get($type) as $prop) {
                 if (!$prop->isProperty()) continue;
-                foreach ($prop as $ann) {
-                    if (empty($ann['args']) || count($ann['args']) < 2) continue;
-                    $zclass = $docs[$ann['args'][0]]['class'];
-                    $references[$zclass][] = array(
-                        'class'         => strtolower($prop['class']),
+                foreach ($prop as $id => $ann) {
+                    if (Empty($ann['args'])) continue;
+                    $pxClass = $docs[$ann['args'][0]]['class'];
+                    $pzClass = strtolower($prop['class']);
+
+                    if (!empty($refCache[$pxClass])) {
+                        if (empty($ann['args'][1])) {
+                            $ann['args'][1] = array();
+                        }
+                        $ann['args'][1] = array_unique(array_merge($refCache[$pxClass], $ann['args'][1]));
+                    }
+
+                    if (count($ann['args']) < 2) continue;
+
+                    $pxClass = $docs[$ann['args'][0]]['class'];
+
+                    $references[$pxClass][] = array(
+                        'class'         => $pzClass,
                         'property'      => $prop['property'],
-                        'target'        =>  $class_mapper[$zclass]['name'],
+                        'target'        => $class_mapper[$pxClass]['name'],
                         'collection'    => $class_mapper[strtolower($prop['class'])]['name'],
                         'update'        => $ann['args'][1],
                         'multi'         => $multi,

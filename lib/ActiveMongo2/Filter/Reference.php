@@ -35,7 +35,7 @@
   +---------------------------------------------------------------------------------+
 */
 
-namespace ActiveMongo2\Plugin;
+namespace ActiveMongo2\Filter;
 
 use ActiveMongo2\Reference;
 
@@ -64,7 +64,7 @@ function _validate_reference_many(&$value, Array $args, $conn, $mapper)
         }
     }
 
-    return true;
+    return _validate_array($value, $args, $conn, $mapper);
 }
 
 
