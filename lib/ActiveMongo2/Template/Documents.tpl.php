@@ -253,48 +253,48 @@ class Mapper
 
                 if (!array_key_exists({{@$propname}}, $current)) {
                     $change['$unset'][{{@$propname}}] = 1;
-                } else if (!array_key_exists('{{$propname}}', $old)) {
-                    $change['$set']['{{$propname}}'] = $current['{{$propname}}'];
-                } else if ($current['{{$propname}}'] !== $old['{{$propname}}']) {
+                } else if (!array_key_exists({{@$propname}}, $old)) {
+                    $change['$set'][{{@$propname}}] = $current[{{@$propname}}];
+                } else if ($current[{{@$propname}}] !== $old[{{@$propname}}]) {
                     @if ($prop->has('Inc'))
-                        if (empty($old['{{$propname}}'])) {
+                        if (empty($old[{{@$propname}}])) {
                             $prev = 0;
                         } else {
-                            $prev = $old['{{$propname}}'];
+                            $prev = $old[{{@$propname}}];
                         }
-                        $change['$inc']['{{$propname}}'] = $current['{{$propname}}'] - $prev;
+                        $change['$inc'][{{@$propname}}] = $current[{{@$propname}}] - $prev;
                     @elif ($prop->has('Embed'))
-                        if ($current['{{$propname}}']['__embed_class'] != $old['{{$propname}}']['__embed_class']) {
-                            $change['$set']['{{$propname}}.' . $index] = $current['{{$propname}}'];
+                        if ($current[{{@$propname}}]['__embed_class'] != $old[{{@$propname}}]['__embed_class']) {
+                            $change['$set'][{{@$propname.'.'}} . $index] = $current[{{@$propname}}];
                         } else {
-                            $update = 'update_' . sha1($current['{{$propname}}']['__embed_class']);
-                            $diff = $this->$update($current['{{$propname}}'], $old['{{$propname}}'], true);
+                            $update = 'update_' . sha1($current[{{@$propname}}]['__embed_class']);
+                            $diff = $this->$update($current[{{@$propname}}], $old[{{@$propname}}], true);
                             foreach ($diff as $op => $value) {
                                 foreach ($value as $p => $val) {
-                                    $change[$op]['{{$propname}}.' . $p] = $val;
+                                    $change[$op][{{@$propname.'.'}} . $p] = $val;
                                 }
                             }
                         }
                     @elif ($prop->has('EmbedMany'))
                         // add things to the array
-                        $toRemove = array_diff_key($old['{{$propname}}'], $current['{{$propname}}']);
+                        $toRemove = array_diff_key($old[{{@$propname}}], $current[{{@$propname}}]);
 
-                        if (count($toRemove) > 0 && $this->array_unique($old['{{$propname}}'], $toRemove)) {
-                            $change['$set']['{{$propname}}'] = array_values($current['{{$propname}}']);
+                        if (count($toRemove) > 0 && $this->array_unique($old[{{@$propname}}], $toRemove)) {
+                            $change['$set'][{{@$propname}}] = array_values($current[{{@$propname}}]);
                         } else {
-                            foreach ($current['{{$propname}}'] as $index => $value) {
-                                if (!array_key_exists($index, $old['{{$propname}}'])) {
-                                    $change['$push']['{{$propname}}'] = $value;
+                            foreach ($current[{{@$propname}}] as $index => $value) {
+                                if (!array_key_exists($index, $old[{{@$propname}}])) {
+                                    $change['$push'][{{@$propname}}] = $value;
                                     continue;
                                 }
-                                if ($value['__embed_class'] != $old['{{$propname}}'][$index]['__embed_class']) {
-                                    $change['$set']['{{$propname}}.' . $index] = $value;
+                                if ($value['__embed_class'] != $old[{{@$propname}}][$index]['__embed_class']) {
+                                    $change['$set'][{{@$propname.'.'}} . $index] = $value;
                                 } else {
                                     $update = 'update_' . sha1($value['__embed_class']);
-                                    $diff = $this->$update($value, $old['{{$propname}}'][$index], true);
+                                    $diff = $this->$update($value, $old[{{@$propname}}][$index], true);
                                     foreach ($diff as $op => $value) {
                                         foreach ($value as $p => $val) {
-                                            $change[$op]['{{$propname}}.' . $index . '.' . $p] = $val;
+                                            $change[$op][{{@$propname.'.'}} . $index . '.' . $p] = $val;
                                         }
                                     }
                                 }
@@ -317,7 +317,7 @@ class Mapper
                         // add things to the array
                         $toRemove = array_diff_key($old[{{@$propname}}], $current[{{@$propname}}]);
 
-                        if (count($toRemove) > 0 && $this->array_unique($old['{{$propname}}'], $toRemove)) {
+                        if (count($toRemove) > 0 && $this->array_unique($old[{{@$propname}}], $toRemove)) {
                             $change['$set'][{{@$propname}}] = array_values($current[@{{$propname}}]);
                         } else {
                             foreach ($current[{{@$propname}}] as $index => $value) {
@@ -381,21 +381,21 @@ class Mapper
             if (array_key_exists("{{$name}}", $data)) {
                 @foreach($hydratations as $zname => $callback)
                     @if ($prop->has($zname))
-                        if (empty($this->loaded['{{$files[$zname]}}'])) {
-                            require_once __DIR__ .  '{{$files[$zname]}}';
-                            $this->loaded['{{$files[$zname]}}'] = true;
+                        if (empty($this->loaded[{{@$files[$zname]}}])) {
+                            require_once __DIR__ .  {{@$files[$zname]}};
+                            $this->loaded[{{@$files[$zname]}}] = true;
                         }
                         
-                        {{$callback}}($data['{{$name}}'], {{var_export($prop[0]['args'] ?: [],  true)}}, $this->connection, $this);
+                        {{$callback}}($data[{{@$name}}], {{var_export($prop[0]['args'] ?: [],  true)}}, $this->connection, $this);
                     @end
                 @end
 
                 @if (in_array('public', $prop['visibility']))
-                    $object->{{$prop['property']}} = $data['{{$name}}'];
+                    $object->{{$prop['property']}} = $data[{{@$name}}];
                 @else
-                    $property = new \ReflectionProperty($object, "{{ $prop['property'] }}");
+                    $property = new \ReflectionProperty($object, {{@$prop['property']}});
                     $property->setAccessible(true);
-                    $property->setValue($object, $data['{{$name}}']);
+                    $property->setValue($object, $data[{{@$name}}]);
                 @end
                 
             }
@@ -447,12 +447,12 @@ class Mapper
             @end
             @if (in_array('public', $prop['visibility']))
                 if ($object->{{$prop['property']}} !== NULL) {
-                    $doc['{{$propname}}'] = $object->{{$prop['property']}};
+                    $doc[{{@$propname}}] = $object->{{$prop['property']}};
                 }
             @else
                 $property = new \ReflectionProperty($object, {{ @$prop['property'] }});
                 $property->setAccessible(true);
-                $doc['{{$propname}}'] = $property->getValue($object);
+                $doc[{{@$propname}}] = $property->getValue($object);
             @end
         @end
 
@@ -464,12 +464,12 @@ class Mapper
             @foreach ($defaults as $name => $callback) 
                 @if ($prop->has($name))
                     // default: {{$name}}
-                    if (empty($doc['{{$propname}}'])) {
-                        if (empty($this->loaded['{{$files[$name]}}'])) {
-                            require_once __DIR__ . '{{$files[$name]}}';
-                            $this->loaded['{{$files[$name]}}'] = true;
+                    if (empty($doc[{{@$propname}}])) {
+                        if (empty($this->loaded[{{@$files[$name]}}])) {
+                            require_once __DIR__ . {{@$files[$name]}};
+                            $this->loaded[{{@$files[$name]}}] = true;
                         }
-                        $doc['{{$propname}}'] = {{$callback}}($doc, {{@$prop->getOne($name)}}, $this->connection, $this); 
+                        $doc[{{@$propname}}] = {{$callback}}($doc, {{@$prop->getOne($name)}}, $this->connection, $this); 
                     }
                 @end
             @end
@@ -495,7 +495,7 @@ class Mapper
                 @set($propname, '_id')
             @end
             @if ($prop->has('Required'))
-            if (empty($doc['{{$propname}}'])) {
+            if (empty($doc[{{@$propname}}])) {
                 throw new \RuntimeException("{{$prop['property']}} cannot be empty");
             }
             @end
@@ -513,7 +513,7 @@ class Mapper
         @end
         @foreach ($doc['annotation']->getProperties() as $prop)
             @set($propname, $prop['property'])
-            if ($property ==  '{{$propname}}'
+            if ($property ==  {{@$propname}}
             @foreach($prop->getAll() as $annotation) 
                  || $property == '@{{$annotation['method']}}'
             @end
@@ -611,9 +611,9 @@ class Mapper
                     @set($temp, $plugins[$zmethod['method']])
                     @foreach($temp->getMethods() as $method)
                         @if ($method->has($ev) && empty($first_time)) 
-                            if (empty($this->loaded['{{$self->getRelativePath($temp['file'])}}'])) {
-                                require_once __DIR__ .  '{{$self->getRelativePath($temp['file'])}}';
-                                $this->loaded['{{$self->getRelativePath($temp['file'])}}'] = true;
+                            if (empty($this->loaded[{{@$self->getRelativePath($temp['file'])}}])) {
+                                require_once __DIR__ .  {{@$self->getRelativePath($temp['file'])}};
+                                $this->loaded[{{@$self->getRelativePath($temp['file'])}}] = true;
                             }
                             @if (!in_array('static', $temp['visibility']))
                                 // {{$method[0]['method']}}

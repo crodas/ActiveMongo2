@@ -280,15 +280,73 @@ namespace {
                     var_export($propname);
                     echo ", \$current)) {\n                    \$change['\$unset'][";
                     var_export($propname);
-                    echo "] = 1;\n                } else if (!array_key_exists('" . ($propname) . "', \$old)) {\n                    \$change['\$set']['" . ($propname) . "'] = \$current['" . ($propname) . "'];\n                } else if (\$current['" . ($propname) . "'] !== \$old['" . ($propname) . "']) {\n";
+                    echo "] = 1;\n                } else if (!array_key_exists(";
+                    var_export($propname);
+                    echo ", \$old)) {\n                    \$change['\$set'][";
+                    var_export($propname);
+                    echo "] = \$current[";
+                    var_export($propname);
+                    echo "];\n                } else if (\$current[";
+                    var_export($propname);
+                    echo "] !== \$old[";
+                    var_export($propname);
+                    echo "]) {\n";
                     if ($prop->has('Inc')) {
-                        echo "                        if (empty(\$old['" . ($propname) . "'])) {\n                            \$prev = 0;\n                        } else {\n                            \$prev = \$old['" . ($propname) . "'];\n                        }\n                        \$change['\$inc']['" . ($propname) . "'] = \$current['" . ($propname) . "'] - \$prev;\n";
+                        echo "                        if (empty(\$old[";
+                        var_export($propname);
+                        echo "])) {\n                            \$prev = 0;\n                        } else {\n                            \$prev = \$old[";
+                        var_export($propname);
+                        echo "];\n                        }\n                        \$change['\$inc'][";
+                        var_export($propname);
+                        echo "] = \$current[";
+                        var_export($propname);
+                        echo "] - \$prev;\n";
                     }
                     else if ($prop->has('Embed')) {
-                        echo "                        if (\$current['" . ($propname) . "']['__embed_class'] != \$old['" . ($propname) . "']['__embed_class']) {\n                            \$change['\$set']['" . ($propname) . ".' . \$index] = \$current['" . ($propname) . "'];\n                        } else {\n                            \$update = 'update_' . sha1(\$current['" . ($propname) . "']['__embed_class']);\n                            \$diff = \$this->\$update(\$current['" . ($propname) . "'], \$old['" . ($propname) . "'], true);\n                            foreach (\$diff as \$op => \$value) {\n                                foreach (\$value as \$p => \$val) {\n                                    \$change[\$op]['" . ($propname) . ".' . \$p] = \$val;\n                                }\n                            }\n                        }\n";
+                        echo "                        if (\$current[";
+                        var_export($propname);
+                        echo "]['__embed_class'] != \$old[";
+                        var_export($propname);
+                        echo "]['__embed_class']) {\n                            \$change['\$set'][";
+                        var_export($propname.'.');
+                        echo " . \$index] = \$current[";
+                        var_export($propname);
+                        echo "];\n                        } else {\n                            \$update = 'update_' . sha1(\$current[";
+                        var_export($propname);
+                        echo "]['__embed_class']);\n                            \$diff = \$this->\$update(\$current[";
+                        var_export($propname);
+                        echo "], \$old[";
+                        var_export($propname);
+                        echo "], true);\n                            foreach (\$diff as \$op => \$value) {\n                                foreach (\$value as \$p => \$val) {\n                                    \$change[\$op][";
+                        var_export($propname.'.');
+                        echo " . \$p] = \$val;\n                                }\n                            }\n                        }\n";
                     }
                     else if ($prop->has('EmbedMany')) {
-                        echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old['" . ($propname) . "'], \$current['" . ($propname) . "']);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old['" . ($propname) . "'], \$toRemove)) {\n                            \$change['\$set']['" . ($propname) . "'] = array_values(\$current['" . ($propname) . "']);\n                        } else {\n                            foreach (\$current['" . ($propname) . "'] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old['" . ($propname) . "'])) {\n                                    \$change['\$push']['" . ($propname) . "'] = \$value;\n                                    continue;\n                                }\n                                if (\$value['__embed_class'] != \$old['" . ($propname) . "'][\$index]['__embed_class']) {\n                                    \$change['\$set']['" . ($propname) . ".' . \$index] = \$value;\n                                } else {\n                                    \$update = 'update_' . sha1(\$value['__embed_class']);\n                                    \$diff = \$this->\$update(\$value, \$old['" . ($propname) . "'][\$index], true);\n                                    foreach (\$diff as \$op => \$value) {\n                                        foreach (\$value as \$p => \$val) {\n                                            \$change[\$op]['" . ($propname) . ".' . \$index . '.' . \$p] = \$val;\n                                        }\n                                    }\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                if (!empty(\$value['__instance'])) {\n                                    \$change['\$pull'][";
+                        echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old[";
+                        var_export($propname);
+                        echo "], \$current[";
+                        var_export($propname);
+                        echo "]);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old[";
+                        var_export($propname);
+                        echo "], \$toRemove)) {\n                            \$change['\$set'][";
+                        var_export($propname);
+                        echo "] = array_values(\$current[";
+                        var_export($propname);
+                        echo "]);\n                        } else {\n                            foreach (\$current[";
+                        var_export($propname);
+                        echo "] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old[";
+                        var_export($propname);
+                        echo "])) {\n                                    \$change['\$push'][";
+                        var_export($propname);
+                        echo "] = \$value;\n                                    continue;\n                                }\n                                if (\$value['__embed_class'] != \$old[";
+                        var_export($propname);
+                        echo "][\$index]['__embed_class']) {\n                                    \$change['\$set'][";
+                        var_export($propname.'.');
+                        echo " . \$index] = \$value;\n                                } else {\n                                    \$update = 'update_' . sha1(\$value['__embed_class']);\n                                    \$diff = \$this->\$update(\$value, \$old[";
+                        var_export($propname);
+                        echo "][\$index], true);\n                                    foreach (\$diff as \$op => \$value) {\n                                        foreach (\$value as \$p => \$val) {\n                                            \$change[\$op][";
+                        var_export($propname.'.');
+                        echo " . \$index . '.' . \$p] = \$val;\n                                        }\n                                    }\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                if (!empty(\$value['__instance'])) {\n                                    \$change['\$pull'][";
                         var_export($propname);
                         echo "] = array(\n                                        '__instance' => \$value['__instance'],\n                                    );\n                                } else {\n                                    \$change['\$pull'][";
                         var_export($propname);
@@ -299,7 +357,9 @@ namespace {
                         var_export($propname);
                         echo "], \$current[";
                         var_export($propname);
-                        echo "]);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old['" . ($propname) . "'], \$toRemove)) {\n                            \$change['\$set'][";
+                        echo "]);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old[";
+                        var_export($propname);
+                        echo "], \$toRemove)) {\n                            \$change['\$set'][";
                         var_export($propname);
                         echo "] = array_values(\$current[" . "@" . ($propname) . "]);\n                        } else {\n                            foreach (\$current[";
                         var_export($propname);
@@ -354,15 +414,29 @@ namespace {
                     echo "            if (array_key_exists(\"" . ($name) . "\", \$data)) {\n";
                     foreach($hydratations as $zname => $callback) {
                         if ($prop->has($zname)) {
-                            echo "                        if (empty(\$this->loaded['" . ($files[$zname]) . "'])) {\n                            require_once __DIR__ .  '" . ($files[$zname]) . "';\n                            \$this->loaded['" . ($files[$zname]) . "'] = true;\n                        }\n                        \n                        " . ($callback) . "(\$data['" . ($name) . "'], " . (var_export($prop[0]['args'] ?: [],  true)) . ", \$this->connection, \$this);\n";
+                            echo "                        if (empty(\$this->loaded[";
+                            var_export($files[$zname]);
+                            echo "])) {\n                            require_once __DIR__ .  ";
+                            var_export($files[$zname]);
+                            echo ";\n                            \$this->loaded[";
+                            var_export($files[$zname]);
+                            echo "] = true;\n                        }\n                        \n                        " . ($callback) . "(\$data[";
+                            var_export($name);
+                            echo "], " . (var_export($prop[0]['args'] ?: [],  true)) . ", \$this->connection, \$this);\n";
                         }
                     }
                     echo "\n";
                     if (in_array('public', $prop['visibility'])) {
-                        echo "                    \$object->" . ($prop['property']) . " = \$data['" . ($name) . "'];\n";
+                        echo "                    \$object->" . ($prop['property']) . " = \$data[";
+                        var_export($name);
+                        echo "];\n";
                     }
                     else {
-                        echo "                    \$property = new \\ReflectionProperty(\$object, \"" . ($prop['property']) . "\");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$object, \$data['" . ($name) . "']);\n";
+                        echo "                    \$property = new \\ReflectionProperty(\$object, ";
+                        var_export($prop['property']);
+                        echo ");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$object, \$data[";
+                        var_export($name);
+                        echo "]);\n";
                     }
                     echo "                \n            }\n";
                 }
@@ -390,12 +464,16 @@ namespace {
                         $propname = '_id';
                     }
                     if (in_array('public', $prop['visibility'])) {
-                        echo "                if (\$object->" . ($prop['property']) . " !== NULL) {\n                    \$doc['" . ($propname) . "'] = \$object->" . ($prop['property']) . ";\n                }\n";
+                        echo "                if (\$object->" . ($prop['property']) . " !== NULL) {\n                    \$doc[";
+                        var_export($propname);
+                        echo "] = \$object->" . ($prop['property']) . ";\n                }\n";
                     }
                     else {
                         echo "                \$property = new \\ReflectionProperty(\$object, ";
                         var_export($prop['property']);
-                        echo ");\n                \$property->setAccessible(true);\n                \$doc['" . ($propname) . "'] = \$property->getValue(\$object);\n";
+                        echo ");\n                \$property->setAccessible(true);\n                \$doc[";
+                        var_export($propname);
+                        echo "] = \$property->getValue(\$object);\n";
                     }
                 }
                 echo "\n";
@@ -406,7 +484,17 @@ namespace {
                     }
                     foreach($defaults as $name => $callback) {
                         if ($prop->has($name)) {
-                            echo "                    // default: " . ($name) . "\n                    if (empty(\$doc['" . ($propname) . "'])) {\n                        if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n                            require_once __DIR__ . '" . ($files[$name]) . "';\n                            \$this->loaded['" . ($files[$name]) . "'] = true;\n                        }\n                        \$doc['" . ($propname) . "'] = " . ($callback) . "(\$doc, ";
+                            echo "                    // default: " . ($name) . "\n                    if (empty(\$doc[";
+                            var_export($propname);
+                            echo "])) {\n                        if (empty(\$this->loaded[";
+                            var_export($files[$name]);
+                            echo "])) {\n                            require_once __DIR__ . ";
+                            var_export($files[$name]);
+                            echo ";\n                            \$this->loaded[";
+                            var_export($files[$name]);
+                            echo "] = true;\n                        }\n                        \$doc[";
+                            var_export($propname);
+                            echo "] = " . ($callback) . "(\$doc, ";
                             var_export($prop->getOne($name));
                             echo ", \$this->connection, \$this); \n                    }\n";
                         }
@@ -427,7 +515,9 @@ namespace {
                         $propname = '_id';
                     }
                     if ($prop->has('Required')) {
-                        echo "            if (empty(\$doc['" . ($propname) . "'])) {\n                throw new \\RuntimeException(\"" . ($prop['property']) . " cannot be empty\");\n            }\n";
+                        echo "            if (empty(\$doc[";
+                        var_export($propname);
+                        echo "])) {\n                throw new \\RuntimeException(\"" . ($prop['property']) . " cannot be empty\");\n            }\n";
                     }
                     echo "\n";
                     ActiveMongo2\Templates::exec('validate', compact('propname', 'validators', 'files', 'prop'), $this->context);
@@ -438,7 +528,9 @@ namespace {
                 }
                 foreach($doc['annotation']->getProperties() as $prop) {
                     $propname = $prop['property'];
-                    echo "            if (\$property ==  '" . ($propname) . "'\n";
+                    echo "            if (\$property ==  ";
+                    var_export($propname);
+                    echo "\n";
                     foreach($prop->getAll() as $annotation) {
                         echo "                 || \$property == '" . "@" . ($annotation['method']) . "'\n";
                     }
@@ -543,7 +635,13 @@ namespace {
                             $temp = $plugins[$zmethod['method']];
                             foreach($temp->getMethods() as $method) {
                                 if ($method->has($ev) && empty($first_time)) {
-                                    echo "                            if (empty(\$this->loaded['" . ($self->getRelativePath($temp['file'])) . "'])) {\n                                require_once __DIR__ .  '" . ($self->getRelativePath($temp['file'])) . "';\n                                \$this->loaded['" . ($self->getRelativePath($temp['file'])) . "'] = true;\n                            }\n";
+                                    echo "                            if (empty(\$this->loaded[";
+                                    var_export($self->getRelativePath($temp['file']));
+                                    echo "])) {\n                                require_once __DIR__ .  ";
+                                    var_export($self->getRelativePath($temp['file']));
+                                    echo ";\n                                \$this->loaded[";
+                                    var_export($self->getRelativePath($temp['file']));
+                                    echo "] = true;\n                            }\n";
                                     if (!in_array('static', $temp['visibility'])) {
                                         echo "                                // " . ($method[0]['method']) . "\n                                \$plugin = new \\" . ($temp['class']) . "(" . (var_export($zmethod['args'], true)) . ");\n";
                                         $first_time = true;
