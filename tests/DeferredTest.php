@@ -32,7 +32,7 @@ class DeferredTest extends \phpunit_framework_testcase
         $this->assertNotEquals($this->getUser()->visits, $this->getPost()->author_refs[0]->visits);
 
         $done = getConnection()->worker(false);
-        $this->assertEquals(1, $done);
+        $this->assertEquals(3, $done);
 
         $this->assertEquals($this->getUser()->visits, $this->getPost()->author_ref->visits);
         $this->assertEquals($this->getUser()->visits, $this->getPost()->author_refs[0]->visits);

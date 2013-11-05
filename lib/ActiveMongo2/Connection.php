@@ -235,21 +235,21 @@ class Connection
                 break;
             }
             $all  = $refs->find(['source_id' => $work['source_id']]);
-            $update = $work['update'];
-            foreach ($update as $op => $fields) {
-                foreach ($fields as $field => $value) {
-                    unset($update[$op][$field]);
-                    foreach ($all as $row) {
+            foreach ($all as $row) {
+                $update = $work['update'];
+                foreach ($update as $op => $fields) {
+                    foreach ($fields as $field => $value) {
+                        unset($update[$op][$field]);
                         $update[$op][$row['property'] . '.' . $field] = $value;
                     }
                 }
+                $col = $this->db->{$row['collection']};
+                $col->update(
+                    ['_id' => $row['id']],
+                    $update
+                );
+                $done++;
             }
-            $col = $this->db->{$row['collection']};
-            $col->update(
-                ['_id' => $row['id']],
-                $update
-            );
-            $done++;
             $queue->remove(['_id' => $work['_id']]);
         } while (true);
         return $done;
