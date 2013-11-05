@@ -190,26 +190,50 @@ class Generate
                 if (!$prop->isProperty()) continue;
                 foreach ($prop as $id => $ann) {
                     if (Empty($ann['args'])) continue;
-                    $pxClass = $docs[$ann['args'][0]]['class'];
                     $pzClass = strtolower($prop['class']);
+                    $pzArgs  = !empty($ann['args'][1]) ? $ann['args'][1] :[];
+                    if (empty($docs[$ann['args'][0]])) {
+                        // Document is not found, probably there
+                        // are inheritance
+                        foreach ($docs as $doc) {
+                            if ($doc['name'] != $ann['args'][0]) {
+                                continue;
+                            }
+                            $pxClass = $doc['class'];
+                            $pxArgs  = $pzArgs;
+                            if (!empty($refCache[$pxClass])) {
+                                $pxArgs = array_unique(array_merge($refCache[$pxClass], $pzArgs));
+                            }
 
-                    if (!empty($refCache[$pxClass])) {
-                        if (empty($ann['args'][1])) {
-                            $ann['args'][1] = array();
+                            if (empty($pxArgs)) continue;
+
+                            $references[$pxClass][] = array(
+                                'class'         => $pzClass,
+                                'property'      => $prop['property'],
+                                'target'        => $class_mapper[$pxClass]['name'],
+                                'collection'    => $class_mapper[strtolower($prop['class'])]['name'],
+                                'update'        => $pxArgs,
+                                'multi'         => $multi,
+                                'deferred'      => $prop->has('Deferred'),
+                            );
                         }
-                        $ann['args'][1] = array_unique(array_merge($refCache[$pxClass], $ann['args'][1]));
+                        continue;
                     }
 
-                    if (count($ann['args']) < 2) continue;
-
                     $pxClass = $docs[$ann['args'][0]]['class'];
+
+                    if (!empty($refCache[$pxClass])) {
+                        $pzArgs = array_unique(array_merge($refCache[$pxClass], $pzArgs));
+                    }
+
+                    if (empty($pzArgs)) continue;
 
                     $references[$pxClass][] = array(
                         'class'         => $pzClass,
                         'property'      => $prop['property'],
                         'target'        => $class_mapper[$pxClass]['name'],
                         'collection'    => $class_mapper[strtolower($prop['class'])]['name'],
-                        'update'        => $ann['args'][1],
+                        'update'        => $pzArgs,
                         'multi'         => $multi,
                         'deferred'      => $prop->has('Deferred'),
                     );
