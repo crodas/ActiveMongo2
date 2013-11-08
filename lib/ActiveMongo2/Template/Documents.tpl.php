@@ -459,6 +459,15 @@ class Mapper
         $extra    = array();
         if ($include) {
             $extra  = array_intersect_key($document, $include);
+            foreach ($extra as $key => $value) {
+                if (is_object($value)) {
+                    if ($value instanceof \ActiveMongo2\Reference) {
+                        $extra[$key] = $value->getReference();
+                    } else {
+                        $extra[$key] = $this->getReference($value);
+                    }
+                }
+            }
         }
 
         return array_merge(array(

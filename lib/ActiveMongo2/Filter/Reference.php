@@ -39,6 +39,8 @@ namespace ActiveMongo2\Filter;
 
 use ActiveMongo2\Reference;
 
+require_once __DIR__ . "/Common.php";
+
 /**
  *  @Hydratate(ReferenceMany)
  */
