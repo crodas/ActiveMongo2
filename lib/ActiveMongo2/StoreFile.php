@@ -34,91 +34,39 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
+namespace ActiveMongo2;
 
-namespace ActiveMongo2\Filter;
+use MongoGridFS;
 
-use ActiveMongo2\Reference;
-
-/**
- *  @Hydratate(ReferenceMany)
- */
-function _hydratate_reference_many(&$value, Array $args, $conn, $mapper)
+class StoreFile 
 {
-    foreach ((array)$value as $id => $val) {
-        _hydratate_reference_one($value[$id], $args, $conn, $mapper);
-    }
-}
+    protected $gridfs;
+    protected $metadata;
 
-/**
- *  @Validate(ReferenceMany)
- */
-function _validate_reference_many(&$value, Array $args, $conn, $mapper)
-{
-    if (!is_array($value)) {
-        return false;
+    public function __construct(MongoGridFS $col, Array $document)
+    {
+        $this->gridfs   = $col;
+        $this->metadata = $document;
     }
 
-    foreach ($value as $id => $val) {
-        if (!_validate_reference_one($value[$id], $args, $conn, $mapper)) {
-            return false;
+    public function storeFile($name)
+    {
+        if (!is_file($name)) {
+            throw new \RuntimeException("Cannot find file {$name}");
         }
+        $doc = $this->gridfs->storeFile($name, $this->metadata);
     }
 
-    return _validate_array($value, $args, $conn, $mapper);
-}
-
-
-/**
- *  @Hydratate(Reference)
- *  @Hydratate(ReferenceOne)
- */
-function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
-{
-    $expected = current($args);
-    if ($expected && $expected != $value['$ref']) {
-        throw new \RuntimeException("Expecting document {$expected} but got {$value['ref']}");
+    public function storeBytes($bytes)
+    {
+        $doc = $this->gridfs->storeBytes($bytes, $this->metadata);
     }
 
-    try {
-        $class = $mapper->mapCollection($value['$ref'])['class'];
-    } catch (\Exception $e) {
-        if (empty($value['__class'])) {
-            throw $e;
+    public function storeUpload($name)
+    {
+        if (empty($_FILES[$name])) {
+            throw new \RuntimeException("Cannot find \$_FILE[{$name}]");
         }
-        $class = $value['__class'];
+        $doc = $this->gridfs->storeUpload($name, $this->metadata);
     }
-    $value = new Reference($value, $class, $conn, $mapper->getMapping($class));
-    $mapper->trigger('onHydratation', $value);
-}
-
-/**
- *  @Validate(Reference)
- *  @Validate(ReferenceOne)
- */
-function _validate_reference_one(&$value, Array $args, $conn, $mapper)
-{
-    if ($value instanceof Reference) {
-        $value = $value->getReference();
-        if (is_array($value)) {
-            if (!empty($args[1])) {
-                foreach ((array)$args[1] as $prop) {
-                    if (!empty($array[$prop])) {
-                        $value[$prop] = $array[$prop];
-                    }
-                }
-            }
-            return true;
-        }
-    }
-
-    $document = $value;
-    $conn->save($document);
-
-    if (!empty($args) && !$conn->is(current($args), $document)) {
-        throw new \RuntimeException("Invalid value");
-    }
-    
-    $value = $mapper->getReference($document, empty($args[1]) ? [] : array_flip($args[1]));
-
-    return true;
 }

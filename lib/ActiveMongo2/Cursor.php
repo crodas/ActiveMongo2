@@ -62,6 +62,9 @@ class Cursor extends MongoCursor
     {
         $current = parent::current();
         $class   = $this->mapper->getObjectClass($this->col, $current);
+        if ($this->col instanceof \MongoGridFs) {
+            $current = new \MongoGridFsFile($this->col, $current);
+        }
         return $this->conn->registerDocument($class, $current);
     }
 

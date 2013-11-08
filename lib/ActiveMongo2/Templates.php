@@ -162,25 +162,25 @@ namespace {
                     var_export($field);
                     echo "])) {\n";
                     if ($ref['deferred']) {
-                        echo "                    \$replicate[\$operation] = [";
+                        echo "                    \$replicate[\$operation][";
                         var_export($field);
-                        echo "  => \$values[";
+                        echo "]  = \$values[";
                         var_export($field);
-                        echo "]];\n";
+                        echo "];\n";
                     }
                     else if ($ref['multi']) {
-                        echo "                    \$replicate[\$operation] = [";
+                        echo "                    \$replicate[\$operation][";
                         var_export($ref['property'].'.$.'.$field);
-                        echo "  => \$values[";
+                        echo "] = \$values[";
                         var_export($field);
-                        echo "]];\n";
+                        echo "];\n";
                     }
                     else {
-                        echo "                    \$replicate[\$operation] = [";
+                        echo "                    \$replicate[\$operation][";
                         var_export($ref['property'].'.'.$field);
-                        echo " => \$values[";
+                        echo "] = \$values[";
                         var_export($field);
-                        echo "]];\n";
+                        echo "];\n";
                     }
 
                     echo "            }\n";
@@ -232,11 +232,20 @@ namespace {
                     echo ";\n                }\n";
                 }
             }
-            echo "            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        \$data = \$this->class_mapper[\$class];\n\n        if (empty(\$this->loaded[\$data['file']])) {\n            require_once __DIR__ . \$data['file'];\n            \$this->loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    protected function array_unique(\$array, \$toRemove)\n    {\n        \$return = array();\n        \$count  = array();\n        foreach (\$array as \$key => \$value) {\n            \$val = serialize(\$value);\n            if (empty(\$count[\$val])) {\n                \$count[\$val] = 0;\n            }\n            \$count[\$val]++; \n        }\n        foreach (\$toRemove as \$value) {\n            \$val = serialize(\$value);\n            if (!empty(\$count[\$val]) && \$count[\$val] != 1) {\n                return true;\n            }\n        }\n        return false;\n    }\n\n    public function mapObject(\$object)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->class_mapper[\$class];\n    }\n\n    public function getDocument(\$object)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"get_array_\" . sha1(\$class)}(\$object);\n    }\n\n    public function validate(\$object)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"validate_\" . sha1(\$class)}(\$object);\n    }\n\n    public function update(\$object, Array \$doc, Array \$old)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"update_\" . sha1(\$class)}(\$doc, \$old);\n    }\n\n    public function populate(\$object, Array \$data)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"populate_\" . sha1(\$class)}(\$object, \$data);\n    }\n\n    public function trigger(\$event, \$object, Array \$args = array())\n    {\n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = strtolower(\$object->getClass());\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n        \$method = \"event_{\$event}_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$object, \$args);\n    }\n\n    public function getMapping(\$class)\n    {\n        if (is_object(\$class)) {\n            \$class = get_class(\$class);\n        }\n        \$func  = \"get_mapping_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$func))) {\n            throw new \\Exception(\"Cannot map \$class\");\n        }\n        return \$this->\$func();\n    }\n\n    public function getObjectClass(\$col, Array \$array)\n    {\n        if (\$col instanceof \\MongoCollection) {\n            \$col = \$col->getName();\n        }\n        \$class = NULL;\n        switch (\$col) {\n";
+            echo "            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        \$data = \$this->class_mapper[\$class];\n\n        if (empty(\$this->loaded[\$data['file']])) {\n            require_once __DIR__ . \$data['file'];\n            \$this->loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    protected function array_unique(\$array, \$toRemove)\n    {\n        \$return = array();\n        \$count  = array();\n        foreach (\$array as \$key => \$value) {\n            \$val = serialize(\$value);\n            if (empty(\$count[\$val])) {\n                \$count[\$val] = 0;\n            }\n            \$count[\$val]++; \n        }\n        foreach (\$toRemove as \$value) {\n            \$val = serialize(\$value);\n            if (!empty(\$count[\$val]) && \$count[\$val] != 1) {\n                return true;\n            }\n        }\n        return false;\n    }\n\n    public function mapObject(\$object)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->class_mapper[\$class];\n    }\n\n    public function getReference(\$object, Array \$extra = array())\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"get_reference_\" . sha1(\$class)}(\$object, \$extra);\n    }\n\n    public function getDocument(\$object)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"get_array_\" . sha1(\$class)}(\$object);\n    }\n\n    public function validate(\$object)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"validate_\" . sha1(\$class)}(\$object);\n    }\n\n    public function update(\$object, Array \$doc, Array \$old)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"update_\" . sha1(\$class)}(\$doc, \$old);\n    }\n\n    public function populate(\$object, \$data)\n    {\n        \$class = strtolower(get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"populate_\" . sha1(\$class)}(\$object, \$data);\n    }\n\n    public function trigger(\$event, \$object, Array \$args = array())\n    {\n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = strtolower(\$object->getClass());\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n        \$method = \"event_{\$event}_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$object, \$args);\n    }\n\n    public function getMapping(\$class)\n    {\n        if (is_object(\$class)) {\n            \$class = get_class(\$class);\n        }\n        \$func  = \"get_mapping_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$func))) {\n            throw new \\Exception(\"Cannot map \$class\");\n        }\n        return \$this->\$func();\n    }\n\n    public function getObjectClass(\$col, \$array)\n    {\n        if (\$array instanceof \\MongoGridFsFile) {\n            \$array = \$array->file;\n        }\n        if (\$col instanceof \\MongoCollection) {\n            \$col = \$col->getName();\n        }\n        \$class = NULL;\n        switch (\$col) {\n";
             foreach($docs as $doc) {
-                echo "            case ";
-                var_export($doc['name']);
-                echo ":\n";
+                if ($doc['is_gridfs']) {
+                    echo "            case ";
+                    var_export($doc['name'] . '.files');
+                    echo ":\n            case ";
+                    var_export($doc['name'] . '.chunks');
+                    echo ":\n";
+                }
+                else {
+                    echo "            case ";
+                    var_export($doc['name']);
+                    echo ":\n";
+                }
                 if (empty($doc['disc'])) {
                     echo "                    \$class = ";
                     var_export($doc['class']);
@@ -266,39 +275,127 @@ namespace {
                 }
                 echo "\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
+                    $docname = $prop['property'];
                     $propname = $prop['property'];
-                    $var = 'current';
+                    $current = "current";
                     if ($prop->has('Id')) {
                         $propname = '_id';
                     }
-                    $var = "current";
+                    echo "\n";
+                    if ($doc['is_gridfs']) {
+                        echo "                // GridFS collection detected! it is special :-)\n";
+                        $current = "current['metadata']";
+                        $docname = "metadata." . $propname;
+                    }
                     echo "\n            if (array_key_exists(";
                     var_export($propname);
-                    echo ", \$current)\n                || array_key_exists(";
+                    echo ", \$" . ($current) . ")\n                || array_key_exists(";
                     var_export($propname);
                     echo ", \$old)) {\n\n                if (!array_key_exists(";
                     var_export($propname);
-                    echo ", \$current)) {\n                    \$change['\$unset'][";
+                    echo ", \$" . ($current) . ")) {\n                    \$change['\$unset'][";
+                    var_export($docname);
+                    echo "] = 1;\n                } else if (!array_key_exists(";
                     var_export($propname);
-                    echo "] = 1;\n                } else if (!array_key_exists('" . ($propname) . "', \$old)) {\n                    \$change['\$set']['" . ($propname) . "'] = \$current['" . ($propname) . "'];\n                } else if (\$current['" . ($propname) . "'] !== \$old['" . ($propname) . "']) {\n";
+                    echo ", \$old)) {\n                    \$change['\$set'][";
+                    var_export($docname);
+                    echo "] = \$" . ($current) . "[";
+                    var_export($propname);
+                    echo "];\n                } else if (\$" . ($current) . "[";
+                    var_export($propname);
+                    echo "] !== \$old[";
+                    var_export($propname);
+                    echo "]) {\n";
                     if ($prop->has('Inc')) {
-                        echo "                        if (empty(\$old['" . ($propname) . "'])) {\n                            \$prev = 0;\n                        } else {\n                            \$prev = \$old['" . ($propname) . "'];\n                        }\n                        \$change['\$inc']['" . ($propname) . "'] = \$current['" . ($propname) . "'] - \$prev;\n";
+                        echo "                        if (empty(\$old[";
+                        var_export($propname);
+                        echo "])) {\n                            \$prev = 0;\n                        } else {\n                            \$prev = \$old[";
+                        var_export($propname);
+                        echo "];\n                        }\n                        \$change['\$inc'][";
+                        var_export($docname);
+                        echo "] = \$" . ($current) . "[";
+                        var_export($propname);
+                        echo "] - \$prev;\n";
                     }
                     else if ($prop->has('Embed')) {
-                        echo "                        if (\$current['" . ($propname) . "']['__embed_class'] != \$old['" . ($propname) . "']['__embed_class']) {\n                            \$change['\$set']['" . ($propname) . ".' . \$index] = \$current['" . ($propname) . "'];\n                        } else {\n                            \$update = 'update_' . sha1(\$current['" . ($propname) . "']['__embed_class']);\n                            \$diff = \$this->\$update(\$current['" . ($propname) . "'], \$old['" . ($propname) . "'], true);\n                            foreach (\$diff as \$op => \$value) {\n                                foreach (\$value as \$p => \$val) {\n                                    \$change[\$op]['" . ($propname) . ".' . \$p] = \$val;\n                                }\n                            }\n                        }\n";
+                        echo "                        if (\$" . ($current) . "[";
+                        var_export($propname);
+                        echo "]['__embed_class'] != \$old[";
+                        var_export($propname);
+                        echo "]['__embed_class']) {\n                            \$change['\$set'][";
+                        var_export($docname.'.');
+                        echo " . \$index] = \$" . ($current) . "[";
+                        var_export($propname);
+                        echo "];\n                        } else {\n                            \$update = 'update_' . sha1(\$" . ($current) . "[";
+                        var_export($propname);
+                        echo "]['__embed_class']);\n                            \$diff = \$this->\$update(\$" . ($current) . "[";
+                        var_export($propname);
+                        echo "], \$old[";
+                        var_export($propname);
+                        echo "], true);\n                            foreach (\$diff as \$op => \$value) {\n                                foreach (\$value as \$p => \$val) {\n                                    \$change[\$op][";
+                        var_export($docname.'.');
+                        echo " . \$p] = \$val;\n                                }\n                            }\n                        }\n";
                     }
                     else if ($prop->has('EmbedMany')) {
-                        echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old['" . ($propname) . "'], \$current['" . ($propname) . "']);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old['" . ($propname) . "'], \$toRemove)) {\n                            \$change['\$set']['" . ($propname) . "'] = array_values(\$current['" . ($propname) . "']);\n                        } else {\n                            foreach (\$current['" . ($propname) . "'] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old['" . ($propname) . "'])) {\n                                    \$change['\$push']['" . ($propname) . "'] = \$value;\n                                    continue;\n                                }\n                                if (\$value['__embed_class'] != \$old['" . ($propname) . "'][\$index]['__embed_class']) {\n                                    \$change['\$set']['" . ($propname) . ".' . \$index] = \$value;\n                                } else {\n                                    \$update = 'update_' . sha1(\$value['__embed_class']);\n                                    \$diff = \$this->\$update(\$value, \$old['" . ($propname) . "'][\$index], true);\n                                    foreach (\$diff as \$op => \$value) {\n                                        foreach (\$value as \$p => \$val) {\n                                            \$change[\$op]['" . ($propname) . ".' . \$index . '.' . \$p] = \$val;\n                                        }\n                                    }\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                \$change['\$pull']['" . ($propname) . "'] = \$value;\n                            }\n                        }\n\n\n\n";
+                        echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old[";
+                        var_export($propname);
+                        echo "], \$" . ($current) . "[";
+                        var_export($propname);
+                        echo "]);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old[";
+                        var_export($propname);
+                        echo "], \$toRemove)) {\n                            \$change['\$set'][";
+                        var_export($docname);
+                        echo "] = array_values(\$" . ($current) . "[";
+                        var_export($propname);
+                        echo "]);\n                        } else {\n                            foreach (\$" . ($current) . "[";
+                        var_export($propname);
+                        echo "] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old[";
+                        var_export($propname);
+                        echo "])) {\n                                    \$change['\$push'][";
+                        var_export($docname);
+                        echo "] = \$value;\n                                    continue;\n                                }\n                                if (\$value['__embed_class'] != \$old[";
+                        var_export($propname);
+                        echo "][\$index]['__embed_class']) {\n                                    \$change['\$set'][";
+                        var_export($docname.'.');
+                        echo " . \$index] = \$value;\n                                } else {\n                                    \$update = 'update_' . sha1(\$value['__embed_class']);\n                                    \$diff = \$this->\$update(\$value, \$old[";
+                        var_export($propname);
+                        echo "][\$index], true);\n                                    foreach (\$diff as \$op => \$value) {\n                                        foreach (\$value as \$p => \$val) {\n                                            \$change[\$op][";
+                        var_export($docname.'.');
+                        echo " . \$index . '.' . \$p] = \$val;\n                                        }\n                                    }\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                if (!empty(\$value['__instance'])) {\n                                    \$change['\$pull'][";
+                        var_export($docname);
+                        echo "] = array(\n                                        '__instance' => \$value['__instance'],\n                                    );\n                                } else {\n                                    \$change['\$pull'][";
+                        var_export($docname);
+                        echo "] = \$value;\n                                }\n                            }\n                        }\n\n\n\n";
                     }
                     else if ($prop->has('ReferenceMany') || $prop->has('Array')) {
-                        echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old['" . ($propname) . "'], \$current['" . ($propname) . "']);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old['" . ($propname) . "'], \$toRemove)) {\n                            \$change['\$set']['" . ($propname) . "'] = array_values(\$current['" . ($propname) . "']);\n                        } else {\n                            foreach (\$current['" . ($propname) . "'] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old['" . ($propname) . "'])) {\n                                    \$change['\$push']['" . ($propname) . "'] = \$value;\n                                    continue;\n                                }\n                                if (\$old['" . ($propname) . "'][\$index] != \$value) {\n                                    \$change['\$set']['" . ($propname) . ".' . \$index] = \$value;\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                \$change['\$pull'][";
+                        echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old[";
                         var_export($propname);
-                        echo "] = \$value;\n                            }\n                        }\n\n";
+                        echo "], \$" . ($current) . "[";
+                        var_export($propname);
+                        echo "]);\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old[";
+                        var_export($propname);
+                        echo "], \$toRemove)) {\n                            \$change['\$set'][";
+                        var_export($docname);
+                        echo "] = array_values(\$" . ($current) . "[" . "@" . ($propname) . "]);\n                        } else {\n                            foreach (\$" . ($current) . "[";
+                        var_export($propname);
+                        echo "] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old[";
+                        var_export($propname);
+                        echo "])) {\n                                    \$change['\$push'][";
+                        var_export($docname);
+                        echo "] = \$value;\n                                    continue;\n                                }\n                                if (\$old[";
+                        var_export($propname);
+                        echo "][\$index] != \$value) {\n                                    \$change['\$set'][";
+                        var_export($docname . '.');
+                        echo " . \$index] = \$value;\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                if (!empty(\$value['__instance'])) {\n                                    \$change['\$pull'][";
+                        var_export($docname);
+                        echo "] = array(\n                                        '__instance' => \$value['__instance'],\n                                    );\n                                } else {\n                                    \$change['\$pull'][";
+                        var_export($docname);
+                        echo "] = \$value;\n                                }\n                            }\n                        }\n\n";
                     }
                     else {
                         echo "                        \$change['\$set'][";
-                        var_export($propname);
-                        echo "] = \$current[";
+                        var_export($docname);
+                        echo "] = \$" . ($current) . "[";
                         var_export($propname);
                         echo "];\n";
                     }
@@ -309,61 +406,130 @@ namespace {
                 }
                 echo "\n        return \$change;\n    }\n\n    public function get_mapping_" . (sha1($doc['class'])) . "() \n    {\n        return array(\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
-                    $name = $prop['property'];
+                    $cname = $prop['property'];
+                    $pname = $cname;
                     if ($prop->has('Id')) {
-                        $name = '_id';
+                        $cname = '_id';
                     }
+                    else if ($doc['is_gridfs']) {
+                        $pname = 'metadata.' . $pname;
+                    }
+
                     echo "                ";
-                    var_export($prop['property']);
+                    var_export($pname);
                     echo " => ";
-                    var_export($name);
+                    var_export($cname);
                     echo ",\n";
                 }
-                echo "        );\n    }\n\n    /**\n     *  Populate objects " . ($doc['class']) . " \n     */\n    public function populate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, Array \$data)\n    {\n";
+                echo "        );\n    }\n\n    /**\n     *  Populate objects " . ($doc['class']) . " \n     */\n    public function populate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, \$data)\n    {\n";
                 if (!empty($doc['parent'])) {
                     echo "            \$this->populate_" . (sha1($doc['parent'])) . "(\$object, \$data);\n";
                 }
                 echo "\n";
+                if ($doc['is_gridfs']) {
+                    echo "            if (!\$data instanceof \\MongoGridFsFile) {\n                throw new \\RuntimeException(\"Internal error, trying to populate a GridFSFile with an array\");\n            }\n            \$data_file = \$data;\n            \$data      = \$data->file;\n            if (empty(\$data['metadata'])) {\n                \$data['metadata'] = [];\n            }\n";
+                }
+                else {
+                    echo "\n            if (!is_array(\$data)) {\n                throw new \\RuntimeException(\"Internal error, trying to populate a document with a wrong data\");\n            }\n";
+                }
+                echo "\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
-                    $name = $prop['property'];
+                    $docname = $prop['property'];
+                    $propname = $prop['property'];
+                    $data = '$data';
+                    echo "\n";
                     if ($prop->has('Id')) {
-                        $name = '_id';
+                        $docname = '_id';
                     }
-                    echo "            if (array_key_exists(\"" . ($name) . "\", \$data)) {\n";
+                    else if ($doc['is_gridfs']) {
+                        $data = '$data["metadata"]';
+                    }
+
+                    if ($prop->has('Stream')) {
+                        if (in_array('public', $prop['visibility'])) {
+                            echo "                    \$object->" . ($prop['property']) . " = \$data_file->getResource();\n";
+                        }
+                        else {
+                            echo "                    \$property = new \\ReflectionProperty(\$object, ";
+                            var_export($prop['property']);
+                            echo ");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$object, \$data_file->getResource());\n";
+                        }
+                        continue;
+                    }
+                    echo "            if (array_key_exists(\"" . ($docname) . "\", " . ($data) . ")) {\n";
                     foreach($hydratations as $zname => $callback) {
                         if ($prop->has($zname)) {
-                            echo "                        if (empty(\$this->loaded['" . ($files[$zname]) . "'])) {\n                            require_once __DIR__ .  '" . ($files[$zname]) . "';\n                            \$this->loaded['" . ($files[$zname]) . "'] = true;\n                        }\n                        \n                        " . ($callback) . "(\$data['" . ($name) . "'], " . (var_export($prop[0]['args'] ?: [],  true)) . ", \$this->connection, \$this);\n";
+                            echo "                        if (empty(\$this->loaded[";
+                            var_export($files[$zname]);
+                            echo "])) {\n                            require_once __DIR__ .  ";
+                            var_export($files[$zname]);
+                            echo ";\n                            \$this->loaded[";
+                            var_export($files[$zname]);
+                            echo "] = true;\n                        }\n                        \n                        " . ($callback) . "(" . ($data) . "[";
+                            var_export($docname);
+                            echo "], " . (var_export($prop[0]['args'] ?: [],  true)) . ", \$this->connection, \$this);\n";
                         }
                     }
                     echo "\n";
                     if (in_array('public', $prop['visibility'])) {
-                        echo "                    \$object->" . ($prop['property']) . " = \$data['" . ($name) . "'];\n";
+                        echo "                    \$object->" . ($prop['property']) . " = " . ($data) . "[";
+                        var_export($docname);
+                        echo "];\n";
                     }
                     else {
-                        echo "                    \$property = new \\ReflectionProperty(\$object, \"" . ($prop['property']) . "\");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$object, \$data['" . ($name) . "']);\n";
+                        echo "                    \$property = new \\ReflectionProperty(\$object, ";
+                        var_export($prop['property']);
+                        echo ");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$object, " . ($data) . "[";
+                        var_export($docname);
+                        echo "]);\n";
                     }
                     echo "                \n            }\n";
                 }
-                echo "    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function get_array_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n";
+                echo "    }\n\n    /**\n     *  Get reference of  " . ($doc['class']) . " object\n     */\n    public function get_reference_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, \$include = Array())\n    {\n        \$document = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n        \$extra    = array();\n        if (\$include) {\n            \$extra  = array_intersect_key(\$document, \$include);\n        }\n\n        return array_merge(array(\n                '\$id'   => \$document['_id'],\n                '\$ref'  => ";
+                var_export($doc['name']);
+                echo ", \n                '__class' => ";
+                var_export($doc['class']);
+                echo ",\n            )\n            , \$extra\n";
+                if (!empty($refCache[$doc['class']])) {
+                    echo "            , array_intersect_key(\n                \$document, \n                ";
+                    var_export(array_combine($refCache[$doc['class']], $refCache[$doc['class']]));
+                    echo "\n            )\n";
+                }
+                echo "        );\n\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function get_array_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n";
                 if (empty($doc['parent'])) {
                     echo "            \$doc = array();\n";
                 }
                 else {
                     echo "            \$doc = \$this->get_array_" . (sha1($doc['parent'])) . "(\$object);\n";
                 }
+                echo "\n";
+                $docz = '$doc';
+                if ($doc['is_gridfs']) {
+                    $docz = '$doc["metadata"]';
+                }
+                echo "\n\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
                     echo "            /* " . ($prop['property']) . " */\n";
                     $propname = $prop['property'];
+                    $docname = $propname;
                     if ($prop->has('Id')) {
-                        $propname = '_id';
+                        $docz = '$doc';
+                        $docname = '_id';
                     }
                     if (in_array('public', $prop['visibility'])) {
-                        echo "                if (\$object->" . ($prop['property']) . " !== NULL) {\n                    \$doc['" . ($propname) . "'] = \$object->" . ($prop['property']) . ";\n                }\n";
+                        echo "                if (\$object->" . ($propname) . " !== NULL) {\n                    " . ($docz) . "[";
+                        var_export($docname);
+                        echo "] = \$object->" . ($propname) . ";\n                }\n";
                     }
                     else {
                         echo "                \$property = new \\ReflectionProperty(\$object, ";
-                        var_export($prop['property']);
-                        echo ");\n                \$property->setAccessible(true);\n                \$doc['" . ($propname) . "'] = \$property->getValue(\$object);\n";
+                        var_export($propname);
+                        echo ");\n                \$property->setAccessible(true);\n                " . ($docz) . "[";
+                        var_export($docname);
+                        echo "] = \$property->getValue(\$object);\n";
+                    }
+                    if ($doc['is_gridfs']) {
+                        $docz = '$doc["metadata"]';
                     }
                 }
                 echo "\n";
@@ -374,7 +540,17 @@ namespace {
                     }
                     foreach($defaults as $name => $callback) {
                         if ($prop->has($name)) {
-                            echo "                    // default: " . ($name) . "\n                    if (empty(\$doc['" . ($propname) . "'])) {\n                        if (empty(\$this->loaded['" . ($files[$name]) . "'])) {\n                            require_once __DIR__ . '" . ($files[$name]) . "';\n                            \$this->loaded['" . ($files[$name]) . "'] = true;\n                        }\n                        \$doc['" . ($propname) . "'] = " . ($callback) . "(\$doc, ";
+                            echo "                    // default: " . ($name) . "\n                    if (empty(" . ($docz) . "[";
+                            var_export($propname);
+                            echo "])) {\n                        if (empty(\$this->loaded[";
+                            var_export($files[$name]);
+                            echo "])) {\n                            require_once __DIR__ . ";
+                            var_export($files[$name]);
+                            echo ";\n                            \$this->loaded[";
+                            var_export($files[$name]);
+                            echo "] = true;\n                        }\n                        " . ($docz) . "[";
+                            var_export($propname);
+                            echo "] = " . ($callback) . "(" . ($docz) . ", ";
                             var_export($prop->getOne($name));
                             echo ", \$this->connection, \$this); \n                    }\n";
                         }
@@ -382,20 +558,26 @@ namespace {
                 }
                 echo "\n";
                 if (!empty($doc['disc'])) {
-                    echo "            \$doc[";
+                    echo "            " . ($docz) . "[";
                     var_export($doc['disc']);
                     echo "] = ";
                     var_export($doc['class']);
                     echo ";\n";
                 }
                 echo "\n        return \$doc;\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function validate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n        \$doc = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n\n";
+                $docz = '$doc';
+                if ($doc['is_gridfs']) {
+                    $docz = '$doc["metadata"]';
+                }
                 foreach($doc['annotation']->getProperties() as $prop) {
                     $propname = $prop['property'];
                     if ($prop->has('Id')) {
                         $propname = '_id';
                     }
                     if ($prop->has('Required')) {
-                        echo "            if (empty(\$doc['" . ($propname) . "'])) {\n                throw new \\RuntimeException(\"" . ($prop['property']) . " cannot be empty\");\n            }\n";
+                        echo "            if (empty(" . ($docz) . "[";
+                        var_export($propname);
+                        echo "])) {\n                throw new \\RuntimeException(\"" . ($prop['property']) . " cannot be empty\");\n            }\n";
                     }
                     echo "\n";
                     ActiveMongo2\Templates::exec('validate', compact('propname', 'validators', 'files', 'prop'), $this->context);
@@ -406,7 +588,9 @@ namespace {
                 }
                 foreach($doc['annotation']->getProperties() as $prop) {
                     $propname = $prop['property'];
-                    echo "            if (\$property ==  '" . ($propname) . "'\n";
+                    echo "            if (\$property ==  ";
+                    var_export($propname);
+                    echo "\n";
                     foreach($prop->getAll() as $annotation) {
                         echo "                 || \$property == '" . "@" . ($annotation['method']) . "'\n";
                     }
@@ -511,7 +695,13 @@ namespace {
                             $temp = $plugins[$zmethod['method']];
                             foreach($temp->getMethods() as $method) {
                                 if ($method->has($ev) && empty($first_time)) {
-                                    echo "                            if (empty(\$this->loaded['" . ($self->getRelativePath($temp['file'])) . "'])) {\n                                require_once __DIR__ .  '" . ($self->getRelativePath($temp['file'])) . "';\n                                \$this->loaded['" . ($self->getRelativePath($temp['file'])) . "'] = true;\n                            }\n";
+                                    echo "                            if (empty(\$this->loaded[";
+                                    var_export($self->getRelativePath($temp['file']));
+                                    echo "])) {\n                                require_once __DIR__ .  ";
+                                    var_export($self->getRelativePath($temp['file']));
+                                    echo ";\n                                \$this->loaded[";
+                                    var_export($self->getRelativePath($temp['file']));
+                                    echo "] = true;\n                            }\n";
                                     if (!in_array('static', $temp['visibility'])) {
                                         echo "                                // " . ($method[0]['method']) . "\n                                \$plugin = new \\" . ($temp['class']) . "(" . (var_export($zmethod['args'], true)) . ");\n";
                                         $first_time = true;

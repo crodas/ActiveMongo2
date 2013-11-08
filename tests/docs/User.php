@@ -6,6 +6,7 @@ namespace ActiveMongo2\Tests\Document;
  * @Persist(collection="user") 
  * @Unupdatable("email")
  * @Universal(auto_increment=true,set_id=true)
+ * @RefCache(username, email, visits)
  */
 class UserDocument
 {
