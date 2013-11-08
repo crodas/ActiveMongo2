@@ -34,115 +34,50 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2;
+namespace ActiveMongo2\Cache;
 
-use MongoCollection;
-
-class Collection 
+class Cache
 {
-    protected $zconn;
-    protected $mapper;
-    protected $zcol;
-    protected $cache;
-    protected static $list = array();
+    protected $storage;
 
-    protected static $defaultOpts = array(
-        'w' => 1,
-        'multiple' => true,
-    );
-
-    public function __construct(Connection $conn, $mapper, MongoCollection $col, $cache)
+    public function __construct(Storage $storage = null)
     {
-        $this->cache  = $cache;
-        $this->zconn  = $conn;
-        $this->zcol   = $col;
-        $this->mapper = $mapper;
+        if ($storage) {
+            $this->storage = $storage;
+        } else {
+            $this->storage = new Storage\None;
+        }
     }
 
-    public function rawCollection()
+    public function setStorage(Storage $storage)
     {
-        return $this->zcol;
+        $this->storage = $storage;
     }
 
-    protected function analizeUpdate($query)
+    protected function id($id)
     {
-    }
-
-    public function query()
-    {
-        return new FluentQuery($this);
-    }
-
-    public function update($filter, $update, $opts = array())
-    {
-        $this->analizeUpdate($update);
-        $opts = array_merge(self::$defaultOpts, $opts);
-        return $this->zcol->update($filter, $update, $opts);
-    }
-
-    public function count($filter = array(), $skip = 0, $limit = 0)
-    {
-        return $this->zcol->count($filter, $skip, $limit);
-    }
-
-    public function drop()
-    {
-        $this->zcol->drop();
-    }
-
-    public function aggregate()
-    {
-        $document = call_user_func_array([$this->zcol, 'aggregate'], func_get_args());
-        if (empty($document['ok'])) {
-            throw new \RuntimeException($document['errmsg']);
+        if (is_scalar($id)) {
+            return $id;
+        }
+        $parts = [];
+        foreach ($id as $key => $value) {
+            if ($value instanceof \MongoCollection) {
+                $parts[] = (string)$value;
+            } else {
+                $parts[] = serialize($value);
+            }
         }
 
-        $results = [];
-        foreach ($document['result'] as $res) {
-            $results[] = $this->zconn->registerDocument($this->mapper->getObjectClass($this->zcol, $res), $res);
-        }
-
-        return $results;
+        return implode("::", $parts);
     }
 
-    public function findAndModify($query, $update, $options)
+    public function get($index)
     {
-        $response = $this->zcol->findAndModify($query, $update, null, $options);
-
-        return $this->zconn->registerDocument($this->mapper->getObjectClass($this->zcol, $response), $response);
+        return $this->storage->get(self::id($index));
     }
 
-    public function find($query = array(), $fields = array())
+    public function set($index, Array $value)
     {
-        return new Cursor($query, $fields, $this->zconn, $this->zcol, $this->mapper);
-    }
-
-    public function getById($id)
-    {
-        $cache = $this->cache->get([$this->zcol, $id]);
-        if (is_array($cache)) {
-            return $this->zconn->registerDocument(
-                $this->mapper->getObjectClass($this->zcol, $cache), 
-                $cache
-            );
-        }
-        $document = $this->findOne(['_id' => $id]);
-        if (!$document) {
-            throw new \RuntimeException("Cannot find object with _id $id");
-        }
-
-        $this->cache->set([$this->zcol, $id], $this->zconn->getRawDocument($document, false));
-
-        return $document;
-    }
-
-    public function findOne($query = array(), $fields = array())
-    {
-        $doc =  $this->zcol->findOne($query, $fields);
-        if (empty($doc)) {
-            return $doc;
-        }
-
-        return $this->zconn->registerDocument($this->mapper->getObjectClass($this->zcol, $doc), $doc);
+        $this->storage->set(self::id($index), $value);
     }
 }

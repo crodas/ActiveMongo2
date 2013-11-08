@@ -305,7 +305,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $doc1 = $conn->getCollection('post')
             ->getById($post->id);
 
-        $this->assertEquals($doc->foobar, $doc1->foobar);
-        $this->assertEquals($doc, $doc1);
+        $this->assertTrue(empty($doc1->foobar));
+        $this->assertNotEquals($doc, $doc1);
     }
 }

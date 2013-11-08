@@ -34,72 +34,24 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2;
+namespace ActiveMongo2\Cache\Storage;
 
-use Notoj\Notoj;
-use WatchFiles\Watch;
+use ActiveMongo2\Cache\Storage;
 
-class Configuration
+class Memory implements Storage
 {
-    protected $loader;
-    protected $path;
-    protected $devel = false;
-    protected $cache;
+    protected static $cache = array();
 
-    public function __construct($loader)
+    public function get($index)
     {
-        $this->loader = $loader;
-        $this->cache  = new Cache\Cache;
-    }
-
-    public function setCacheStorage(Cache\Storage $storage)
-    {
-        $this->cache->setStorage($storage);
-    }
-
-    public function getCache()
-    {
-        return $this->cache;
-    }
-
-    public function getModelPath()
-    {
-        return $this->path;
-    }
-
-    public function getLoader()
-    {
-        return $this->loader;
-    }
-
-    public function addModelPath($path)
-    {
-        $this->path[] = $path;
-        return $this;
-    }
-
-    public function initialize(Connection $conn)
-    {
-        Notoj::enableCache($this->loader . ".tmp");
-
-        if ($this->devel || !is_file($this->loader)) {
-            $watcher = new Watch($this->loader . ".lock");
-            if (!$watcher->isWatching() || $watcher->hasChanged()) {
-                new Generate($this, $watcher);
-            }
+        if (!empty(self::$cache[$index])) {
+            return self::$cache[$index];
         }
-        
-        
-        $class = "\\ActiveMongo2\\Generated" . sha1($this->GetLoader()) . "\\Mapper";
-        if (!class_exists($class, false)) {
-            require $this->getLoader();
-        }
-        return new $class($conn);
     }
 
-    public function development()
+    public function set($index, $value)
     {
-        $this->devel = true;
-        return $this;
+        self::$cache[$index] = $value;
     }
+
 }

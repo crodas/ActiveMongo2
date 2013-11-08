@@ -61,12 +61,15 @@ class Connection
     protected static $docs = array();
     protected static $rand;
     protected $uniq = null;
+    protected $cache;
 
     public function __construct(Configuration $config, MongoClient $conn, $db)
     {
         if (empty(self::$rand)) {
             self::$rand = uniqid(true);
         } 
+
+        $this->cache  = $config->getCache();
         $this->mapper = $config->initialize($this);
         $this->conn   = $conn;
         $this->db     = $conn->selectDB($db);
@@ -119,12 +122,16 @@ class Connection
             return $this->collections[$data['name']];
         }
 
+        $cache = $this->cache;
         if (!empty($data['is_gridfs'])) {
             $mongoCol = $this->db->getGridFs($data['name']);
+            $cache    = new Cache\Storage\None;
         } else {
             $mongoCol = $this->db->selectCollection($data['name']);
         }
-        $this->collections[$data['name']] = new Collection($this, $this->mapper, $mongoCol);
+
+        $this->collections[$data['name']] = new Collection($this, $this->mapper, $mongoCol, $cache);
+
         return $this->collections[$data['name']];
     }
 
