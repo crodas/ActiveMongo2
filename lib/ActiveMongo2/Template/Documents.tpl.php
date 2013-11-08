@@ -142,7 +142,7 @@ class Mapper
         return $this->{"update_" . sha1($class)}($doc, $old);
     }
 
-    public function populate($object, Array $data)
+    public function populate($object, $data)
     {
         $class = strtolower(get_class($object));
         if (empty($this->class_mapper[$class])) {
@@ -179,15 +179,23 @@ class Mapper
         return $this->$func();
     }
 
-    public function getObjectClass($col, Array $array)
+    public function getObjectClass($col, $array)
     {
+        if ($array instanceof \MongoGridFsFile) {
+            $array = $array->file;
+        }
         if ($col instanceof \MongoCollection) {
             $col = $col->getName();
         }
         $class = NULL;
         switch ($col) {
         @foreach ($docs as $doc)
+            @if ($doc['is_gridfs'])
+            case {{@$doc['name'] . '.files'}}:
+            case {{@$doc['name'] . '.chunks'}}:
+            @else
             case {{@$doc['name']}}:
+            @end
                 @if (empty($doc['disc']))
                     $class = {{@$doc['class']}};
                 @else
@@ -241,60 +249,66 @@ class Mapper
         @end
 
         @foreach ($doc['annotation']->getProperties() as $prop)
+            @set($docname, $prop['property'])
             @set($propname, $prop['property'])
-            @set($var, 'current')
+            @set($current, "current")
             @if ($prop->has('Id'))
                 @set($propname, '_id')
             @end
-            @set($var, "current")
 
-            if (array_key_exists({{@$propname}}, $current)
+            @if ($doc['is_gridfs'])
+                // GridFS collection detected! it is special :-)
+                @set($current, "current['metadata']")
+                @set($docname, "metadata." . $propname)
+            @end
+
+            if (array_key_exists({{@$propname}}, ${{$current}})
                 || array_key_exists({{@$propname}}, $old)) {
 
-                if (!array_key_exists({{@$propname}}, $current)) {
-                    $change['$unset'][{{@$propname}}] = 1;
+                if (!array_key_exists({{@$propname}}, ${{$current}})) {
+                    $change['$unset'][{{@$docname}}] = 1;
                 } else if (!array_key_exists({{@$propname}}, $old)) {
-                    $change['$set'][{{@$propname}}] = $current[{{@$propname}}];
-                } else if ($current[{{@$propname}}] !== $old[{{@$propname}}]) {
+                    $change['$set'][{{@$docname}}] = ${{$current}}[{{@$propname}}];
+                } else if (${{$current}}[{{@$propname}}] !== $old[{{@$propname}}]) {
                     @if ($prop->has('Inc'))
                         if (empty($old[{{@$propname}}])) {
                             $prev = 0;
                         } else {
                             $prev = $old[{{@$propname}}];
                         }
-                        $change['$inc'][{{@$propname}}] = $current[{{@$propname}}] - $prev;
+                        $change['$inc'][{{@$docname}}] = ${{$current}}[{{@$propname}}] - $prev;
                     @elif ($prop->has('Embed'))
-                        if ($current[{{@$propname}}]['__embed_class'] != $old[{{@$propname}}]['__embed_class']) {
-                            $change['$set'][{{@$propname.'.'}} . $index] = $current[{{@$propname}}];
+                        if (${{$current}}[{{@$propname}}]['__embed_class'] != $old[{{@$propname}}]['__embed_class']) {
+                            $change['$set'][{{@$docname.'.'}} . $index] = ${{$current}}[{{@$propname}}];
                         } else {
-                            $update = 'update_' . sha1($current[{{@$propname}}]['__embed_class']);
-                            $diff = $this->$update($current[{{@$propname}}], $old[{{@$propname}}], true);
+                            $update = 'update_' . sha1(${{$current}}[{{@$propname}}]['__embed_class']);
+                            $diff = $this->$update(${{$current}}[{{@$propname}}], $old[{{@$propname}}], true);
                             foreach ($diff as $op => $value) {
                                 foreach ($value as $p => $val) {
-                                    $change[$op][{{@$propname.'.'}} . $p] = $val;
+                                    $change[$op][{{@$docname.'.'}} . $p] = $val;
                                 }
                             }
                         }
                     @elif ($prop->has('EmbedMany'))
                         // add things to the array
-                        $toRemove = array_diff_key($old[{{@$propname}}], $current[{{@$propname}}]);
+                        $toRemove = array_diff_key($old[{{@$propname}}], ${{$current}}[{{@$propname}}]);
 
                         if (count($toRemove) > 0 && $this->array_unique($old[{{@$propname}}], $toRemove)) {
-                            $change['$set'][{{@$propname}}] = array_values($current[{{@$propname}}]);
+                            $change['$set'][{{@$docname}}] = array_values(${{$current}}[{{@$propname}}]);
                         } else {
-                            foreach ($current[{{@$propname}}] as $index => $value) {
+                            foreach (${{$current}}[{{@$propname}}] as $index => $value) {
                                 if (!array_key_exists($index, $old[{{@$propname}}])) {
-                                    $change['$push'][{{@$propname}}] = $value;
+                                    $change['$push'][{{@$docname}}] = $value;
                                     continue;
                                 }
                                 if ($value['__embed_class'] != $old[{{@$propname}}][$index]['__embed_class']) {
-                                    $change['$set'][{{@$propname.'.'}} . $index] = $value;
+                                    $change['$set'][{{@$docname.'.'}} . $index] = $value;
                                 } else {
                                     $update = 'update_' . sha1($value['__embed_class']);
                                     $diff = $this->$update($value, $old[{{@$propname}}][$index], true);
                                     foreach ($diff as $op => $value) {
                                         foreach ($value as $p => $val) {
-                                            $change[$op][{{@$propname.'.'}} . $index . '.' . $p] = $val;
+                                            $change[$op][{{@$docname.'.'}} . $index . '.' . $p] = $val;
                                         }
                                     }
                                 }
@@ -302,11 +316,11 @@ class Mapper
 
                             foreach ($toRemove as $value) {
                                 if (!empty($value['__instance'])) {
-                                    $change['$pull'][{{@$propname}}] = array(
+                                    $change['$pull'][{{@$docname}}] = array(
                                         '__instance' => $value['__instance'],
                                     );
                                 } else {
-                                    $change['$pull'][{{@$propname}}] = $value;
+                                    $change['$pull'][{{@$docname}}] = $value;
                                 }
                             }
                         }
@@ -315,34 +329,34 @@ class Mapper
 
                     @elif ($prop->has('ReferenceMany') || $prop->has('Array'))
                         // add things to the array
-                        $toRemove = array_diff_key($old[{{@$propname}}], $current[{{@$propname}}]);
+                        $toRemove = array_diff_key($old[{{@$propname}}], ${{$current}}[{{@$propname}}]);
 
                         if (count($toRemove) > 0 && $this->array_unique($old[{{@$propname}}], $toRemove)) {
-                            $change['$set'][{{@$propname}}] = array_values($current[@{{$propname}}]);
+                            $change['$set'][{{@$docname}}] = array_values(${{$current}}[@{{$propname}}]);
                         } else {
-                            foreach ($current[{{@$propname}}] as $index => $value) {
+                            foreach (${{$current}}[{{@$propname}}] as $index => $value) {
                                 if (!array_key_exists($index, $old[{{@$propname}}])) {
-                                    $change['$push'][{{@$propname}}] = $value;
+                                    $change['$push'][{{@$docname}}] = $value;
                                     continue;
                                 }
                                 if ($old[{{@$propname}}][$index] != $value) {
-                                    $change['$set'][{{@$propname . '.'}} . $index] = $value;
+                                    $change['$set'][{{@$docname . '.'}} . $index] = $value;
                                 }
                             }
 
                             foreach ($toRemove as $value) {
                                 if (!empty($value['__instance'])) {
-                                    $change['$pull'][{{@$propname}}] = array(
+                                    $change['$pull'][{{@$docname}}] = array(
                                         '__instance' => $value['__instance'],
                                     );
                                 } else {
-                                    $change['$pull'][{{@$propname}}] = $value;
+                                    $change['$pull'][{{@$docname}}] = $value;
                                 }
                             }
                         }
 
                     @else
-                        $change['$set'][{{@$propname}}] = $current[{{@$propname}}];
+                        $change['$set'][{{@$docname}}] = ${{$current}}[{{@$propname}}];
                     @end
                 }
             }
@@ -355,11 +369,14 @@ class Mapper
     {
         return array(
             @foreach ($doc['annotation']->getProperties() as $prop)
-                @set($name, $prop['property'])
+                @set($cname, $prop['property'])
+                @set($pname, $cname);
                 @if ($prop->has('Id'))
-                    @set($name, '_id')
+                    @set($cname, '_id')
+                @elif ($doc['is_gridfs']) 
+                    @set($pname, 'metadata.' . $pname)
                 @end
-                {{@$prop['property']}} => {{@$name}},
+                {{@$pname}} => {{@$cname}},
             @end
         );
     }
@@ -367,18 +384,49 @@ class Mapper
     /**
      *  Populate objects {{$doc['class']}} 
      */
-    public function populate_{{sha1($doc['class'])}}(\{{$doc['class']}} $object, Array $data)
+    public function populate_{{sha1($doc['class'])}}(\{{$doc['class']}} $object, $data)
     {
         @if (!empty($doc['parent']))
             $this->populate_{{sha1($doc['parent'])}}($object, $data);
         @end
 
+        @if ($doc['is_gridfs'])
+            if (!$data instanceof \MongoGridFsFile) {
+                throw new \RuntimeException("Internal error, trying to populate a GridFSFile with an array");
+            }
+            $data_file = $data;
+            $data      = $data->file;
+            if (empty($data['metadata'])) {
+                $data['metadata'] = [];
+            }
+        @else
+
+            if (!is_array($data)) {
+                throw new \RuntimeException("Internal error, trying to populate a document with a wrong data");
+            }
+        @end
+
         @foreach ($doc['annotation']->getProperties() as $prop)
-            @set($name, $prop['property'])
+            @set($docname,  $prop['property'])
+            @set($propname, $prop['property'])
+            @set($data, '$data')
+
             @if ($prop->has('Id'))
-                @set($name, '_id')
+                @set($docname, '_id')
+            @elif ($doc['is_gridfs'])
+                @set($data, '$data["metadata"]')
             @end
-            if (array_key_exists("{{$name}}", $data)) {
+            @if ($prop->has('Stream'))
+                @if (in_array('public', $prop['visibility']))
+                    $object->{{$prop['property']}} = $data_file->getResource();
+                @else
+                    $property = new \ReflectionProperty($object, {{@$prop['property']}});
+                    $property->setAccessible(true);
+                    $property->setValue($object, $data_file->getResource());
+                @end
+                @continue
+            @end
+            if (array_key_exists("{{$docname}}", {{$data}})) {
                 @foreach($hydratations as $zname => $callback)
                     @if ($prop->has($zname))
                         if (empty($this->loaded[{{@$files[$zname]}}])) {
@@ -386,16 +434,16 @@ class Mapper
                             $this->loaded[{{@$files[$zname]}}] = true;
                         }
                         
-                        {{$callback}}($data[{{@$name}}], {{var_export($prop[0]['args'] ?: [],  true)}}, $this->connection, $this);
+                        {{$callback}}({{$data}}[{{@$docname}}], {{var_export($prop[0]['args'] ?: [],  true)}}, $this->connection, $this);
                     @end
                 @end
 
                 @if (in_array('public', $prop['visibility']))
-                    $object->{{$prop['property']}} = $data[{{@$name}}];
+                    $object->{{$prop['property']}} = {{$data}}[{{@$docname}}];
                 @else
                     $property = new \ReflectionProperty($object, {{@$prop['property']}});
                     $property->setAccessible(true);
-                    $property->setValue($object, $data[{{@$name}}]);
+                    $property->setValue($object, {{$data}}[{{@$docname}}]);
                 @end
                 
             }
@@ -439,20 +487,32 @@ class Mapper
         @else
             $doc = $this->get_array_{{sha1($doc['parent'])}}($object);
         @end
+
+        @set($docz, '$doc')
+        @if ($doc['is_gridfs'])
+            @set($docz, '$doc["metadata"]')
+        @end
+
+
         @foreach ($doc['annotation']->getProperties() as $prop)
             /* {{$prop['property']}} */
             @set($propname, $prop['property'])
+            @set($docname, $propname)
             @if ($prop->has('Id'))
-                @set($propname, '_id')
+                @set($docz, '$doc')
+                @set($docname, '_id')
             @end
             @if (in_array('public', $prop['visibility']))
-                if ($object->{{$prop['property']}} !== NULL) {
-                    $doc[{{@$propname}}] = $object->{{$prop['property']}};
+                if ($object->{{$propname}} !== NULL) {
+                    {{$docz}}[{{@$docname}}] = $object->{{$propname}};
                 }
             @else
-                $property = new \ReflectionProperty($object, {{ @$prop['property'] }});
+                $property = new \ReflectionProperty($object, {{ @$propname }});
                 $property->setAccessible(true);
-                $doc[{{@$propname}}] = $property->getValue($object);
+                {{$docz}}[{{@$docname}}] = $property->getValue($object);
+            @end
+            @if ($doc['is_gridfs'])
+                @set($docz, '$doc["metadata"]')
             @end
         @end
 
@@ -464,19 +524,19 @@ class Mapper
             @foreach ($defaults as $name => $callback) 
                 @if ($prop->has($name))
                     // default: {{$name}}
-                    if (empty($doc[{{@$propname}}])) {
+                    if (empty({{$docz}}[{{@$propname}}])) {
                         if (empty($this->loaded[{{@$files[$name]}}])) {
                             require_once __DIR__ . {{@$files[$name]}};
                             $this->loaded[{{@$files[$name]}}] = true;
                         }
-                        $doc[{{@$propname}}] = {{$callback}}($doc, {{@$prop->getOne($name)}}, $this->connection, $this); 
+                        {{$docz}}[{{@$propname}}] = {{$callback}}({{$docz}}, {{@$prop->getOne($name)}}, $this->connection, $this); 
                     }
                 @end
             @end
         @end
 
         @if (!empty($doc['disc']))
-            $doc[{{@$doc['disc']}}] = {{@$doc['class']}};
+            {{$docz}}[{{@$doc['disc']}}] = {{@$doc['class']}};
         @end
 
         return $doc;
@@ -489,13 +549,17 @@ class Mapper
     {
         $doc = $this->get_array_{{sha1($doc['class'])}}($object);
 
+        @set($docz, '$doc')
+        @if ($doc['is_gridfs'])
+            @set($docz, '$doc["metadata"]')
+        @end
         @foreach ($doc['annotation']->getProperties() as $prop)
             @set($propname, $prop['property'])
             @if ($prop->has('Id'))
                 @set($propname, '_id')
             @end
             @if ($prop->has('Required'))
-            if (empty($doc[{{@$propname}}])) {
+            if (empty({{$docz}}[{{@$propname}}])) {
                 throw new \RuntimeException("{{$prop['property']}} cannot be empty");
             }
             @end

@@ -36,40 +36,37 @@
 */
 namespace ActiveMongo2;
 
-use MongoCollection;
-use MongoCursor;
+use MongoGridFS;
 
-class Cursor extends MongoCursor
+class StoreFile 
 {
-    protected $mapper;
-    protected $conn;
-    protected $col;
+    protected $gridfs;
+    protected $metadata;
 
-    public function __construct(Array $query, Array $fields, Connection $conn, MongoCollection $col, $mapper)
+    public function __construct(MongoGridFS $col, Array $document)
     {
-        $this->conn   = $conn;
-        $this->col    = $col;
-        $this->mapper = $mapper;
-        parent::__construct($conn->getConnection(), (string)$col, $query, $fields);
+        $this->gridfs   = $col;
+        $this->metadata = $document;
     }
 
-    public function first()
+    public function storeFile($name)
     {
-        return $this->current();
-    }
-
-    public function current()
-    {
-        $current = parent::current();
-        $class   = $this->mapper->getObjectClass($this->col, $current);
-        if ($this->col instanceof \MongoGridFs) {
-            $current = new \MongoGridFsFile($this->col, $current);
+        if (!is_file($name)) {
+            throw new \RuntimeException("Cannot find file {$name}");
         }
-        return $this->conn->registerDocument($class, $current);
+        $doc = $this->gridfs->storeFile($name, $this->metadata);
     }
 
-    public function toArray()
+    public function storeBytes($bytes)
     {
-        return iterator_to_array($this);
+        $doc = $this->gridfs->storeBytes($bytes, $this->metadata);
+    }
+
+    public function storeUpload($name)
+    {
+        if (empty($_FILES[$name])) {
+            throw new \RuntimeException("Cannot find \$_FILE[{$name}]");
+        }
+        $doc = $this->gridfs->storeUpload($name, $this->metadata);
     }
 }

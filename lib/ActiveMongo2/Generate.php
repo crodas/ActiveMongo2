@@ -47,6 +47,39 @@ class Generate
     protected $files = array();
     protected $config;
 
+    public function getParentClasses($annotations)
+    {
+        $parents = [];
+        foreach ($annotations->get('Persist') as $object) {
+            if (!$object->isClass()) continue;
+            $class = strtolower($object['class']);
+            $parents[$class]  = $object;
+        }
+        return $parents;
+    }
+
+    public function getReferenceCache($annotations)
+    {
+        $refCache = [];
+        foreach ($annotations->get('Persist') as $object) {
+            if (!$object->isClass()) continue;
+            $class = strtolower($object['class']);
+            $refCache[$class] = [];
+            if ($object->has('RefCache')) {
+                foreach ($object->get('RefCache') as $args) {
+                    $args = $args['args'];
+                    if (empty($args)) {
+                        throw new \Exception("@RefCache expects at least one argument");
+                    }
+                    foreach ($args as $p) {
+                        $refCache[$class][] = $p;
+                    }
+                }
+            }
+        }
+        return $refCache;
+    }
+
     public function __construct(Configuration $config, Watch $watcher)
     {
         $annotations  = new Notoj\Annotations;
@@ -64,26 +97,8 @@ class Generate
             $dir->getAnnotations($annotations);
         }
 
-        $docs     = [];
-        $parents  = [];
-        $refCache = [];
-        foreach ($annotations->get('Persist') as $object) {
-            if (!$object->isClass()) continue;
-            $class = strtolower($object['class']);
-            $parents[$class]  = $object;
-            $refCache[$class] = [];
-            if ($object->has('RefCache')) {
-                foreach ($object->get('RefCache') as $args) {
-                    $args = $args['args'];
-                    if (empty($args)) {
-                        throw new \Exception("@RefCache expects at least one argument");
-                    }
-                    foreach ($args as $p) {
-                        $refCache[$class][] = $p;
-                    }
-                }
-            }
-        }
+        $parents  = $this->getParentClasses($annotations); 
+        $refCache = $this->getReferenceCache($annotations); 
 
         foreach (array('Persist', 'Embeddable') as $type) {
             foreach ($annotations->get($type) as $object) {
@@ -94,8 +109,17 @@ class Generate
                     'class' => strtolower($object['class']), 
                     'file'  => $this->getRelativePath($object['file']),
                     'annotation' => $object,
+                    'is_gridfs'  => $object->has('GridFs'),
                     'parent'     => $parent ? strtolower($parent['class']) : NULL,
                 );
+
+                if (!$data['is_gridfs']) {
+                    foreach ($object->getProperties() as $prop) {
+                        if ($prop->has('Stream')) {
+                            throw new \RuntimeException('@Stream only works with @GridFS');
+                        }
+                    }
+                }
 
                 if ($object->has('SingleCollection')) {
                     $data['disc'] = $object->getOne('SingleCollection') ?: ['__type'];
@@ -115,7 +139,14 @@ class Generate
                         $parent = $parent->GetParent();
                     } 
 
-                    if (empty($data['name'])) continue;
+                    if (empty($data['name'])) {
+                        if ($data['is_gridfs']) {
+                            $data['name'] = 'fs';
+                        } else {
+                            $data['name'] = explode("\\", $data['class']);
+                            $data['name'] = strtolower(end($data['name']));
+                        }
+                    }
 
                     if (!empty($data['disc'])) {
                         // give them some weird name
@@ -132,6 +163,7 @@ class Generate
             'Validate' => 'validators', 'Hydratate' => 'hydratations',
             'DefaultValue' => 'defaults',
         ];
+
         foreach ($read as $operation => $var) {
             $$var = array();
             foreach ($annotations->get($operation) as $validator) {
