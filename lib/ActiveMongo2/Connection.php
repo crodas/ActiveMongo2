@@ -122,12 +122,20 @@ class Connection
             return $this->collections[$data['name']];
         }
 
-        $mongoCol = $this->db->selectCollection($data['name']);
-        $this->collections[$data['name']] = new Collection($this, $this->mapper, $mongoCol, $this->cache);
+        $cache = $this->cache;
+        if (!empty($data['is_gridfs'])) {
+            $mongoCol = $this->db->getGridFs($data['name']);
+            $cache    = new Cache\Storage\None;
+        } else {
+            $mongoCol = $this->db->selectCollection($data['name']);
+        }
+
+        $this->collections[$data['name']] = new Collection($this, $this->mapper, $mongoCol, $cache);
+
         return $this->collections[$data['name']];
     }
 
-    public function registerDocument($class, Array $document)
+    public function registerDocument($class, $document)
     {
         $refl = new \ReflectionClass($class);
         if (PHP_MAJOR_VERSION >= 5 && PHP_MINOR_VERSION >= 5) {
@@ -141,7 +149,7 @@ class Connection
         return $doc;
     }
 
-    protected function setObjectDocument($object, Array $document)
+    protected function setObjectDocument($object, $document)
     {
         $this->mapper->populate($object, $document);
         $hash  = spl_object_hash($object);
@@ -214,6 +222,50 @@ class Connection
         return $diff;
     }
 
+    public function worker($daemon = true)
+    {
+        $queue = $this->db->deferred_queue;
+        $refs  = $this->db->references_queue;
+
+        $queue->ensureIndex(['processed' => 1]);
+        $refs->ensureIndex(['source_id' => 1]);
+
+        $done = 0;
+        do {
+            $work = $queue->findAndModify(
+                ['processed' => false], 
+                ['$set' => ['processed' => true, 'started' => new \MongoDate]], 
+                null, 
+                ['sort' => ['$natural' => -1]]
+            );
+            if (empty($work)) {
+                if ($daemon) {
+                    usleep(200000);
+                    continue;
+                }
+                break;
+            }
+            $all  = $refs->find(['source_id' => $work['source_id']]);
+            foreach ($all as $row) {
+                $update = $work['update'];
+                foreach ($update as $op => $fields) {
+                    foreach ($fields as $field => $value) {
+                        unset($update[$op][$field]);
+                        $update[$op][$row['property'] . '.' . $field] = $value;
+                    }
+                }
+                $col = $this->db->{$row['collection']};
+                $col->update(
+                    ['_id' => $row['id']],
+                    $update
+                );
+                $done++;
+            }
+            $queue->remove(['_id' => $work['_id']]);
+        } while (true);
+        return $done;
+    }
+
     public function is($collection, $object)
     {
         $class = $this->mapper->mapCollection($collection)['class'];
@@ -221,6 +273,32 @@ class Connection
             return $class == $object->getClass();
         }
         return $object instanceof $class;
+    }
+
+    public function file($obj)
+    {
+        if ($obj instanceof DocumentProxy) {
+            throw new \RuntimeException("Cannot update a reference");
+        }
+
+        $data = $this->mapper->mapClass(get_class($obj));;
+        if (!$data['is_gridfs']) {
+            throw new \RuntimeException("Missing @GridFS argument");
+        }
+        $col      = $this->db->getGridFs($data['name']);
+        $document = $this->mapper->validate($obj);
+        $oldDoc   = $this->getRawDocument($obj, false);
+
+        if (!empty($oldDoc)) {
+            throw new \RuntimeException("Update on @GridFS is not yet implemented");
+        }
+
+        $this->mapper->trigger('preCreate', $obj, array(&$document, $this));
+        if (empty($document['_id'])) {
+            $document['_id'] = new MongoId;
+        }
+
+        return new StoreFile($col, $document, $this, $obj);
     }
 
     public function save($obj, $safe = true)
@@ -233,7 +311,11 @@ class Connection
         }
         $class = get_class($obj);
         if (empty($this->classes[$class])) {
-            $collection = $this->mapper->mapClass(get_class($obj))['name'];
+            $data = $this->mapper->mapClass(get_class($obj));;
+            if ($data['is_gridfs']) {
+                throw new \RuntimeException("@GridFS must be saved with file");
+            }
+            $collection = $data['name'];
             $this->classes[$class] = $this->db->selectCollection($collection);
         }
 
@@ -256,9 +338,10 @@ class Connection
                 );
             }
 
-            $this->mapper->trigger('postUpdate', $obj, array($this, $update, $oldDoc['_id']));
-
             $this->setObjectDocument($obj, $document);
+
+            $this->mapper->trigger('postUpdate', $obj, array($update, $this,$oldDoc['_id']));
+            $this->mapper->trigger('postSave', $obj, array($update, $this));
 
             return $this;
         }
@@ -271,7 +354,8 @@ class Connection
         $this->setObjectDocument($obj, $document);
 
         $ret = $this->classes[$class]->save($document, array('w' => 1));
-        $this->mapper->trigger('postCreate', $obj, array($document));
+        $this->mapper->trigger('postCreate', $obj, array($document, $this));
+        $this->mapper->trigger('postSave', $obj, array($document, $this));
 
         return $this;
     }

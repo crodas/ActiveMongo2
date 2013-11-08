@@ -47,6 +47,39 @@ class Generate
     protected $files = array();
     protected $config;
 
+    public function getParentClasses($annotations)
+    {
+        $parents = [];
+        foreach ($annotations->get('Persist') as $object) {
+            if (!$object->isClass()) continue;
+            $class = strtolower($object['class']);
+            $parents[$class]  = $object;
+        }
+        return $parents;
+    }
+
+    public function getReferenceCache($annotations)
+    {
+        $refCache = [];
+        foreach ($annotations->get('Persist') as $object) {
+            if (!$object->isClass()) continue;
+            $class = strtolower($object['class']);
+            $refCache[$class] = [];
+            if ($object->has('RefCache')) {
+                foreach ($object->get('RefCache') as $args) {
+                    $args = $args['args'];
+                    if (empty($args)) {
+                        throw new \Exception("@RefCache expects at least one argument");
+                    }
+                    foreach ($args as $p) {
+                        $refCache[$class][] = $p;
+                    }
+                }
+            }
+        }
+        return $refCache;
+    }
+
     public function __construct(Configuration $config, Watch $watcher)
     {
         $annotations  = new Notoj\Annotations;
@@ -64,12 +97,8 @@ class Generate
             $dir->getAnnotations($annotations);
         }
 
-        $docs    = [];
-        $parents = [];
-        foreach ($annotations->get('Persist') as $object) {
-            if (!$object->isClass()) continue;
-            $parents[strtolower($object['class'])] = $object;
-        }
+        $parents  = $this->getParentClasses($annotations); 
+        $refCache = $this->getReferenceCache($annotations); 
 
         foreach (array('Persist', 'Embeddable') as $type) {
             foreach ($annotations->get($type) as $object) {
@@ -80,8 +109,17 @@ class Generate
                     'class' => strtolower($object['class']), 
                     'file'  => $this->getRelativePath($object['file']),
                     'annotation' => $object,
+                    'is_gridfs'  => $object->has('GridFs'),
                     'parent'     => $parent ? strtolower($parent['class']) : NULL,
                 );
+
+                if (!$data['is_gridfs']) {
+                    foreach ($object->getProperties() as $prop) {
+                        if ($prop->has('Stream')) {
+                            throw new \RuntimeException('@Stream only works with @GridFS');
+                        }
+                    }
+                }
 
                 if ($object->has('SingleCollection')) {
                     $data['disc'] = $object->getOne('SingleCollection') ?: ['__type'];
@@ -101,7 +139,14 @@ class Generate
                         $parent = $parent->GetParent();
                     } 
 
-                    if (empty($data['name'])) continue;
+                    if (empty($data['name'])) {
+                        if ($data['is_gridfs']) {
+                            $data['name'] = 'fs';
+                        } else {
+                            $data['name'] = explode("\\", $data['class']);
+                            $data['name'] = strtolower(end($data['name']));
+                        }
+                    }
 
                     if (!empty($data['disc'])) {
                         // give them some weird name
@@ -118,6 +163,7 @@ class Generate
             'Validate' => 'validators', 'Hydratate' => 'hydratations',
             'DefaultValue' => 'defaults',
         ];
+
         foreach ($read as $operation => $var) {
             $$var = array();
             foreach ($annotations->get($operation) as $validator) {
@@ -174,13 +220,54 @@ class Generate
         foreach ($vars as $type => $multi) {
             foreach ($annotations->get($type) as $prop) {
                 if (!$prop->isProperty()) continue;
-                foreach ($prop as $ann) {
-                    if (empty($ann['args']) || count($ann['args']) < 2) continue;
-                    $references[$ann['args'][0]][] = array(
+                foreach ($prop as $id => $ann) {
+                    if (Empty($ann['args'])) continue;
+                    $pzClass = strtolower($prop['class']);
+                    $pzArgs  = !empty($ann['args'][1]) ? $ann['args'][1] :[];
+                    if (empty($docs[$ann['args'][0]])) {
+                        // Document is not found, probably there
+                        // are inheritance
+                        foreach ($docs as $doc) {
+                            if ($doc['name'] != $ann['args'][0]) {
+                                continue;
+                            }
+                            $pxClass = $doc['class'];
+                            $pxArgs  = $pzArgs;
+                            if (!empty($refCache[$pxClass])) {
+                                $pxArgs = array_unique(array_merge($refCache[$pxClass], $pzArgs));
+                            }
+
+                            if (empty($pxArgs)) continue;
+
+                            $references[$pxClass][] = array(
+                                'class'         => $pzClass,
+                                'property'      => $prop['property'],
+                                'target'        => $class_mapper[$pxClass]['name'],
+                                'collection'    => $class_mapper[strtolower($prop['class'])]['name'],
+                                'update'        => $pxArgs,
+                                'multi'         => $multi,
+                                'deferred'      => $prop->has('Deferred'),
+                            );
+                        }
+                        continue;
+                    }
+
+                    $pxClass = $docs[$ann['args'][0]]['class'];
+
+                    if (!empty($refCache[$pxClass])) {
+                        $pzArgs = array_unique(array_merge($refCache[$pxClass], $pzArgs));
+                    }
+
+                    if (empty($pzArgs)) continue;
+
+                    $references[$pxClass][] = array(
+                        'class'         => $pzClass,
                         'property'      => $prop['property'],
+                        'target'        => $class_mapper[$pxClass]['name'],
                         'collection'    => $class_mapper[strtolower($prop['class'])]['name'],
-                        'update'        => $ann['args'][1],
+                        'update'        => $pzArgs,
                         'multi'         => $multi,
+                        'deferred'      => $prop->has('Deferred'),
                     );
                 }
             }
@@ -192,7 +279,7 @@ class Generate
                 'docs', 'namespace', 'class_mapper', 'events',
                 'validators', 'mapper', 'files', 'indexes',
                 'plugins', 'hydratations', 'self', 'references',
-                'defaults'
+                'defaults', 'refCache'
             ), true);
 
         $code = FixCode::fix($code);

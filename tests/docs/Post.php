@@ -3,14 +3,21 @@
 namespace ActiveMongo2\Tests\Document;
 
 /** 
- * @Persist
+ *  @Persist
+ *  @RefCache('title', 'tags', 'author')
  */
 class PostDocument extends BaseDocument
 {
     /** @Universal */
     public $global_id;
 
-    /** @Reference("user", [username, email]) @Required */
+    /** @Reference("user") @Deferred */
+    public $author_ref;
+
+    /** @ReferenceMany("user") @Deferred */
+    public $author_refs;
+
+    /** @Reference("user") @Required */
     public $author;
 
     /** @Int */

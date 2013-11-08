@@ -114,7 +114,7 @@ class EmbedReferenceTest extends \phpunit_framework_testcase
         $post->readers[1]->visits = 1024;
         $conn->save($post);
         $this->assertEquals($this->getUser()->visits, 1024);
-        $this->assertEquals($this->getUser()->visits, $post->readers[0]->visits);
+        $this->assertEquals($this->getUser()->visits, $this->getPost()->readers[0]->visits);
 
         // remove one
         unset($post->readers[0]);

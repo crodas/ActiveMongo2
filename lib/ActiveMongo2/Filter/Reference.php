@@ -35,9 +35,11 @@
   +---------------------------------------------------------------------------------+
 */
 
-namespace ActiveMongo2\Plugin;
+namespace ActiveMongo2\Filter;
 
 use ActiveMongo2\Reference;
+
+require_once __DIR__ . "/Common.php";
 
 /**
  *  @Hydratate(ReferenceMany)
@@ -64,7 +66,7 @@ function _validate_reference_many(&$value, Array $args, $conn, $mapper)
         }
     }
 
-    return true;
+    return _validate_array($value, $args, $conn, $mapper);
 }
 
 
@@ -118,20 +120,7 @@ function _validate_reference_one(&$value, Array $args, $conn, $mapper)
         throw new \RuntimeException("Invalid value");
     }
     
-    $array = $mapper->validate($document);
-    $value = array(
-        '$id'       => $array['_id'],
-        '$ref'      => $mapper->mapClass(get_class($document))['name'],
-        '__class'   => get_class($document),
-    );
-
-    if (!empty($args[1])) {
-        foreach ((array)$args[1] as $prop) {
-            if (!empty($array[$prop])) {
-                $value[$prop] = $array[$prop];
-            }
-        }
-    }
+    $value = $mapper->getReference($document, empty($args[1]) ? [] : array_flip($args[1]));
 
     return true;
 }

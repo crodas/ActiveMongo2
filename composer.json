@@ -5,10 +5,10 @@
         "crodas/notoj": "~0.1",
         "crodas/simple-view-engine": "~0.1",
         "crodas/watch-files": "~0.1",
-        "crodas/path": "*"
+        "crodas/path": "~0.1"
     },
     "license": "BSD-4-Clause",
-    "version": "v0.1.4",
+    "version": "v0.1.7",
     "authors": [
         {
             "name": "César D. Rodas",
