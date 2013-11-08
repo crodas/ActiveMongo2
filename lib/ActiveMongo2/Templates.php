@@ -82,7 +82,7 @@ namespace {
                     }
                 }
                 else {
-                    echo "        \$reflection = new ReflectionMethod(\"\\\\" . (addslashes($doc['class'])) . "\", \"" . ($method['function']) . "\");\n        \$return = \$reflection->invoke(\$document, " . ($target) . ", \$args, \$this->connection, " . (var_export($args ?: $method[0]['args'], true)) . ", \$this);\n";
+                    echo "        \$reflection = new \\ReflectionMethod(\"\\\\" . (addslashes($doc['class'])) . "\", \"" . ($method['function']) . "\");\n        \$return = \$reflection->invoke(\$document, " . ($target) . ", \$args, \$this->connection, " . (var_export($args ?: $method[0]['args'], true)) . ", \$this);\n";
                 }
                 echo "    if (\$return === FALSE) {\n        throw new \\RuntimeException(\"" . (addslashes($doc['class']) . "::" . $method['function']) . " returned false\");\n    }\n";
             }
