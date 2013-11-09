@@ -78,7 +78,7 @@ function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
 {
     $expected = current($args);
     if ($expected && $expected != $value['$ref']) {
-        throw new \RuntimeException("Expecting document {$expected} but got {$value['ref']}");
+        throw new \RuntimeException("Expecting document {$expected} but got {$value['$ref']}");
     }
 
     try {
