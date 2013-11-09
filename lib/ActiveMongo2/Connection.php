@@ -76,6 +76,12 @@ class Connection
         $this->uniq   = "__status_" . self::$rand;
     }
 
+    public function setCacheStorage(Cache\Storage $storage)
+    {
+        $this->cache->setStorage($storage);
+        return $this;
+    }
+
     /**
      *  Clone a document 
      *  
