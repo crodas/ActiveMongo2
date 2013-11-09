@@ -85,7 +85,7 @@ function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
         $class = $mapper->mapCollection($value['$ref'])['class'];
     } catch (\Exception $e) {
         if (empty($value['__class'])) {
-            throw $e;
+            throw new \RuntimeException("reference of {$value['$ref']} needs __class interal type");
         }
         $class = $value['__class'];
     }
