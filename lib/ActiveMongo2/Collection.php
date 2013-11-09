@@ -114,7 +114,7 @@ class Collection
 
     public function find($query = array(), $fields = array())
     {
-        return new Cursor($query, $fields, $this->zconn, $this->zcol, $this->mapper);
+        return new Cursor\Cursor($query, $fields, $this->zconn, $this->zcol, $this->mapper);
     }
 
     public function getById($id)
@@ -127,6 +127,7 @@ class Collection
             );
         }
         $document = $this->findOne(['_id' => $id]);
+
         if (!$document) {
             throw new \RuntimeException("Cannot find object with _id $id");
         }
@@ -134,6 +135,11 @@ class Collection
         $this->cache->set([$this->zcol, $id], $this->zconn->getRawDocument($document, false));
 
         return $document;
+    }
+
+    public function resultCache(Array $object)
+    {
+        return new Cursor\Cache($object, $this->zconn, $this->zcol, $this->mapper);
     }
 
     public function findOne($query = array(), $fields = array())

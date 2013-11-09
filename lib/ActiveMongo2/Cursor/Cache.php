@@ -34,42 +34,34 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2;
 
+namespace ActiveMongo2\Cursor;
+
+use ArrayObject;
 use MongoCollection;
-use MongoCursor;
+use ActiveMongo2\Connection;
 
-class Cursor extends MongoCursor
+class Cache extends ArrayObject
 {
+    use Base;
+
     protected $mapper;
     protected $conn;
     protected $col;
 
-    public function __construct(Array $query, Array $fields, Connection $conn, MongoCollection $col, $mapper)
+
+    public function __construct(Array $resultset, Connection $conn, MongoCollection $col, $mapper)
     {
         $this->conn   = $conn;
         $this->col    = $col;
         $this->mapper = $mapper;
-        parent::__construct($conn->getConnection(), (string)$col, $query, $fields);
+        parent::__construct($resultset);
     }
 
-    public function first()
+    public function getResultCache()
     {
-        return $this->current();
+        return (array)$this;
     }
 
-    public function current()
-    {
-        $current = parent::current();
-        $class   = $this->mapper->getObjectClass($this->col, $current);
-        if ($this->col instanceof \MongoGridFs) {
-            $current = new \MongoGridFsFile($this->col, $current);
-        }
-        return $this->conn->registerDocument($class, $current);
-    }
 
-    public function toArray()
-    {
-        return iterator_to_array($this);
-    }
 }
