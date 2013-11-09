@@ -150,7 +150,11 @@ class Generate
 
                     if (!empty($data['disc'])) {
                         // give them some weird name
-                        $docs[$data['class']] = $data;
+                        if (empty($docs[$data['name']])) {
+                            $docs[$data['name']] = $data;
+                        } else {
+                            $docs[$data['class']] = $data;
+                        }
                     } else {
                         $docs[$data['name']] = $data;
                     }
