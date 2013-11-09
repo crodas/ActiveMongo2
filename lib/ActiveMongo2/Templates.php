@@ -226,6 +226,8 @@ namespace {
             foreach($docs as $doc) {
                 if (!empty($doc['disc'])) {
                     echo "                if (\$class == ";
+                    var_export($doc['class']);
+                    echo " ||  \$class == ";
                     var_export($doc['name']);
                     echo "){\n                    return ";
                     var_export(['name' => $doc['name'], 'dynamic' => true, 'prop' => $doc['disc'], 'class' => NULL]);

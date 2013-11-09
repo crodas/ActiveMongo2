@@ -54,7 +54,7 @@ class Mapper
         if (empty($this->class_mapper[$class])) {
             @foreach ($docs as $doc)
                 @if (!empty($doc['disc']))
-                if ($class == {{@$doc['name']}}){
+                if ($class == {{@$doc['class']}} ||  $class == {{@$doc['name']}}){
                     return {{@['name' => $doc['name'], 'dynamic' => true, 'prop' => $doc['disc'], 'class' => NULL]}};
                 }
                 @end
