@@ -459,13 +459,21 @@ class Mapper
         $extra    = array();
         if ($include) {
             $extra  = array_intersect_key($document, $include);
-            foreach ($extra as $key => $value) {
-                if (is_object($value)) {
-                    if ($value instanceof \ActiveMongo2\Reference) {
-                        $extra[$key] = $value->getReference();
-                    } else {
-                        $extra[$key] = $this->getReference($value);
-                    }
+        }
+
+        @if (!empty($refCache[$doc['class']]))
+            $extra = array_merge($extra,  array_intersect_key(
+                $document, 
+                {{@array_combine($refCache[$doc['class']], $refCache[$doc['class']])}}
+            ));
+        @end
+        
+        foreach ($extra as $key => $value) {
+            if (is_object($value)) {
+                if ($value instanceof \ActiveMongo2\Reference) {
+                    $extra[$key] = $value->getReference();
+                } else {
+                    $extra[$key] = $this->getReference($value);
                 }
             }
         }
@@ -476,12 +484,6 @@ class Mapper
                 '__class' => {{@$doc['class']}},
             )
             , $extra
-            @if (!empty($refCache[$doc['class']]))
-            , array_intersect_key(
-                $document, 
-                {{@array_combine($refCache[$doc['class']], $refCache[$doc['class']])}}
-            )
-            @end
         );
 
     }

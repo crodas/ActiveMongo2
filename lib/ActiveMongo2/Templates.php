@@ -487,17 +487,17 @@ namespace {
                     }
                     echo "                \n            }\n";
                 }
-                echo "    }\n\n    /**\n     *  Get reference of  " . ($doc['class']) . " object\n     */\n    public function get_reference_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, \$include = Array())\n    {\n        \$document = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n        \$extra    = array();\n        if (\$include) {\n            \$extra  = array_intersect_key(\$document, \$include);\n            foreach (\$extra as \$key => \$value) {\n                if (is_object(\$value)) {\n                    if (\$value instanceof \\ActiveMongo2\\Reference) {\n                        \$extra[\$key] = \$value->getReference();\n                    } else {\n                        \$extra[\$key] = \$this->getReference(\$value);\n                    }\n                }\n            }\n        }\n\n        return array_merge(array(\n                '\$id'   => \$document['_id'],\n                '\$ref'  => ";
+                echo "    }\n\n    /**\n     *  Get reference of  " . ($doc['class']) . " object\n     */\n    public function get_reference_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, \$include = Array())\n    {\n        \$document = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n        \$extra    = array();\n        if (\$include) {\n            \$extra  = array_intersect_key(\$document, \$include);\n        }\n\n";
+                if (!empty($refCache[$doc['class']])) {
+                    echo "            \$extra = array_merge(\$extra,  array_intersect_key(\n                \$document, \n                ";
+                    var_export(array_combine($refCache[$doc['class']], $refCache[$doc['class']]));
+                    echo "\n            ));\n";
+                }
+                echo "        \n        foreach (\$extra as \$key => \$value) {\n            if (is_object(\$value)) {\n                if (\$value instanceof \\ActiveMongo2\\Reference) {\n                    \$extra[\$key] = \$value->getReference();\n                } else {\n                    \$extra[\$key] = \$this->getReference(\$value);\n                }\n            }\n        }\n\n        return array_merge(array(\n                '\$id'   => \$document['_id'],\n                '\$ref'  => ";
                 var_export($doc['name']);
                 echo ", \n                '__class' => ";
                 var_export($doc['class']);
-                echo ",\n            )\n            , \$extra\n";
-                if (!empty($refCache[$doc['class']])) {
-                    echo "            , array_intersect_key(\n                \$document, \n                ";
-                    var_export(array_combine($refCache[$doc['class']], $refCache[$doc['class']]));
-                    echo "\n            )\n";
-                }
-                echo "        );\n\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function get_array_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n";
+                echo ",\n            )\n            , \$extra\n        );\n\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function get_array_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n";
                 if (empty($doc['parent'])) {
                     echo "            \$doc = array();\n";
                 }

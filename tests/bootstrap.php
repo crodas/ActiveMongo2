@@ -9,6 +9,8 @@ foreach (glob(__DIR__ . "/tmp/*") as $delete) {
 
 function getConnection($cache = false)
 {
+    static $first;
+
     $conf = new \ActiveMongo2\Configuration(__DIR__ . "/tmp/foo.php");
     $conf
         ->addModelPath(__DIR__ . '/docs')
@@ -21,7 +23,9 @@ function getConnection($cache = false)
     $mongo = new MongoClient;
     $zconn = new \ActiveMongo2\Connection($conf, $mongo, 'activemongo2_tests');
 
+    if (!$first) $zconn->dropDatabase();
+    $first = true;
+
     return $zconn;
 }
 
-getConnection()->dropDatabase();

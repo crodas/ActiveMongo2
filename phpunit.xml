@@ -28,7 +28,10 @@
     <filter>
         <whitelist>
             <directory>tests/</directory>
-            <directory>lib/</directory>
+            <directory suffix=".php">lib/</directory>
+            <exclude>
+                <directory>lib/ActiveMongo2/Template</directory>
+            </exclude>
         </whitelist>
     </filter>
 
