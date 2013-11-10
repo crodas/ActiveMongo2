@@ -66,6 +66,11 @@ class Reference implements DocumentProxy, \JsonSerializable
 
     public function getReference()
     {
+        return $this->ref;
+    }
+
+    public function getObjectOrReference()
+    {
         return $this->doc ?: $this->ref;
     }
 
@@ -100,6 +105,9 @@ class Reference implements DocumentProxy, \JsonSerializable
     {
         $this->_loadDocument();
         $this->doc->{$name} = $value;
+        if (array_key_exists($name, $this->ref)) {
+            $this->ref[$name] = $value;
+        }
     }
 
     public function __get($name)

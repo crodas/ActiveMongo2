@@ -100,7 +100,7 @@ function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
 function _validate_reference_one(&$value, Array $args, $conn, $mapper)
 {
     if ($value instanceof Reference) {
-        $value = $value->getReference();
+        $value = $value->getObjectOrReference();
         if (is_array($value)) {
             if (!empty($args[1])) {
                 foreach ((array)$args[1] as $prop) {
