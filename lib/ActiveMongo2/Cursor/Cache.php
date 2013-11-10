@@ -37,11 +37,11 @@
 
 namespace ActiveMongo2\Cursor;
 
-use ArrayObject;
+use ArrayIterator;
 use MongoCollection;
 use ActiveMongo2\Connection;
 
-class Cache extends ArrayObject
+class Cache extends ArrayIterator
 {
     use Base;
 
@@ -62,6 +62,5 @@ class Cache extends ArrayObject
     {
         return (array)$this;
     }
-
 
 }
