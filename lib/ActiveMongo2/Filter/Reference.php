@@ -114,7 +114,10 @@ function _validate_reference_one(&$value, Array $args, $conn, $mapper)
     }
 
     $document = $value;
-    $conn->save($document);
+    $info     = $mapper->mapClass($document);
+    if (!$info['is_gridfs']) {
+        $conn->save($document);
+    }
 
     if (!empty($args) && !$conn->is(current($args), $document)) {
         throw new \RuntimeException("Invalid value");
