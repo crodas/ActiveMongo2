@@ -62,6 +62,7 @@ class Connection
     protected static $rand;
     protected $uniq = null;
     protected $cache;
+    protected $config;
 
     public function __construct(Configuration $config, MongoClient $conn, $db)
     {
@@ -69,6 +70,7 @@ class Connection
             self::$rand = uniqid(true);
         } 
 
+        $this->config = $config;
         $this->cache  = $config->getCache();
         $this->mapper = $config->initialize($this);
         $this->conn   = $conn;
@@ -194,8 +196,9 @@ class Connection
         return $doc[0];
     }
 
-    public function delete($obj, $safe = true)
+    public function delete($obj, $w = null)
     {
+        if ($w === null) $w = $this->config->getWriteConcern();
         $class = get_class($obj);
         if (empty($this->classes[$class])) {
             $collection = $this->mapper->mapClass(get_class($obj))['name'];
@@ -212,7 +215,7 @@ class Connection
 
         $this->mapper->trigger('preDelete', $obj, array($document));
 
-        $this->classes[$class]->remove(array('_id' => $document['_id']));
+        $this->classes[$class]->remove(array('_id' => $document['_id']), compact('w'));
 
         $this->mapper->trigger('postDelete', $obj, array($document));
     }
@@ -307,8 +310,9 @@ class Connection
         return new StoreFile($col, $document, $this, $obj);
     }
 
-    public function save($obj, $safe = true)
+    public function save($obj, $w = null)
     {
+        if ($w === null) $w = $this->config->getWriteConcern();
         if ($obj instanceof DocumentProxy) {
             $obj = $obj->getObject();
             if (empty($obj)) {
@@ -340,7 +344,7 @@ class Connection
                 $this->classes[$class]->update(
                     array('_id' => $oldDoc['_id']), 
                     array($op => $value),
-                    array('safe' => $safe)
+                    compact('w')
                 );
             }
 
@@ -359,7 +363,7 @@ class Connection
 
         $this->setObjectDocument($obj, $document);
 
-        $ret = $this->classes[$class]->save($document, array('w' => 1));
+        $ret = $this->classes[$class]->save($document, compact('w'));
         $this->mapper->trigger('postCreate', $obj, array($document, $this));
         $this->mapper->trigger('postSave', $obj, array($document, $this));
 

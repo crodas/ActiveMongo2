@@ -45,11 +45,23 @@ class Configuration
     protected $path;
     protected $devel = false;
     protected $cache;
+    protected $default = array('w' => 1);
 
     public function __construct($loader)
     {
         $this->loader = $loader;
         $this->cache  = new Cache\Cache;
+    }
+
+    public function setWriteConcern($w)
+    {
+        $this->default['w'] = $w;
+        return $this;
+    }
+
+    public function getWriteConcern()
+    {
+        return $this->default['w'];
     }
 
     public function setCacheStorage(Cache\Storage $storage)
