@@ -79,6 +79,40 @@ class EmbedReferenceTest extends \phpunit_framework_testcase
         $conn->delete($user);
     }
 
+    public function testJSON()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "crodas:" . uniqid();
+        $user->pass     = "foobar";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author = $user;
+        $post->author_id = $user->userid;
+        $post->title = "some weird title";
+        $conn->save($post);
+
+        foreach ($conn->getCollection('post')->find() as $zpost) {
+            $a1 = json_encode($user);
+            $a2 = json_encode($zpost->author);
+            $this->AssertEquals(substr($a1, 0, 200), substr($a2, 0, 200));
+            $ob1 = json_decode($a1, true);
+            $ob2 = json_decode($a2, true);
+
+            array_pop($ob1);
+            array_pop($ob1);
+            array_pop($ob2);
+            array_pop($ob2);
+
+            $this->AssertEquals($ob1, $ob2);
+            
+        }
+
+        $conn->delete($post);
+        $conn->delete($user);
+    }
+
     public function testReferenceMany()
     {
         $conn = getConnection();
