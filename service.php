@@ -11,6 +11,7 @@ namespace ActiveMongo2\Service;
  *      opts: { default:{}, type: 'hash'},
  *      path: { require: true, type: dir},
  *      temp_dir: { default: '/tmp', type: dir },
+ *      w: {default: 1},
  *      devel: {default: true}
  *  }, { shared: true })
  */
@@ -33,6 +34,7 @@ function activemongo2_service($config)
     if ($config['devel']) {
         $conf->development();
     }
+    $conf->setWriteConcern($config['w']);
     $mongo = new \ActiveMongo2\Connection($conf, $conn, $db);
     return $mongo;
 }
