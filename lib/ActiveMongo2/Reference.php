@@ -82,7 +82,7 @@ class Reference implements DocumentProxy, \JsonSerializable
 
     public function jsonSerialize() 
     {
-        return $this->getReference();
+        return $this->getDocument();
     }
 
     private function _loadDocument()
