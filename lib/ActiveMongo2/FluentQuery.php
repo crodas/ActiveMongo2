@@ -178,6 +178,11 @@ class FluentQuery implements \IteratorAggregate
         return $this->genericQuery('$nin', $value);
     }
 
+    public function eq($value)
+    {
+        return $this->equals($value);
+    }
+
     public function equals($value)
     {
         $this->assertField();
@@ -311,6 +316,17 @@ class FluentQuery implements \IteratorAggregate
         return $this->col->find($this->query);
     }
 
+    public function remove($justOne = false)
+    {
+        if ($this->parent) {
+            return $this->end()->remove($justOne);
+        }
+        if (!empty($this->update)) {
+            throw new \Exception("Invalid call to remove(), it was expecting update (`execute()`)");
+        }
+        return $this->col->remove($this->query, compact('justOne'));
+    }
+
     public function execute()
     {
         if ($this->parent) {
@@ -341,13 +357,5 @@ class FluentQuery implements \IteratorAggregate
             return $this->end()->count();
         }
         return $this->col->count($this->query);
-    }
-
-    public function delete()
-    {
-        if ($this->parent) {
-            return $this->end()->delete();
-        }
-        return $this->col->delete($this->query);
     }
 }

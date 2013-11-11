@@ -47,12 +47,12 @@ class Collection
     protected static $list = array();
 
     protected static $defaultOpts = array(
-        'w' => 1,
         'multiple' => true,
     );
 
-    public function __construct(Connection $conn, $mapper, MongoCollection $col, $cache)
+    public function __construct(Connection $conn, $mapper, MongoCollection $col, $cache, $config)
     {
+        $this->config = $config;
         $this->cache  = $cache;
         $this->zconn  = $conn;
         $this->zcol   = $col;
@@ -76,8 +76,20 @@ class Collection
     public function update($filter, $update, $opts = array())
     {
         $this->analizeUpdate($update);
+        if (empty($opts['w'])) {
+            $opts['w'] = $this->config->getWriteConcern();
+        }
         $opts = array_merge(self::$defaultOpts, $opts);
         return $this->zcol->update($filter, $update, $opts);
+    }
+
+    public function remove($filter, $opts = array())
+    {
+        if (empty($opts['w'])) {
+            $opts['w'] = $this->config->getWriteConcern();
+        }
+        $opts = array_merge(self::$defaultOpts, $opts);
+        return $this->zcol->remove($filter, $opts);
     }
 
     public function count($filter = array(), $skip = 0, $limit = 0)

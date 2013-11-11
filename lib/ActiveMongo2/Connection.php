@@ -138,7 +138,7 @@ class Connection
             $mongoCol = $this->db->selectCollection($data['name']);
         }
 
-        $this->collections[$data['name']] = new Collection($this, $this->mapper, $mongoCol, $cache);
+        $this->collections[$data['name']] = new Collection($this, $this->mapper, $mongoCol, $cache, $this->config);
 
         return $this->collections[$data['name']];
     }

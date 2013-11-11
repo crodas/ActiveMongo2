@@ -198,5 +198,53 @@ class FluentTest extends \phpunit_framework_testcase
         ));
         $this->assertEquals($query->getUpdate(), $update);
     }
+
+    public function testFirst()
+    {
+        $conn  = getconnection();
+        $users = $conn->getcollection('user');
+        $user = $users->query()->first();
+        $this->assertTrue($user instanceof UserDocument);
+        $user = $users->query()->addAnd()->field('_id')->eq(1)->first();
+        $this->assertNull($user);
+    }
+
+    /**
+     *  @dependsOn testFirst
+     */
+    public function testIterator()
+    {
+        $conn  = getconnection();
+        $users = $conn->getcollection('user')->query();
+        $i     = 0;
+        foreach ($users as $user) {
+            $this->assertTrue($user instanceof UserDocument);
+            $i++;
+        }
+        $this->assertTrue($i > 0);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testFirstInvalidCall()
+    {
+        $conn  = getconnection();
+        $users = $conn->getcollection('user');
+        $user = $users->query()->field('foo')->set(99)->first();
+    }
+
+    public function testRemove()
+    {
+        $conn  = getconnection();
+        $users = $conn->getcollection('user');
+        $total = $users->query()->count();
+        $this->assertTrue($total > 0);
+
+        $users->query()->remove();
+
+        $total = $users->query()->count();
+        $this->assertEquals($total, 0);
+    }
 }
 
