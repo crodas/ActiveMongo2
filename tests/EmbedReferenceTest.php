@@ -18,6 +18,10 @@ class EmbedReferenceTest extends \phpunit_framework_testcase
         $this->assertNotEquals("foobar", $user->pass);
         $old_pass = $user->pass;
         $conn->save($user);
+        $this->assertEquals($old_pass, $user->pass);
+
+        $user->pass = "xxx";
+        $conn->save($user);
         $this->assertNotEquals($old_pass, $user->pass);
 
         $post = new PostDocument;

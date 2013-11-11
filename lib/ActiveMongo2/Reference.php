@@ -37,6 +37,8 @@
 
 namespace ActiveMongo2;
 
+use ActiveMongo2\Filter as f;
+
 class Reference implements DocumentProxy, \JsonSerializable
 {
     protected $class;
@@ -44,13 +46,17 @@ class Reference implements DocumentProxy, \JsonSerializable
     protected $doc;
     protected $ref;
     protected $map;
+    protected $conn;
+    protected $mapper;
 
-    public function __construct(Array $info, $class, $conn, Array $map)
+    public function __construct(Array $info, $class, $conn, Array $map, $mapper)
     {
         $this->ref    = $info;
         $this->map    = $map;
         $this->_class = $class;
         $this->class  = $conn->getCollection($class);
+        $this->conn   = $conn;
+        $this->mapper = $mapper;
     }
 
     public function getObject()
@@ -115,7 +121,13 @@ class Reference implements DocumentProxy, \JsonSerializable
         if (array_key_exists($name, $this->map)) {
             $expected = $this->map[$name];
             if (array_key_exists($expected, $this->ref)) {
-                return $this->ref[$expected];
+                $doc = $this->ref[$expected];
+                if (is_array($doc)) {
+                    $tmp = $doc;
+                    f\_hydratate_reference_one($tmp, [], $this->conn, $this->mapper);
+                    return $tmp;
+                }
+                return $doc;
             }
 
             if ($expected == '_id') {

@@ -67,7 +67,9 @@ function _validate_integer(&$value)
  */
 function _validate_password(&$value, $args)
 {
-    $value = password_hash($value, PASSWORD_BCRYPT, ["cost" => 7, "salt" => sha1(implode(",", $args))]);
+    if (!password_get_info($value)['algo']) {
+        $value = password_hash($value, PASSWORD_BCRYPT, ["cost" => 7, "salt" => sha1(implode(",", $args))]);
+    }
     return true;
 }
 

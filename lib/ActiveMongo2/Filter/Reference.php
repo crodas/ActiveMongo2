@@ -89,7 +89,7 @@ function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
         }
         $class = $value['__class'];
     }
-    $value = new Reference($value, $class, $conn, $mapper->getMapping($class));
+    $value = new Reference($value, $class, $conn, $mapper->getMapping($class), $mapper);
     $mapper->trigger('onHydratation', $value);
 }
 
@@ -118,6 +118,7 @@ function _validate_reference_one(&$value, Array $args, $conn, $mapper)
     if (!$info['is_gridfs']) {
         $conn->save($document);
     }
+
 
     if (!empty($args) && !$conn->is(current($args), $document)) {
         throw new \RuntimeException("Invalid value");
