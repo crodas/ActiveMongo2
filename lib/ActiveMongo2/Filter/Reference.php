@@ -77,7 +77,7 @@ function _validate_reference_many(&$value, Array $args, $conn, $mapper)
 function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
 {
     $expected = current($args);
-    if ($expected && $expected != $value['$ref']) {
+    if ($expected && $expected != $value['$ref'] && !empty($value['__class']) && $expected != $value['__class']) {
         throw new \RuntimeException("Expecting document {$expected} but got {$value['$ref']}");
     }
 
@@ -119,8 +119,8 @@ function _validate_reference_one(&$value, Array $args, $conn, $mapper)
         $conn->save($document);
     }
 
-
-    if (!empty($args) && !$conn->is(current($args), $document)) {
+    $check = !empty($args) ? current($args) : null;
+    if ($check && !$document instanceof $check && !$conn->is(current($args), $document)) {
         throw new \RuntimeException("Invalid value");
     }
     
