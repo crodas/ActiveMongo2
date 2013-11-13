@@ -117,7 +117,7 @@ class Collection
         return $results;
     }
 
-    public function findAndModify($query, $update, $options)
+    public function findAndModify($query, $update, $options = [])
     {
         $response = $this->zcol->findAndModify($query, $update, null, $options);
 
