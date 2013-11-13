@@ -268,7 +268,7 @@ namespace {
             }
             echo "    }\n\n";
             foreach($docs as $doc) {
-                echo "    /**\n     *  Get update object " . ($doc['class']) . " \n     */\n    public function update_" . (sha1($doc['class'])) . "(Array \$current, Array \$old, \$embed = false)\n    {\n        if (!\$embed && \$current['_id'] != \$old['_id']) {\n            throw new \\RuntimeException(\"document ids cannot be updated\");\n        }\n\n";
+                echo "    /**\n     *  Get update object " . ($doc['class']) . " \n     */\n    protected function update_" . (sha1($doc['class'])) . "(Array \$current, Array \$old, \$embed = false)\n    {\n        if (!\$embed && !empty(\$current['_id']) && \$current['_id'] != \$old['_id']) {\n            throw new \\RuntimeException(\"document ids cannot be updated\");\n        }\n\n";
                 if (empty($doc['parent'])) {
                     echo "            \$change = array();\n";
                 }
@@ -406,7 +406,7 @@ namespace {
 
                     echo "                }\n            }\n";
                 }
-                echo "\n        return \$change;\n    }\n\n    public function get_mapping_" . (sha1($doc['class'])) . "() \n    {\n        return array(\n";
+                echo "\n        return \$change;\n    }\n\n    protected function get_mapping_" . (sha1($doc['class'])) . "() \n    {\n        return array(\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
                     $cname = $prop['property'];
                     $pname = $cname;
@@ -423,7 +423,7 @@ namespace {
                     var_export($cname);
                     echo ",\n";
                 }
-                echo "        );\n    }\n\n    /**\n     *  Populate objects " . ($doc['class']) . " \n     */\n    public function populate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, \$data)\n    {\n";
+                echo "        );\n    }\n\n    /**\n     *  Populate objects " . ($doc['class']) . " \n     */\n    protected function populate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, \$data)\n    {\n";
                 if (!empty($doc['parent'])) {
                     echo "            \$this->populate_" . (sha1($doc['parent'])) . "(\$object, \$data);\n";
                 }
@@ -487,7 +487,7 @@ namespace {
                     }
                     echo "                \n            }\n";
                 }
-                echo "    }\n\n    /**\n     *  Get reference of  " . ($doc['class']) . " object\n     */\n    public function get_reference_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, \$include = Array())\n    {\n        \$document = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n        \$extra    = array();\n        if (\$include) {\n            \$extra  = array_intersect_key(\$document, \$include);\n        }\n\n";
+                echo "    }\n\n    /**\n     *  Get reference of  " . ($doc['class']) . " object\n     */\n    protected function get_reference_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, \$include = Array())\n    {\n        \$document = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n        \$extra    = array();\n        if (\$include) {\n            \$extra  = array_intersect_key(\$document, \$include);\n        }\n\n";
                 if (!empty($refCache[$doc['class']])) {
                     echo "            \$extra = array_merge(\$extra,  array_intersect_key(\n                \$document, \n                ";
                     var_export(array_combine($refCache[$doc['class']], $refCache[$doc['class']]));
@@ -497,7 +497,7 @@ namespace {
                 var_export($doc['name']);
                 echo ", \n                '__class' => ";
                 var_export($doc['class']);
-                echo ",\n            )\n            , \$extra\n        );\n\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function get_array_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n";
+                echo ",\n            )\n            , \$extra\n        );\n\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    protected function get_array_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n";
                 if (empty($doc['parent'])) {
                     echo "            \$doc = array();\n";
                 }
@@ -566,7 +566,7 @@ namespace {
                     var_export($doc['class']);
                     echo ";\n";
                 }
-                echo "\n        return \$doc;\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    public function validate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n        \$doc = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n\n";
+                echo "\n        return \$doc;\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    protected function validate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n        \$doc = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n\n";
                 $docz = '$doc';
                 if ($doc['is_gridfs']) {
                     $docz = '$doc["metadata"]';

@@ -236,9 +236,9 @@ class Mapper
     /**
      *  Get update object {{$doc['class']}} 
      */
-    public function update_{{sha1($doc['class'])}}(Array $current, Array $old, $embed = false)
+    protected function update_{{sha1($doc['class'])}}(Array $current, Array $old, $embed = false)
     {
-        if (!$embed && $current['_id'] != $old['_id']) {
+        if (!$embed && !empty($current['_id']) && $current['_id'] != $old['_id']) {
             throw new \RuntimeException("document ids cannot be updated");
         }
 
@@ -365,7 +365,7 @@ class Mapper
         return $change;
     }
 
-    public function get_mapping_{{sha1($doc['class'])}}() 
+    protected function get_mapping_{{sha1($doc['class'])}}() 
     {
         return array(
             @foreach ($doc['annotation']->getProperties() as $prop)
@@ -384,7 +384,7 @@ class Mapper
     /**
      *  Populate objects {{$doc['class']}} 
      */
-    public function populate_{{sha1($doc['class'])}}(\{{$doc['class']}} $object, $data)
+    protected function populate_{{sha1($doc['class'])}}(\{{$doc['class']}} $object, $data)
     {
         @if (!empty($doc['parent']))
             $this->populate_{{sha1($doc['parent'])}}($object, $data);
@@ -453,7 +453,7 @@ class Mapper
     /**
      *  Get reference of  {{$doc['class']}} object
      */
-    public function get_reference_{{sha1($doc['class'])}}(\{{$doc['class']}} $object, $include = Array())
+    protected function get_reference_{{sha1($doc['class'])}}(\{{$doc['class']}} $object, $include = Array())
     {
         $document = $this->get_array_{{sha1($doc['class'])}}($object);
         $extra    = array();
@@ -491,7 +491,7 @@ class Mapper
     /**
      *  Validate {{$doc['class']}} object
      */
-    public function get_array_{{sha1($doc['class'])}}(\{{$doc['class']}} $object)
+    protected function get_array_{{sha1($doc['class'])}}(\{{$doc['class']}} $object)
     {
         @if (empty($doc['parent']))
             $doc = array();
@@ -556,7 +556,7 @@ class Mapper
     /**
      *  Validate {{$doc['class']}} object
      */
-    public function validate_{{sha1($doc['class'])}}(\{{$doc['class']}} $object)
+    protected function validate_{{sha1($doc['class'])}}(\{{$doc['class']}} $object)
     {
         $doc = $this->get_array_{{sha1($doc['class'])}}($object);
 
