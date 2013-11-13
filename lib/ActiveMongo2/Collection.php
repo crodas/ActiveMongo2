@@ -121,6 +121,10 @@ class Collection
     {
         $response = $this->zcol->findAndModify($query, $update, null, $options);
 
+        if (empty($response)) {
+            return NULL;
+        }
+
         return $this->zconn->registerDocument($this->mapper->getObjectClass($this->zcol, $response), $response);
     }
 
