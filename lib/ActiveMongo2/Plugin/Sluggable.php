@@ -78,6 +78,29 @@ class Sluggable
     }
 
     /**
+     *  @preUpdate
+     */
+    public function updateSlugUrl($obj, Array $event_args, $conn)
+    {
+        $source = $this->args[0];
+        $target = $this->args[1];
+
+        $document = &$event_args[0];
+        if (empty($obj->$target)) {
+            // Rarely use case
+            // @Sluggable has been added and old documents are being update
+            $slug = self::sluggify($obj->$source ?: 'n-a');
+            $col  = $conn->getCollection(get_class($obj));
+
+            while ( $col->count(array($target => $slug)) != 0) {
+                $slug .= '-' . uniqid(true);
+            }
+
+            $document['$set'][$target] = $slug;
+        }
+    }
+
+    /**
      *  @preCreate
      */
     public function setSlugUrl($obj, Array $event_args, $conn)
