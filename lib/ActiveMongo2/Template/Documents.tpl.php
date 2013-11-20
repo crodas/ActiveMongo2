@@ -4,6 +4,8 @@ namespace ActiveMongo2\Generated{{$namespace}};
 
 use ActiveMongo2\Connection;
 
+@set($instance, '_' . uniqid(true))
+
 class Mapper
 {
     protected $mapper = {{ var_export($mapper, true) }};
@@ -157,7 +159,7 @@ class Mapper
     public function getRawDocument($object)
     {
         if ($object instanceof ActiveMongo2Mapped){
-            return $object->activemongo2_getOriginal();
+            return $object->{{$instance}}_getOriginal();
         }
 
         return array();
@@ -242,7 +244,7 @@ class Mapper
     public function get_class($object)
     {
         if ($object instanceof ActiveMongo2Mapped) {
-            $class = $object->activemongo2_getClass();
+            $class = $object->{{$instance}}_getClass();
         } else {
             $class = strtolower(get_class($object));
         }
@@ -451,7 +453,7 @@ class Mapper
             }
         @end
 
-        $object->activemongo2_setOriginal($data);
+        $object->{{$instance}}_setOriginal($data);
 
         @foreach ($doc['annotation']->getProperties() as $prop)
             @set($docname,  $prop['property'])
@@ -756,6 +758,9 @@ class Mapper
 
 interface ActiveMongo2Mapped
 {
+    public function {{$instance}}_getClass();
+    public function {{$instance}}_setOriginal(Array $data);
+    public function {{$instance}}_getOriginal();
 }
 
 @foreach ($docs as $doc) 
@@ -773,21 +778,21 @@ function define_class_{{sha1($name)}}()
 
     final class {{$name}} extends \{{$doc['class']}} implements ActiveMongo2Mapped
     {
-        private $_original;
+        private ${{$instance}}_original;
 
-        public function activemongo2_getClass()
+        public function {{$instance}}_getClass()
         {
             return {{@$doc['class']}};
         }
 
-        public function activemongo2_setOriginal(Array $data)
+        public function {{$instance}}_setOriginal(Array $data)
         {
-            $this->_original = $data;
+            $this->{{$instance}}_original = $data;
         }
 
-        public function activemongo2_getOriginal()
+        public function {{$instance}}_getOriginal()
         {
-            return $this->_original;
+            return $this->{{$instance}}_original;
         }
 
         public function __destruct()
