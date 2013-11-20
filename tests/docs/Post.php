@@ -58,4 +58,5 @@ class PostDocument extends BaseDocument
             $this->tmp++;
         }
     }
+
 }

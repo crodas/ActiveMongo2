@@ -199,9 +199,9 @@ class Connection
     public function delete($obj, $w = null)
     {
         if ($w === null) $w = $this->config->getWriteConcern();
-        $class = get_class($obj);
+        $class = $this->mapper->get_class($obj);
         if (empty($this->classes[$class])) {
-            $collection = $this->mapper->mapClass(get_class($obj))['name'];
+            $collection = $this->mapper->mapClass($class)['name'];
             $this->classes[$class] = $this->db->selectCollection($collection);
         }
 
@@ -290,7 +290,7 @@ class Connection
             throw new \RuntimeException("Cannot update a reference");
         }
 
-        $data = $this->mapper->mapClass(get_class($obj));;
+        $data = $this->mapper->mapClass($this->mapper->get_class($obj));;
         if (!$data['is_gridfs']) {
             throw new \RuntimeException("Missing @GridFS argument");
         }
@@ -310,7 +310,7 @@ class Connection
         return new StoreFile($col, $document, $this, $obj);
     }
 
-    public function save($obj, $w = null)
+    public function save(&$obj, $w = null)
     {
         if ($w === null) $w = $this->config->getWriteConcern();
         if ($obj instanceof DocumentProxy) {
@@ -319,9 +319,9 @@ class Connection
                 return $this;
             }
         }
-        $class = get_class($obj);
+        $class = $this->mapper->get_class($obj);
         if (empty($this->classes[$class])) {
-            $data = $this->mapper->mapClass(get_class($obj));;
+            $data = $this->mapper->mapClass($class);;
             if ($data['is_gridfs']) {
                 throw new \RuntimeException("@GridFS must be saved with file");
             }

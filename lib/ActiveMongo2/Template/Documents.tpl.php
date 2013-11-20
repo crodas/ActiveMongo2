@@ -17,6 +17,17 @@ class Mapper
         spl_autoload_register(array($this, '__autoloader'));
     }
 
+    public function getClass($name)
+    {
+        $class = __NAMESPACE__ . "\\$name";
+        if (!class_exists($class, false)) {
+            $define = __NAMESPACE__ . "\\define_class_" . sha1($name);
+            $define();
+        }
+
+        return $class;
+    }
+
     public function __autoloader($class)
     {
         $class = strtolower($class);
@@ -48,8 +59,9 @@ class Mapper
     public function mapClass($class)
     {
         if (is_object($class)) {
-            $class = get_class($class);
+            $class = $this->get_class($class);
         }
+
         $class = strtolower($class);
         if (empty($this->class_mapper[$class])) {
             @foreach ($docs as $doc)
@@ -94,7 +106,7 @@ class Mapper
 
     public function mapObject($object)
     {
-        $class = strtolower(get_class($object));
+        $class = strtolower($this->get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -104,7 +116,7 @@ class Mapper
 
     public function getReference($object, Array $extra = array())
     {
-        $class = strtolower(get_class($object));
+        $class = strtolower($this->get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -114,7 +126,7 @@ class Mapper
 
     public function getDocument($object)
     {
-        $class = strtolower(get_class($object));
+        $class = strtolower($this->get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -124,7 +136,7 @@ class Mapper
 
     public function validate($object)
     {
-        $class = strtolower(get_class($object));
+        $class = strtolower($this->get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -134,7 +146,7 @@ class Mapper
 
     public function update($object, Array $doc, Array $old)
     {
-        $class = strtolower(get_class($object));
+        $class = strtolower($this->get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -144,7 +156,8 @@ class Mapper
 
     public function populate($object, $data)
     {
-        $class = strtolower(get_class($object));
+        $class = strtolower($this->get_class($object));
+
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
@@ -157,7 +170,7 @@ class Mapper
         if ($object instanceof \ActiveMongo2\Reference) {
             $class = strtolower($object->getClass());
         } else {
-            $class = strtolower(get_class($object));
+            $class = strtolower($this->get_class($object));
         }
         $method = "event_{$event}_" . sha1($class);
         if (!is_callable(array($this, $method))) {
@@ -170,7 +183,7 @@ class Mapper
     public function getMapping($class)
     {
         if (is_object($class)) {
-            $class = get_class($class);
+            $class = $this->get_class($class);
         }
         $func  = "get_mapping_" . sha1($class);
         if (!is_callable(array($this, $func))) {
@@ -211,12 +224,26 @@ class Mapper
             throw new \RuntimeException("Cannot get class for collection {$col}");
         }
 
+
+        return $this->getClass($this->class_mapper[$class]['name'] . '_' . sha1($class));
+
+        return $class;
+    }
+
+    public function get_class($object)
+    {
+        if ($object instanceof ActiveMongo2Mapped) {
+            $class = $object->activemongo2_getClass();
+        } else {
+            $class = get_class($object);
+        }
+
         return $class;
     }
 
     public function updateProperty($document, $key, $value)
     {
-        $class  = strtolower(get_class($document));
+        $class  = strtolower($this->get_class($document));
         $method = "update_property_" . sha1($class);
         if (!is_callable(array($this, $method))) {
             throw new \RuntimeException("Cannot trigger {$event} event on '$class' objects");
@@ -706,3 +733,37 @@ class Mapper
 
     @end
 }
+
+interface ActiveMongo2Mapped
+{
+}
+
+@foreach ($docs as $doc) 
+    @set($name, $doc['name'] . '_' . sha1($doc['class']))
+
+/**
+ * 
+ */
+function define_class_{{sha1($name)}}()
+{
+
+    if (!class_exists({{@"\\".$doc['class']}}, false)) {
+        require_once __DIR__ . {{@$doc['file']}};
+    }
+
+    final class {{$name}} extends \{{$doc['class']}} implements ActiveMongo2Mapped
+    {
+        public function activemongo2_getClass()
+        {
+            return {{@$doc['class']}};
+        }
+
+        public function __destruct()
+        {
+            if(is_callable('parent::__construct')) {
+                parent::__destruct();
+            }
+        }
+    }
+}
+@end
