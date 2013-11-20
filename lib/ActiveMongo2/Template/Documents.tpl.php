@@ -21,7 +21,7 @@ class Mapper
     {
         $class = __NAMESPACE__ . "\\$name";
         if (!class_exists($class, false)) {
-            $define = __NAMESPACE__ . "\\define_class_" . sha1($name);
+            $define = __NAMESPACE__ . "\\define_class_" . sha1(strtolower($name));
             $define();
         }
 
@@ -154,7 +154,16 @@ class Mapper
         return $this->{"update_" . sha1($class)}($doc, $old);
     }
 
-    public function populate($object, $data)
+    public function getRawDocument($object)
+    {
+        if ($object instanceof ActiveMongo2Mapped){
+            return $object->activemongo2_getOriginal();
+        }
+
+        return array();
+    }
+
+    public function populate(&$object, $data)
     {
         $class = strtolower($this->get_class($object));
 
@@ -235,7 +244,7 @@ class Mapper
         if ($object instanceof ActiveMongo2Mapped) {
             $class = $object->activemongo2_getClass();
         } else {
-            $class = get_class($object);
+            $class = strtolower(get_class($object));
         }
 
         return $class;
@@ -411,8 +420,17 @@ class Mapper
     /**
      *  Populate objects {{$doc['class']}} 
      */
-    protected function populate_{{sha1($doc['class'])}}(\{{$doc['class']}} $object, $data)
+    protected function populate_{{sha1($doc['class'])}}(\{{$doc['class']}} &$object, $data)
     {
+        if (!$object instanceof ActiveMongo2Mapped) {
+            $class    = $this->getClass({{@$doc['name'] . '_' }} .  sha1(strtolower(get_class($object))));
+            $populate = get_object_vars($object);
+            $object = new $class;
+            foreach ($populate as $key => $value) {
+                $object->$key = $value;
+            }
+        }
+
         @if (!empty($doc['parent']))
             $this->populate_{{sha1($doc['parent'])}}($object, $data);
         @end
@@ -432,6 +450,8 @@ class Mapper
                 throw new \RuntimeException("Internal error, trying to populate a document with a wrong data");
             }
         @end
+
+        $object->activemongo2_setOriginal($data);
 
         @foreach ($doc['annotation']->getProperties() as $prop)
             @set($docname,  $prop['property'])
@@ -739,7 +759,7 @@ interface ActiveMongo2Mapped
 }
 
 @foreach ($docs as $doc) 
-    @set($name, $doc['name'] . '_' . sha1($doc['class']))
+    @set($name, strtolower($doc['name']) . '_' . sha1($doc['class']))
 
 /**
  * 
@@ -753,9 +773,21 @@ function define_class_{{sha1($name)}}()
 
     final class {{$name}} extends \{{$doc['class']}} implements ActiveMongo2Mapped
     {
+        private $_original;
+
         public function activemongo2_getClass()
         {
             return {{@$doc['class']}};
+        }
+
+        public function activemongo2_setOriginal(Array $data)
+        {
+            $this->_original = $data;
+        }
+
+        public function activemongo2_getOriginal()
+        {
+            return $this->_original;
         }
 
         public function __destruct()

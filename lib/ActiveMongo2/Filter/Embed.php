@@ -87,7 +87,7 @@ function _do_embed_one(&$value, $args, $conn, $mapper)
         return false;
     }
 
-    $class = strtolower(get_class($value));
+    $class = $mapper->get_class($value);
 
     if ($args) {
         $collection = current($args); 

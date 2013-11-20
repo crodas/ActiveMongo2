@@ -145,55 +145,16 @@ class Connection
 
     public function registerDocument($class, $document)
     {
-        $refl = new \ReflectionClass($class);
-        if (PHP_MAJOR_VERSION >= 5 && PHP_MINOR_VERSION >= 5) {
-            $doc = $refl->newInstanceWithoutConstructor();
-        } else {
-            $doc = $refl->newInstance();
-        }
+        $doc = new $class;
         $this->setObjectDocument($doc, $document);
         $this->mapper->trigger('onHydratation', $doc);
 
         return $doc;
     }
 
-    protected function setObjectDocument($object, $document)
+    protected function setObjectDocument(&$object, $document)
     {
         $this->mapper->populate($object, $document);
-        $hash  = spl_object_hash($object);
-        $prop  = $this->uniq;
-
-        if (empty($object->$prop)) {
-            $value = uniqid(true);
-            $object->$prop = $value;
-        } else {
-            $value = $object->$prop;
-        }
-        
-        self::$docs[$hash] = array($document, $value);
-    }
-
-    public function getRawDocument($object, $default = NULL)
-    {
-        $docid = spl_object_hash($object);
-        $prop  = $this->uniq;
-        if (empty(self::$docs[$docid])) {
-            if ($default === NULL) {
-                throw new \RuntimeException("Cannot find document");
-            } 
-            return $default;
-        }
-
-        $doc = self::$docs[$docid];
-
-        if (empty($object->$prop) || $object->$prop != $doc[1]) {
-            if ($default === NULL) {
-                throw new \RuntimeException("Cannot find document");
-            } 
-            return $default;
-        }
-
-        return $doc[0];
     }
 
     public function delete($obj, $w = null)
@@ -296,7 +257,7 @@ class Connection
         }
         $col      = $this->db->getGridFs($data['name']);
         $document = $this->mapper->validate($obj);
-        $oldDoc   = $this->getRawDocument($obj, false);
+        $oldDoc   = $this->mapper->getRawDocument($obj, false);
 
         if (!empty($oldDoc)) {
             throw new \RuntimeException("Update on @GridFS is not yet implemented");
@@ -330,7 +291,7 @@ class Connection
         }
 
         $document = $this->mapper->validate($obj);
-        $oldDoc   = $this->getRawDocument($obj, false);
+        $oldDoc   = $this->mapper->getRawDocument($obj, false);
         if ($oldDoc) {
             $update = $this->mapper->update($obj, $document, $oldDoc);
 
