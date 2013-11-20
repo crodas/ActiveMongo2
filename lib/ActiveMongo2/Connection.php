@@ -58,24 +58,16 @@ class Connection
      */
     protected $classes;
     protected $mapper;
-    protected static $docs = array();
-    protected static $rand;
-    protected $uniq = null;
     protected $cache;
     protected $config;
 
     public function __construct(Configuration $config, MongoClient $conn, $db)
     {
-        if (empty(self::$rand)) {
-            self::$rand = uniqid(true);
-        } 
-
         $this->config = $config;
         $this->cache  = $config->getCache();
         $this->mapper = $config->initialize($this);
         $this->conn   = $conn;
         $this->db     = $conn->selectDB($db);
-        $this->uniq   = "__status_" . self::$rand;
     }
 
     public function setCacheStorage(Cache\Storage $storage)
@@ -94,7 +86,6 @@ class Connection
     public function cloneDocument($doc)
     {
         $tmp = clone $doc;
-        unset($tmp->{$this->uniq});
         return $tmp;
     }
     
@@ -171,8 +162,6 @@ class Connection
         if (empty($document['_id'])) {
             throw new \RuntimeException("Cannot delete without an id");
         }
-
-        unset(self::$docs[$hash]);
 
         $this->mapper->trigger('preDelete', $obj, array($document));
 
