@@ -58,24 +58,16 @@ class Connection
      */
     protected $classes;
     protected $mapper;
-    protected static $docs = array();
-    protected static $rand;
-    protected $uniq = null;
     protected $cache;
     protected $config;
 
     public function __construct(Configuration $config, MongoClient $conn, $db)
     {
-        if (empty(self::$rand)) {
-            self::$rand = uniqid(true);
-        } 
-
         $this->config = $config;
         $this->cache  = $config->getCache();
         $this->mapper = $config->initialize($this);
         $this->conn   = $conn;
         $this->db     = $conn->selectDB($db);
-        $this->uniq   = "__status_" . self::$rand;
     }
 
     public function setCacheStorage(Cache\Storage $storage)
@@ -94,7 +86,6 @@ class Connection
     public function cloneDocument($doc)
     {
         $tmp = clone $doc;
-        unset($tmp->{$this->uniq});
         return $tmp;
     }
     
@@ -145,63 +136,24 @@ class Connection
 
     public function registerDocument($class, $document)
     {
-        $refl = new \ReflectionClass($class);
-        if (PHP_MAJOR_VERSION >= 5 && PHP_MINOR_VERSION >= 5) {
-            $doc = $refl->newInstanceWithoutConstructor();
-        } else {
-            $doc = $refl->newInstance();
-        }
+        $doc = new $class;
         $this->setObjectDocument($doc, $document);
         $this->mapper->trigger('onHydratation', $doc);
 
         return $doc;
     }
 
-    protected function setObjectDocument($object, $document)
+    protected function setObjectDocument(&$object, $document)
     {
         $this->mapper->populate($object, $document);
-        $hash  = spl_object_hash($object);
-        $prop  = $this->uniq;
-
-        if (empty($object->$prop)) {
-            $value = uniqid(true);
-            $object->$prop = $value;
-        } else {
-            $value = $object->$prop;
-        }
-        
-        self::$docs[$hash] = array($document, $value);
-    }
-
-    public function getRawDocument($object, $default = NULL)
-    {
-        $docid = spl_object_hash($object);
-        $prop  = $this->uniq;
-        if (empty(self::$docs[$docid])) {
-            if ($default === NULL) {
-                throw new \RuntimeException("Cannot find document");
-            } 
-            return $default;
-        }
-
-        $doc = self::$docs[$docid];
-
-        if (empty($object->$prop) || $object->$prop != $doc[1]) {
-            if ($default === NULL) {
-                throw new \RuntimeException("Cannot find document");
-            } 
-            return $default;
-        }
-
-        return $doc[0];
     }
 
     public function delete($obj, $w = null)
     {
         if ($w === null) $w = $this->config->getWriteConcern();
-        $class = get_class($obj);
+        $class = $this->mapper->get_class($obj);
         if (empty($this->classes[$class])) {
-            $collection = $this->mapper->mapClass(get_class($obj))['name'];
+            $collection = $this->mapper->mapClass($class)['name'];
             $this->classes[$class] = $this->db->selectCollection($collection);
         }
 
@@ -210,8 +162,6 @@ class Connection
         if (empty($document['_id'])) {
             throw new \RuntimeException("Cannot delete without an id");
         }
-
-        unset(self::$docs[$hash]);
 
         $this->mapper->trigger('preDelete', $obj, array($document));
 
@@ -290,13 +240,13 @@ class Connection
             throw new \RuntimeException("Cannot update a reference");
         }
 
-        $data = $this->mapper->mapClass(get_class($obj));;
+        $data = $this->mapper->mapClass($this->mapper->get_class($obj));;
         if (!$data['is_gridfs']) {
             throw new \RuntimeException("Missing @GridFS argument");
         }
         $col      = $this->db->getGridFs($data['name']);
         $document = $this->mapper->validate($obj);
-        $oldDoc   = $this->getRawDocument($obj, false);
+        $oldDoc   = $this->mapper->getRawDocument($obj, false);
 
         if (!empty($oldDoc)) {
             throw new \RuntimeException("Update on @GridFS is not yet implemented");
@@ -310,7 +260,7 @@ class Connection
         return new StoreFile($col, $document, $this, $obj);
     }
 
-    public function save($obj, $w = null)
+    public function save(&$obj, $w = null)
     {
         if ($w === null) $w = $this->config->getWriteConcern();
         if ($obj instanceof DocumentProxy) {
@@ -319,9 +269,9 @@ class Connection
                 return $this;
             }
         }
-        $class = get_class($obj);
+        $class = $this->mapper->get_class($obj);
         if (empty($this->classes[$class])) {
-            $data = $this->mapper->mapClass(get_class($obj));;
+            $data = $this->mapper->mapClass($class);;
             if ($data['is_gridfs']) {
                 throw new \RuntimeException("@GridFS must be saved with file");
             }
@@ -330,7 +280,7 @@ class Connection
         }
 
         $document = $this->mapper->validate($obj);
-        $oldDoc   = $this->getRawDocument($obj, false);
+        $oldDoc   = $this->mapper->getRawDocument($obj, false);
         if ($oldDoc) {
             $update = $this->mapper->update($obj, $document, $oldDoc);
 

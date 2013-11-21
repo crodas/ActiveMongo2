@@ -44,7 +44,6 @@ class Collection
     protected $mapper;
     protected $zcol;
     protected $cache;
-    protected static $list = array();
 
     protected static $defaultOpts = array(
         'multiple' => true,
@@ -148,7 +147,7 @@ class Collection
             throw new \RuntimeException("Cannot find object with _id $id");
         }
 
-        $this->cache->set([$this->zcol, $id], $this->zconn->getRawDocument($document, false));
+        $this->cache->set([$this->zcol, $id], $this->mapper->getRawDocument($document, false));
 
         return $document;
     }
