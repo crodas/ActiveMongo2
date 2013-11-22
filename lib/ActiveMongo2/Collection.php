@@ -91,6 +91,19 @@ class Collection
         return $this->zcol->remove($filter, $opts);
     }
 
+    public function sum($key, $filter = array())
+    {
+        $object = $this->zcol->aggregate([
+            ['$match' => $filter],
+            ['$group' => [
+                '_id' => null,
+                'sum' => ['$sum' => '$' . $key],
+            ]],
+        ]);
+        
+        return $object['result'][0]['sum'];
+    }
+
     public function count($filter = array(), $skip = 0, $limit = 0)
     {
         return $this->zcol->count($filter, $skip, $limit);
