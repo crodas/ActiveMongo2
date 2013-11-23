@@ -607,7 +607,14 @@ class Mapper
      */
     protected function validate_{{sha1($doc['class'])}}(\{{$doc['class']}} $object)
     {
-        $doc = $this->get_array_{{sha1($doc['class'])}}($object);
+        @if (!empty($doc['parent']))
+            $doc = array_merge(
+                $this->validate_{{sha1($doc['parent'])}}($object),
+                $this->get_array_{{sha1($doc['class'])}}($object)
+            );
+        @else 
+            $doc = $this->get_array_{{sha1($doc['class'])}}($object);
+        @end
 
         @set($docz, '$doc')
         @if ($doc['is_gridfs'])

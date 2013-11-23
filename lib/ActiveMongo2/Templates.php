@@ -570,7 +570,14 @@ namespace {
                     var_export($doc['class']);
                     echo ";\n";
                 }
-                echo "\n        return \$doc;\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    protected function validate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n        \$doc = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n\n";
+                echo "\n        return \$doc;\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    protected function validate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n";
+                if (!empty($doc['parent'])) {
+                    echo "            \$doc = array_merge(\n                \$this->validate_" . (sha1($doc['parent'])) . "(\$object),\n                \$this->get_array_" . (sha1($doc['class'])) . "(\$object)\n            );\n";
+                }
+                else {
+                    echo "            \$doc = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n";
+                }
+                echo "\n";
                 $docz = '$doc';
                 if ($doc['is_gridfs']) {
                     $docz = '$doc["metadata"]';
