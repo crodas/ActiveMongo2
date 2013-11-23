@@ -540,12 +540,12 @@ class Mapper
     /**
      *  Validate {{$doc['class']}} object
      */
-    protected function get_array_{{sha1($doc['class'])}}(\{{$doc['class']}} $object)
+    protected function get_array_{{sha1($doc['class'])}}(\{{$doc['class']}} $object, $recursive = true)
     {
         @if (empty($doc['parent']))
             $doc = array();
         @else
-            $doc = $this->get_array_{{sha1($doc['parent'])}}($object);
+            $doc = $recursive ? $this->get_array_{{sha1($doc['parent'])}}($object) : array();
         @end
 
         @set($docz, '$doc')
@@ -610,7 +610,7 @@ class Mapper
         @if (!empty($doc['parent']))
             $doc = array_merge(
                 $this->validate_{{sha1($doc['parent'])}}($object),
-                $this->get_array_{{sha1($doc['class'])}}($object)
+                $this->get_array_{{sha1($doc['class'])}}($object, false)
             );
         @else 
             $doc = $this->get_array_{{sha1($doc['class'])}}($object);

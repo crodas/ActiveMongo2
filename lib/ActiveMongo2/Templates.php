@@ -501,12 +501,12 @@ namespace {
                 var_export($doc['name']);
                 echo ", \n                '__class' => ";
                 var_export($doc['class']);
-                echo ",\n            )\n            , \$extra\n        );\n\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    protected function get_array_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n";
+                echo ",\n            )\n            , \$extra\n        );\n\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    protected function get_array_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, \$recursive = true)\n    {\n";
                 if (empty($doc['parent'])) {
                     echo "            \$doc = array();\n";
                 }
                 else {
-                    echo "            \$doc = \$this->get_array_" . (sha1($doc['parent'])) . "(\$object);\n";
+                    echo "            \$doc = \$recursive ? \$this->get_array_" . (sha1($doc['parent'])) . "(\$object) : array();\n";
                 }
                 echo "\n";
                 $docz = '$doc';
@@ -572,7 +572,7 @@ namespace {
                 }
                 echo "\n        return \$doc;\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    protected function validate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n";
                 if (!empty($doc['parent'])) {
-                    echo "            \$doc = array_merge(\n                \$this->validate_" . (sha1($doc['parent'])) . "(\$object),\n                \$this->get_array_" . (sha1($doc['class'])) . "(\$object)\n            );\n";
+                    echo "            \$doc = array_merge(\n                \$this->validate_" . (sha1($doc['parent'])) . "(\$object),\n                \$this->get_array_" . (sha1($doc['class'])) . "(\$object, false)\n            );\n";
                 }
                 else {
                     echo "            \$doc = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n";
