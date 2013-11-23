@@ -58,6 +58,12 @@ trait Base
         return $this->current();
     }
 
+    public function getNext()
+    {
+        parent::getNext();
+        return $this->current();
+    }
+
     public function current()
     {
         $current = parent::current();
