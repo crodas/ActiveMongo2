@@ -804,7 +804,7 @@ function define_class_{{sha1($name)}}()
 
         public function __destruct()
         {
-            if(is_callable('parent::__construct')) {
+            if(is_callable('parent::__destruct')) {
                 parent::__destruct();
             }
         }
