@@ -737,7 +737,7 @@ namespace {
                 var_export($doc['file']);
                 echo ";\n    }\n\n    final class " . ($name) . " extends \\" . ($doc['class']) . " implements ActiveMongo2Mapped\n    {\n        private \$" . ($instance) . "_original;\n\n        public function " . ($instance) . "_getClass()\n        {\n            return ";
                 var_export($doc['class']);
-                echo ";\n        }\n\n        public function " . ($instance) . "_setOriginal(Array \$data)\n        {\n            \$this->" . ($instance) . "_original = \$data;\n        }\n\n        public function " . ($instance) . "_getOriginal()\n        {\n            return \$this->" . ($instance) . "_original;\n        }\n\n        public function __destruct()\n        {\n            if(is_callable('parent::__construct')) {\n                parent::__destruct();\n            }\n        }\n    }\n}\n";
+                echo ";\n        }\n\n        public function " . ($instance) . "_setOriginal(Array \$data)\n        {\n            \$this->" . ($instance) . "_original = \$data;\n        }\n\n        public function " . ($instance) . "_getOriginal()\n        {\n            return \$this->" . ($instance) . "_original;\n        }\n\n        public function __destruct()\n        {\n            if(is_callable('parent::__destruct')) {\n                parent::__destruct();\n            }\n        }\n    }\n}\n";
             }
 
             if ($return) {
