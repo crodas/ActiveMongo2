@@ -367,9 +367,9 @@ namespace {
                         var_export($docname.'.');
                         echo " . \$index . '.' . \$p] = \$val;\n                                        }\n                                    }\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                if (!empty(\$value['__instance'])) {\n                                    \$change['\$pull'][";
                         var_export($docname);
-                        echo "] = array(\n                                        '__instance' => \$value['__instance'],\n                                    );\n                                } else {\n                                    \$change['\$pull'][";
+                        echo "]['__instance']['\$in'][] = \$value['__instance'];\n                                } else {\n                                    \$change['\$pull'][";
                         var_export($docname);
-                        echo "] = \$value;\n                                }\n                            }\n                        }\n\n\n\n";
+                        echo "][] = \$value;\n                                }\n                            }\n                        }\n\n\n\n";
                     }
                     else if ($prop->has('ReferenceMany') || $prop->has('Array')) {
                         echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old[";
