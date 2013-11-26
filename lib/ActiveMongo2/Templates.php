@@ -392,7 +392,7 @@ namespace {
                         var_export($docname . '.');
                         echo " . \$index] = \$value;\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                if (!empty(\$value['__instance'])) {\n                                    \$change['\$pull'][";
                         var_export($docname);
-                        echo "] = array(\n                                        '__instance' => \$value['__instance'],\n                                    );\n                                } else {\n                                    \$change['\$pull'][";
+                        echo "]['__instance']['\$in'][] = \$value['__instance'];\n                                } else {\n                                    \$change['\$pull'][";
                         var_export($docname);
                         echo "] = \$value;\n                                }\n                            }\n                        }\n\n";
                     }

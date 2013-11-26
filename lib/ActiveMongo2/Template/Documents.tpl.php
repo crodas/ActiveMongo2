@@ -382,9 +382,7 @@ class Mapper
 
                             foreach ($toRemove as $value) {
                                 if (!empty($value['__instance'])) {
-                                    $change['$pull'][{{@$docname}}] = array(
-                                        '__instance' => $value['__instance'],
-                                    );
+                                    $change['$pull'][{{@$docname}}]['__instance']['$in'][] = $value['__instance'];
                                 } else {
                                     $change['$pull'][{{@$docname}}] = $value;
                                 }
