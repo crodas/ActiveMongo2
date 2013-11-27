@@ -46,6 +46,7 @@ class EmbedReferenceTest extends \phpunit_framework_testcase
 
         $post->readers_1[] = $user;
         $post->readers_1[] = $user;
+        $post->readers_1[] = $user;
         $conn->save($post);
 
         $zpost = $this->getPost();
@@ -68,9 +69,11 @@ class EmbedReferenceTest extends \phpunit_framework_testcase
         $this->assertNotEquals($zuser[0]->visits, $zuser[1]->visits);
 
                  
-        $this->assertEquals(count($this->getPost()->readers_1), 2);
-        unset($post->readers_1[0]);
-        $conn->save($post);
+        $this->assertEquals(count($this->getPost()->readers_1), 3);
+        $xpost = $this->getPost();
+        unset($xpost->readers_1[0]);
+        unset($xpost->readers_1[1]);
+        $conn->save($xpost);
 
         $this->assertEquals(count($this->getPost()->readers_1), 1);
         $this->assertEquals(array_keys($this->getPost()->readers_1), array(0));
