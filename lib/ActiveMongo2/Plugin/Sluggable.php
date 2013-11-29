@@ -74,7 +74,7 @@ class Sluggable
             return 'n-a';
         }
 
-        return $text;
+        return substr($text, 0, 50);
     }
 
     /**
