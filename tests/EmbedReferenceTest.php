@@ -147,8 +147,8 @@ class EmbedReferenceTest extends \phpunit_framework_testcase
         $conn->save($post);
 
         // read from db
-        $this->assertEquals(count($this->getPost()->readers), count($post->readers));
-        $this->assertEquals(count($this->getPost()->readers), 2);
+        $this->assertEquals(count($this->getPost()->readers), 1);
+        $this->assertEquals(count($this->getPost()->readers), 1);
 
         // update things in the reference, it should update
         // the object which is referenced too
@@ -160,10 +160,10 @@ class EmbedReferenceTest extends \phpunit_framework_testcase
         // remove one
         unset($post->readers[0]);
         $conn->save($post);
-        $this->assertEquals(count($this->getPost()->readers), count($post->readers));
-        $this->assertEquals(count($this->getPost()->readers), 1);
-        $this->assertTrue(!empty($this->getPost()->readers[0]));
-        $this->assertEquals(array_keys($this->getPost()->readers), array(0));
+        $this->assertEquals(count($this->getPost()->readers), 0);
+        $this->assertEquals(count($this->getPost()->readers), 0);
+        $this->assertTrue(empty($this->getPost()->readers[0]));
+        $this->assertEquals(array_keys($this->getPost()->readers), array());
 
         //delete things
         $conn->delete($post);

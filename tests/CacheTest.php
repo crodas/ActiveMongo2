@@ -34,9 +34,8 @@ class CacheReferenceTest extends \phpunit_framework_testcase
         $post->readers[] = $user;
         $conn->save($post);
 
-        // read from db
-        $this->assertEquals(count($this->getPost()->readers), count($post->readers));
-        $this->assertEquals(count($this->getPost()->readers), 2);
+        // read from db (we never save duplicate references)
+        $this->assertEquals(count($this->getPost()->readers), 1);
 
         // update things in the reference, it should update
         // the object which is referenced too

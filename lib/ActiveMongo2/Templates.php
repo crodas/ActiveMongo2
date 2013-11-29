@@ -384,9 +384,18 @@ namespace {
                         var_export($propname);
                         echo "] as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old[";
                         var_export($propname);
-                        echo "])) {\n                                    \$change['\$push'][";
-                        var_export($docname);
-                        echo "] = \$value;\n                                    continue;\n                                }\n                                if (\$old[";
+                        echo "])) {\n";
+                        if ($prop->has('ReferenceMany')) {
+                            echo "                                        \$change['\$addToSet'][";
+                            var_export($docname);
+                            echo "]['\$each'][] = \$value;\n";
+                        }
+                        else {
+                            echo "                                        \$change['\$push'][";
+                            var_export($docname);
+                            echo "] = \$value;\n";
+                        }
+                        echo "                                    continue;\n                                }\n                                if (\$old[";
                         var_export($propname);
                         echo "][\$index] != \$value) {\n                                    \$change['\$set'][";
                         var_export($docname . '.');
@@ -438,7 +447,7 @@ namespace {
                 else {
                     echo "\n            if (!is_array(\$data)) {\n                throw new \\RuntimeException(\"Internal error, trying to populate a document with a wrong data\");\n            }\n";
                 }
-                echo "\n        \$object->" . ($instance) . "_setOriginal(\$data);\n\n";
+                echo "\n        \$zData = \$data;\n\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
                     $docname = $prop['property'];
                     $propname = $prop['property'];
@@ -451,7 +460,19 @@ namespace {
                         $data = '$data["metadata"]';
                     }
 
-                    if ($prop->has('Stream')) {
+                    echo "\n                \n";
+                    if ($prop->has('ReferenceMany')) {
+                        echo "                if (!empty(\$zData[";
+                        var_export($docname);
+                        echo "])) {\n                    foreach(\$zData[";
+                        var_export($docname);
+                        echo "] as \$id => \$sub) {\n                        if (empty(\$sub['__instance']) || !strpos(\$sub['__instance'], \$sub['\$ref'])) {\n                            \$sub['__instance'] = \$sub['\$ref'] . ':' . serialize(\$sub['\$id']) ;\n                        }\n                        \$zData[";
+                        var_export($docname);
+                        echo "][\$id] = \$sub;\n                        \$data[";
+                        var_export($docname);
+                        echo "][\$id]  = \$sub;\n                    }\n                }\n";
+                    }
+                    else if ($prop->has('Stream')) {
                         if (in_array('public', $prop['visibility'])) {
                             echo "                    \$object->" . ($prop['property']) . " = \$data_file->getResource();\n";
                         }
@@ -462,6 +483,7 @@ namespace {
                         }
                         continue;
                     }
+
                     echo "            if (array_key_exists(\"" . ($docname) . "\", " . ($data) . ")) {\n";
                     foreach($hydratations as $zname => $callback) {
                         if ($prop->has($zname)) {
@@ -491,7 +513,7 @@ namespace {
                     }
                     echo "                \n            }\n";
                 }
-                echo "    }\n\n    /**\n     *  Get reference of  " . ($doc['class']) . " object\n     */\n    protected function get_reference_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, \$include = Array())\n    {\n        \$document = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n        \$extra    = array();\n        if (\$include) {\n            \$extra  = array_intersect_key(\$document, \$include);\n        }\n\n";
+                echo "\n        \$object->" . ($instance) . "_setOriginal(\$zData);\n\n\n    }\n\n    /**\n     *  Get reference of  " . ($doc['class']) . " object\n     */\n    protected function get_reference_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, \$include = Array())\n    {\n        \$document = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n        \$extra    = array();\n        if (\$include) {\n            \$extra  = array_intersect_key(\$document, \$include);\n        }\n\n";
                 if (!empty($refCache[$doc['class']])) {
                     echo "            \$extra = array_merge(\$extra,  array_intersect_key(\n                \$document, \n                ";
                     var_export(array_combine($refCache[$doc['class']], $refCache[$doc['class']]));
@@ -501,7 +523,9 @@ namespace {
                 var_export($doc['name']);
                 echo ", \n                '__class' => ";
                 var_export($doc['class']);
-                echo ",\n            )\n            , \$extra\n        );\n\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    protected function get_array_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, \$recursive = true)\n    {\n";
+                echo ",\n                '__instance' => ";
+                var_export($doc['name']);
+                echo " . ':' . serialize(\$document['_id']),\n            )\n            , \$extra\n        );\n\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    protected function get_array_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, \$recursive = true)\n    {\n";
                 if (empty($doc['parent'])) {
                     echo "            \$doc = array();\n";
                 }

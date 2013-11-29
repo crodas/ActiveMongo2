@@ -374,7 +374,11 @@ class Mapper
                         } else {
                             foreach (${{$current}}[{{@$propname}}] as $index => $value) {
                                 if (!array_key_exists($index, $old[{{@$propname}}])) {
-                                    $change['$push'][{{@$docname}}] = $value;
+                                    @if ($prop->has('ReferenceMany'))
+                                        $change['$addToSet'][{{@$docname}}]['$each'][] = $value;
+                                    @else
+                                        $change['$push'][{{@$docname}}] = $value;
+                                    @end
                                     continue;
                                 }
                                 if ($old[{{@$propname}}][$index] != $value) {
@@ -451,7 +455,7 @@ class Mapper
             }
         @end
 
-        $object->{{$instance}}_setOriginal($data);
+        $zData = $data;
 
         @foreach ($doc['annotation']->getProperties() as $prop)
             @set($docname,  $prop['property'])
@@ -463,7 +467,19 @@ class Mapper
             @elif ($doc['is_gridfs'])
                 @set($data, '$data["metadata"]')
             @end
-            @if ($prop->has('Stream'))
+
+                
+            @if ($prop->has('ReferenceMany'))
+                if (!empty($zData[{{@$docname}}])) {
+                    foreach($zData[{{@$docname}}] as $id => $sub) {
+                        if (empty($sub['__instance']) || !strpos($sub['__instance'], $sub['$ref'])) {
+                            $sub['__instance'] = $sub['$ref'] . ':' . serialize($sub['$id']) ;
+                        }
+                        $zData[{{@$docname}}][$id] = $sub;
+                        $data[{{@$docname}}][$id]  = $sub;
+                    }
+                }
+            @elif ($prop->has('Stream'))
                 @if (in_array('public', $prop['visibility']))
                     $object->{{$prop['property']}} = $data_file->getResource();
                 @else
@@ -495,6 +511,10 @@ class Mapper
                 
             }
         @end
+
+        $object->{{$instance}}_setOriginal($zData);
+
+
     }
 
     /**
@@ -529,6 +549,7 @@ class Mapper
                 '$id'   => $document['_id'],
                 '$ref'  => {{@$doc['name']}}, 
                 '__class' => {{@$doc['class']}},
+                '__instance' => {{@$doc['name']}} . ':' . serialize($document['_id']),
             )
             , $extra
         );
