@@ -245,6 +245,8 @@ class Mapper
     {
         if ($object instanceof ActiveMongo2Mapped) {
             $class = $object->{{$instance}}_getClass();
+        } else if ($object instanceof \ActiveMongo2\Reference) {
+            $class = $object->getClass();
         } else {
             $class = strtolower(get_class($object));
         }
@@ -663,6 +665,10 @@ class Mapper
      */
         protected function event_{{$ev}}_{{sha1($doc['class'])}}($document, Array $args)
         {
+            $class = $this->get_class($document);
+            if ($class != {{@$doc['class']}} && !is_subclass_of($class, {{@$doc['class']}})) {
+                throw new \Exception("Class invalid class name ($class) expecting  "  . {{@$doc['class']}});
+            }
             @if (!empty($doc['parent']))
                 $this->event_{{$ev}}_{{sha1($doc['parent'])}}($document, $args);
             @end

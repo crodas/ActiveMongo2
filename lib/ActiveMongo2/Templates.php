@@ -264,7 +264,7 @@ namespace {
                 }
                 echo "                break;\n";
             }
-            echo "        }\n\n        if (empty(\$class)) {\n            throw new \\RuntimeException(\"Cannot get class for collection {\$col}\");\n        }\n\n\n        return \$this->getClass(\$this->class_mapper[\$class]['name'] . '_' . sha1(\$class));\n\n        return \$class;\n    }\n\n    public function get_class(\$object)\n    {\n        if (\$object instanceof ActiveMongo2Mapped) {\n            \$class = \$object->" . ($instance) . "_getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n\n        return \$class;\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(\$this->get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$db)\n    {\n";
+            echo "        }\n\n        if (empty(\$class)) {\n            throw new \\RuntimeException(\"Cannot get class for collection {\$col}\");\n        }\n\n\n        return \$this->getClass(\$this->class_mapper[\$class]['name'] . '_' . sha1(\$class));\n\n        return \$class;\n    }\n\n    public function get_class(\$object)\n    {\n        if (\$object instanceof ActiveMongo2Mapped) {\n            \$class = \$object->" . ($instance) . "_getClass();\n        } else if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = \$object->getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n\n        return \$class;\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(\$this->get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$db)\n    {\n";
             foreach($indexes as $index) {
                 echo "            \$db->" . ($index[0]) . "->ensureIndex(" . (var_export($index[1], true)) . ", " . (var_export($index[2], true)) . ");\n";
             }
@@ -618,7 +618,13 @@ namespace {
                 }
                 echo "    }\n\n\n";
                 foreach($events as $ev) {
-                    echo "    /**\n     *  Code for " . ($ev) . " events for objects " . ($doc['class']) . "\n     */\n        protected function event_" . ($ev) . "_" . (sha1($doc['class'])) . "(\$document, Array \$args)\n        {\n";
+                    echo "    /**\n     *  Code for " . ($ev) . " events for objects " . ($doc['class']) . "\n     */\n        protected function event_" . ($ev) . "_" . (sha1($doc['class'])) . "(\$document, Array \$args)\n        {\n            \$class = \$this->get_class(\$document);\n            if (\$class != ";
+                    var_export($doc['class']);
+                    echo " && !is_subclass_of(\$class, ";
+                    var_export($doc['class']);
+                    echo ")) {\n                throw new \\Exception(\"Class invalid class name (\$class) expecting  \"  . ";
+                    var_export($doc['class']);
+                    echo ");\n            }\n";
                     if (!empty($doc['parent'])) {
                         echo "                \$this->event_" . ($ev) . "_" . (sha1($doc['parent'])) . "(\$document, \$args);\n";
                     }
