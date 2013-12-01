@@ -308,4 +308,17 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertTrue(empty($doc1->foobar));
         $this->assertNotEquals($doc, $doc1);
     }
+
+    public function testCollectionIterator()
+    {
+        $conn = getConnection();
+        $one = $conn->post->find();
+
+        $i = 0;
+        foreach ($conn->post as $p) {
+            $this->assertTrue($p instanceof ActiveMongo2\Tests\Document\PostDocument);
+            $i++;
+        }
+        $this->assertEquals($one->count(), $i);
+    }
 }

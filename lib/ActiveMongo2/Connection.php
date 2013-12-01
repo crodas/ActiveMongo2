@@ -104,6 +104,11 @@ class Connection
         return $this->conn;
     }
 
+    public function __get($name)
+    {
+        return $this->getCollection($name);
+    }
+
     public function getDocumentClass($collection)
     {
         return $this->mapper->mapCollection($collection)['class'];

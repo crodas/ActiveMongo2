@@ -37,8 +37,9 @@
 namespace ActiveMongo2;
 
 use MongoCollection;
+use IteratorAggregate;
 
-class Collection 
+class Collection implements IteratorAggregate
 {
     protected $zconn;
     protected $mapper;
@@ -57,6 +58,12 @@ class Collection
         $this->zcol   = $col;
         $this->mapper = $mapper;
     }
+
+    public function getIterator()
+    {
+        return $this->find([]);
+    }
+
 
     public function rawCollection()
     {
