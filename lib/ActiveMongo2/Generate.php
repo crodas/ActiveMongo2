@@ -184,7 +184,8 @@ class Generate
             }
         }
 
-        $namespace    = sha1($config->getLoader());
+        $target       = $config->getLoader();
+        $namespace    = sha1($target);
         $mapper       = $this->getDocumentMapper($docs);
         $class_mapper = $this->getClassMapper($docs);
         $events       = array(
@@ -288,7 +289,7 @@ class Generate
 
         $code = FixCode::fix($code);
 
-        File::write($config->getLoader(), $code);
+        File::write($target, $code);
 
         $this->files = array_unique($this->files);
 
@@ -297,6 +298,7 @@ class Generate
             $watcher->watchFile($file);
         }
 
+        $watcher->watchFile($target);
         $watcher->watch();
     }
     
