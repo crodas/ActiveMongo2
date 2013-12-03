@@ -108,6 +108,10 @@ class Collection implements IteratorAggregate
             ]],
         ]);
         
+        if (empty($object['result'][0])) {
+            return 0;
+        }
+        
         return $object['result'][0]['sum'];
     }
 
