@@ -38,6 +38,15 @@ namespace ActiveMongo2\Filter;
 
 use ActiveMongo2\Reference;
 
+function is_hash($obj)
+{
+    if (is_array($obj)) {
+        $diff = array_diff(array_keys($obj), range(0, count($obj)-1));
+        return !empty($diff);
+    }
+    return false;
+}
+
 /** @Validate(String) */
 function _validate_string(&$value)
 {
@@ -74,6 +83,19 @@ function _validate_password(&$value, $args)
 }
 
 /** 
+ * @Hydratate(Array) 
+ */
+function _hydrate_array(&$value)
+{
+    foreach ($value as &$val) {
+        if (!empty($val['__instance'])) {
+            unset($val['__instance']);
+        }
+    }
+    return $value;
+}
+
+/** 
  * @Validate(Array) 
  */
 function _validate_array(&$value)
@@ -82,7 +104,7 @@ function _validate_array(&$value)
         return false;
     }
     foreach ($value as &$v) {
-        if (is_array($v) && empty($v['__instance'])) {
+        if (is_hash($v) && empty($v['__instance'])) {
             $v['__instance'] = uniqid(true);
         }
     }

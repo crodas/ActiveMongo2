@@ -146,7 +146,7 @@ class Mapper
         return $this->{"validate_" . sha1($class)}($object);
     }
 
-    public function update($object, Array $doc, Array $old)
+    public function update($object, Array &$doc, Array $old)
     {
         $class = strtolower($this->get_class($object));
         if (empty($this->class_mapper[$class])) {
@@ -276,7 +276,7 @@ class Mapper
     /**
      *  Get update object {{$doc['class']}} 
      */
-    protected function update_{{sha1($doc['class'])}}(Array $current, Array $old, $embed = false)
+    protected function update_{{sha1($doc['class'])}}(Array &$current, Array $old, $embed = false)
     {
         if (!$embed && !empty($current['_id']) && $current['_id'] != $old['_id']) {
             throw new \RuntimeException("document ids cannot be updated");
@@ -381,6 +381,22 @@ class Mapper
                                     @end
                                     continue;
                                 }
+
+                                if (!empty($old[{{@$propname}}][$index]['__instance']) && is_array($value)) {
+                                    // __instance is an internal variable that helps
+                                    // activemongo2 to remove sub objects from arrays easily.
+                                    // Its value is private to the library and it shouldn't change
+                                    // unless the value of the object changes
+                                    $diff = array_diff(
+                                        $value,
+                                        $old[{{@$propname}}][$index]
+                                    );
+                                    if (count($diff) == 1 && !empty($diff['__instance'])) {
+                                        $value['__instance'] = $old[{{@$propname}}][$index]['__instance'];
+                                        ${{$current}}[{{@$propname}}][$index] = $value;
+                                    }
+                                }
+
                                 if ($old[{{@$propname}}][$index] != $value) {
                                     $change['$set'][{{@$docname . '.'}} . $index] = $value;
                                 }
