@@ -175,17 +175,6 @@ class Connection
         $this->mapper->trigger('postDelete', $obj, array($document));
     }
 
-    protected function array_diff_ex($arr1, $arr2)
-    {
-        $diff = array();
-        foreach ($arr1 as $key => $value) {
-            if ($arr2[$key] !== $arr1[$key]) {
-                $diff[$key] = $value;
-            }
-        }
-        return $diff;
-    }
-
     public function worker($daemon = true)
     {
         $queue = $this->db->deferred_queue;

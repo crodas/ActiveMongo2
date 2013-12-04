@@ -30,6 +30,18 @@ class Mapper
         return $class;
     }
 
+    protected function array_diff(Array $arr1, Array $arr2)
+    {
+        $diff = array();
+        foreach ($arr1 as $key => $value) {
+            if (empty($arr2[$key]) || $arr2[$key] !== $arr1[$key]) {
+                $diff[$key] = $value;
+            }
+        }
+        return $diff;
+    }
+
+
     public function __autoloader($class)
     {
         $class = strtolower($class);
@@ -387,7 +399,7 @@ class Mapper
                                     // activemongo2 to remove sub objects from arrays easily.
                                     // Its value is private to the library and it shouldn't change
                                     // unless the value of the object changes
-                                    $diff = array_diff(
+                                    $diff = $this->array_diff(
                                         $value,
                                         $old[{{@$propname}}][$index]
                                     );
