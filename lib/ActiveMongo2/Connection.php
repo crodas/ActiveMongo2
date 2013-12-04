@@ -230,6 +230,11 @@ class Connection
         return $done;
     }
 
+    public function getReference($object, $cache = [])
+    {
+        return $this->mapper->getReference($object, array_flip($cache));
+    }
+
     public function is($collection, $object)
     {
         $class = $this->mapper->mapCollection($collection)['class'];
