@@ -125,6 +125,37 @@ class Generate
         return $return;
     }
 
+    protected function generateUniqueIndex($annotations, &$indexes, $class_mapper)
+    {
+        foreach ($annotations->get('Unique') as $prop) {
+            if (!$prop->isProperty()) continue;
+            if (empty($class_mapper[strtolower($prop['class'])])) {
+                continue;
+            }
+            $collection = $class_mapper[strtolower($prop['class'])]['name'];
+            foreach ($prop->get('Unique') as $anno) {
+                $indexes[] = array($collection,  array($prop['property'] => 1), array('unique' => 1));
+            }
+        }
+    }
+
+
+    protected function generatePlugins($annotations)
+    {
+        $plugins = [];
+        foreach ($annotations->get('Plugin') as $prop) {
+            if (!$prop->isClass()) continue;
+            foreach ($prop->get('Plugin') as $anno) {
+                $name = current($anno['args']);
+                if (empty($name)) continue;
+                $plugins[$name] = $prop;
+            }
+        }
+
+        return $plugins;
+    }
+
+
     protected function generateHooks($types, $annotations)
     {
         $files = array();
@@ -133,13 +164,14 @@ class Generate
             foreach ($annotations->get($operation) as $validator) {
                 foreach ($validator->get($operation) as $val) {
                     $type = current($val['args']);
-                    if (empty($type)) continue;
-                    if ($validator->isMethod()) {
-                        $return[$var][$type] = "\\" . $validator['class'] . "::" . $validator['function'];
-                    } else if ($validator->isFunction()) {
-                        $return[$var][$type] = "\\" . $validator['function'];
+                    if (!empty($type)) {
+                        if ($validator->isMethod()) {
+                            $return[$var][$type] = "\\" . $validator['class'] . "::" . $validator['function'];
+                        } else if ($validator->isFunction()) {
+                            $return[$var][$type] = "\\" . $validator['function'];
+                        }
+                        $files[$type] = $this->getRelativePath($validator['file']);
                     }
-                    $files[$type] = $this->getRelativePath($validator['file']);
                 }
             }
         }
@@ -209,13 +241,11 @@ class Generate
             }
         }
 
-        $files = array();
-        $read  = [
+        $hookTypes  = [
             'Validate' => 'validators', 'Hydratate' => 'hydratations',
             'DefaultValue' => 'defaults',
         ];
-        extract($this->generateHooks($read, $annotations));
-
+        $hooks = $this->generateHooks($hookTypes, $annotations);
 
         $target       = $config->getLoader();
         $namespace    = sha1($target);
@@ -225,28 +255,11 @@ class Generate
             'preSave', 'postSave', 'preCreate', 'postCreate', 'onHydratation', 
             'preUpdate', 'postUpdate', 'preDelete', 'postDelete'
         );
-        $indexes      = array();
-        $plugins      = array();
 
-        foreach ($annotations->get('Plugin') as $prop) {
-            if (!$prop->isClass()) continue;
-            foreach ($prop->get('Plugin') as $anno) {
-                $name = current($anno['args']);
-                if (empty($name)) continue;
-                $plugins[$name] = $prop;
-            }
-        }
 
-        foreach ($annotations->get('Unique') as $prop) {
-            if (!$prop->isProperty()) continue;
-            if (empty($class_mapper[strtolower($prop['class'])])) {
-                continue;
-            }
-            $collection = $class_mapper[strtolower($prop['class'])]['name'];
-            foreach ($prop->get('Unique') as $anno) {
-                $indexes[] = array($collection,  array($prop['property'] => 1), array('unique' => 1));
-            }
-        }
+        $indexes = array();
+        $plugins = $this->generatePlugins($annotations);
+        $this->generateUniqueIndex($annotations, $indexes, $class_mapper);
 
         $references = [];
         $vars = [
@@ -313,12 +326,11 @@ class Generate
 
         $self = $this;
         $code = Template\Templates::get('documents')
-            ->render(compact(
+            ->render(array_merge(compact(
                 'docs', 'namespace', 'class_mapper', 'events',
-                'validators', 'mapper', 'files', 'indexes',
-                'plugins', 'hydratations', 'self', 'references',
-                'defaults', 'refCache'
-            ), true);
+                'mapper', 'indexes', 'plugins', 'self', 'references',
+                'refCache'
+            ), $hooks), true);
 
         $code = FixCode::fix($code);
 
