@@ -259,7 +259,7 @@ class Connection
         return new StoreFile($col, $document, $this, $obj);
     }
 
-    public function save(&$obj, $w = null)
+    public function save(&$obj, $w = null, $trigger_events = true)
     {
         if ($w === null) $w = $this->config->getWriteConcern();
         if ($obj instanceof DocumentProxy) {
@@ -287,7 +287,9 @@ class Connection
                 return $this;
             }
 
-            $this->mapper->trigger('preUpdate', $obj, array(&$update, $this));
+            if ($trigger_events) {
+                $this->mapper->trigger('preUpdate', $obj, array(&$update, $this));
+            }
 
             foreach ($update as $op => $value) {
                 $this->classes[$class]->update(
@@ -299,13 +301,17 @@ class Connection
 
             $this->setObjectDocument($obj, $document);
 
-            $this->mapper->trigger('postUpdate', $obj, array($update, $this,$oldDoc['_id']));
-            $this->mapper->trigger('postSave', $obj, array($update, $this));
+            if ($trigger_events) {
+                $this->mapper->trigger('postUpdate', $obj, array($update, $this,$oldDoc['_id']));
+                $this->mapper->trigger('postSave', $obj, array($update, $this));
+            }
 
             return $this;
         }
 
-        $this->mapper->trigger('preCreate', $obj, array(&$document, $this));
+        if ($trigger_events) {
+            $this->mapper->trigger('preCreate', $obj, array(&$document, $this));
+        }
         if (empty($document['_id'])) {
             $document['_id'] = new MongoId;
         }
@@ -313,8 +319,10 @@ class Connection
         $this->setObjectDocument($obj, $document);
 
         $ret = $this->classes[$class]->save($document, compact('w'));
-        $this->mapper->trigger('postCreate', $obj, array($document, $this));
-        $this->mapper->trigger('postSave', $obj, array($document, $this));
+        if ($trigger_events) {
+            $this->mapper->trigger('postCreate', $obj, array($document, $this));
+            $this->mapper->trigger('postSave', $obj, array($document, $this));
+        }
 
         return $this;
     }
