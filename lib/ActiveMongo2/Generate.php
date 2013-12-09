@@ -97,6 +97,17 @@ class Generate
         return $annotations;
     }
 
+    protected function checkingGridFsStream($object)
+    {
+        if (!$object->has('GridFs')) {
+            foreach ($object->getProperties() as $prop) {
+                if ($prop->has('Stream')) {
+                    throw new \RuntimeException('@Stream only works with @GridFS');
+                }
+            }
+        }
+    }
+
     protected function getDocumentClasses($annotations)
     {
         $return = [];
@@ -104,14 +115,7 @@ class Generate
         foreach (array('Persist', 'Embeddable') as $type) {
             foreach ($annotations->get($type) as $object) {
                 if ($object->isClass()) {
-                    if (!$object->has('GridFs')) {
-                        foreach ($object->getProperties() as $prop) {
-                            if ($prop->has('Stream')) {
-                                throw new \RuntimeException('@Stream only works with @GridFS');
-                            }
-                        }
-                    }
-
+                    $this->checkingGridFsStream($object);
                     $return[] = [$type, $object];
                 }
             }
