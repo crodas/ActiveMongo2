@@ -61,8 +61,8 @@ class Generate
     public function getReferenceCache($annotations)
     {
         $refCache = [];
-        foreach ($annotations->get('Persist') as $object) {
-            if (!$object->isClass()) continue;
+        foreach ($this->getDocumentClasses($annotations) as $docClass) {
+            list(, $object) = $docClass;
             $class = strtolower($object['class']);
             $refCache[$class] = [];
             if ($object->has('RefCache')) {
@@ -77,6 +77,7 @@ class Generate
                 }
             }
         }
+
         return $refCache;
     }
 
@@ -120,6 +121,29 @@ class Generate
                 }
             }
         }
+
+        return $return;
+    }
+
+    protected function generateHooks($types, $annotations)
+    {
+        $files = array();
+        foreach ($types as $operation => $var) {
+            $$var = array();
+            foreach ($annotations->get($operation) as $validator) {
+                foreach ($validator->get($operation) as $val) {
+                    $type = current($val['args']);
+                    if (empty($type)) continue;
+                    if ($validator->isMethod()) {
+                        $return[$var][$type] = "\\" . $validator['class'] . "::" . $validator['function'];
+                    } else if ($validator->isFunction()) {
+                        $return[$var][$type] = "\\" . $validator['function'];
+                    }
+                    $files[$type] = $this->getRelativePath($validator['file']);
+                }
+            }
+        }
+        $return['files'] = $files;
 
         return $return;
     }
@@ -190,22 +214,8 @@ class Generate
             'Validate' => 'validators', 'Hydratate' => 'hydratations',
             'DefaultValue' => 'defaults',
         ];
+        extract($this->generateHooks($read, $annotations));
 
-        foreach ($read as $operation => $var) {
-            $$var = array();
-            foreach ($annotations->get($operation) as $validator) {
-                foreach ($validator->get($operation) as $val) {
-                    $type = current($val['args']);
-                    if (empty($type)) continue;
-                    if ($validator->isMethod()) {
-                        ${$var}[$type] = "\\" . $validator['class'] . "::" . $validator['function'];
-                    } else if ($validator->isFunction()) {
-                        ${$var}[$type] = "\\" . $validator['function'];
-                    }
-                    $files[$type] = $this->getRelativePath($validator['file']);
-                }
-            }
-        }
 
         $target       = $config->getLoader();
         $namespace    = sha1($target);
