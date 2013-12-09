@@ -80,13 +80,10 @@ class Generate
         return $refCache;
     }
 
-    public function __construct(Configuration $config, Watch $watcher)
+    protected function loadAnnotations()
     {
         $annotations  = new Notoj\Annotations;
-        $this->files  = array();
-        $this->config = $config;
-
-        foreach ($config->getModelPath() as $path) {
+        foreach ($this->config->getModelPath() as $path) {
             $dir = new Notoj\Dir($path);
             $dir->getAnnotations($annotations);
             $this->files = array_merge($this->files, $dir->getFiles());
@@ -96,68 +93,90 @@ class Generate
             $dir = new Notoj\Dir(__DIR__ . "/$d");
             $dir->getAnnotations($annotations);
         }
+        
+        return $annotations;
+    }
+
+    protected function getDocumentClasses($annotations)
+    {
+        $return = [];
+
+        foreach (array('Persist', 'Embeddable') as $type) {
+            foreach ($annotations->get($type) as $object) {
+                if ($object->isClass()) {
+                    if (!$object->has('GridFs')) {
+                        foreach ($object->getProperties() as $prop) {
+                            if ($prop->has('Stream')) {
+                                throw new \RuntimeException('@Stream only works with @GridFS');
+                            }
+                        }
+                    }
+
+                    $return[] = [$type, $object];
+                }
+            }
+        }
+
+        return $return;
+    }
+
+    public function __construct(Configuration $config, Watch $watcher)
+    {
+        $this->files  = array();
+        $this->config = $config;
+        $annotations  = $this->loadAnnotations();
 
         $parents  = $this->getParentClasses($annotations); 
         $refCache = $this->getReferenceCache($annotations); 
 
-        foreach (array('Persist', 'Embeddable') as $type) {
-            foreach ($annotations->get($type) as $object) {
-                if (!$object->isClass()) continue;
-                $parent = $object->getParent();
+        foreach ($this->getDocumentClasses($annotations) as $docClass) {
+            list($type, $object) = $docClass;
+            $parent = $object->getParent();
 
-                $data = array(
-                    'class' => strtolower($object['class']), 
-                    'file'  => $this->getRelativePath($object['file']),
-                    'annotation' => $object,
-                    'is_gridfs'  => $object->has('GridFs'),
-                    'parent'     => $parent ? strtolower($parent['class']) : NULL,
-                );
+            $data = array(
+                'class' => strtolower($object['class']), 
+                'file'  => $this->getRelativePath($object['file']),
+                'annotation' => $object,
+                'is_gridfs'  => $object->has('GridFs'),
+                'parent'     => $parent ? strtolower($parent['class']) : NULL,
+            );
 
-                if (!$data['is_gridfs']) {
-                    foreach ($object->getProperties() as $prop) {
-                        if ($prop->has('Stream')) {
-                            throw new \RuntimeException('@Stream only works with @GridFS');
-                        }
+            if ($object->has('SingleCollection')) {
+                $data['disc'] = $object->getOne('SingleCollection') ?: ['__type'];
+                $data['disc'] = current($data['disc']);
+            }
+
+            foreach ($object->get($type) as $ann) {
+                $data['name'] = $ann['args'] ? current($ann['args']) : null;
+                while ($parent) {
+                    $class = strtolower($parent['class']);
+                    if (empty($parents[$class])) break;
+                    if ($parents[$class]->has('SingleCollection') || empty($data['name'])) {
+                        $data['name'] = current($parents[$class]->getOne('Persist'));
+                        $data['disc'] = $parents[$class]->getOne('SingleCollection') ?: ['__type'];
+                        $data['disc'] = current($data['disc']);
                     }
-                }
+                    $parent = $parent->GetParent();
+                } 
 
-                if ($object->has('SingleCollection')) {
-                    $data['disc'] = $object->getOne('SingleCollection') ?: ['__type'];
-                    $data['disc'] = current($data['disc']);
-                }
-
-                foreach ($object->get($type) as $ann) {
-                    $data['name'] = $ann['args'] ? current($ann['args']) : null;
-                    while ($parent) {
-                        $class = strtolower($parent['class']);
-                        if (empty($parents[$class])) break;
-                        if ($parents[$class]->has('SingleCollection') || empty($data['name'])) {
-                            $data['name'] = current($parents[$class]->getOne('Persist'));
-                            $data['disc'] = $parents[$class]->getOne('SingleCollection') ?: ['__type'];
-                            $data['disc'] = current($data['disc']);
-                        }
-                        $parent = $parent->GetParent();
-                    } 
-
-                    if (empty($data['name'])) {
-                        if ($data['is_gridfs']) {
-                            $data['name'] = 'fs';
-                        } else {
-                            $data['name'] = explode("\\", $data['class']);
-                            $data['name'] = strtolower(end($data['name']));
-                        }
-                    }
-
-                    if (!empty($data['disc'])) {
-                        // give them some weird name
-                        if (empty($docs[$data['name']])) {
-                            $docs[$data['name']] = $data;
-                        } else {
-                            $docs[$data['class']] = $data;
-                        }
+                if (empty($data['name'])) {
+                    if ($data['is_gridfs']) {
+                        $data['name'] = 'fs';
                     } else {
-                        $docs[$data['name']] = $data;
+                        $data['name'] = explode("\\", $data['class']);
+                        $data['name'] = strtolower(end($data['name']));
                     }
+                }
+
+                if (!empty($data['disc'])) {
+                    // give them some weird name
+                    if (empty($docs[$data['name']])) {
+                        $docs[$data['name']] = $data;
+                    } else {
+                        $docs[$data['class']] = $data;
+                    }
+                } else {
+                    $docs[$data['name']] = $data;
                 }
             }
         }
