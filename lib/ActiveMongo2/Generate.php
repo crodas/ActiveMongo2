@@ -279,7 +279,7 @@ class Generate
         }   
 
         $self = $this;
-        $code = Templates::get('documents')
+        $code = Template\Templates::get('documents')
             ->render(compact(
                 'docs', 'namespace', 'class_mapper', 'events',
                 'validators', 'mapper', 'files', 'indexes',

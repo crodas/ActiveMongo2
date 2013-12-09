@@ -7,7 +7,7 @@
 
 namespace {
 
-    class base_template_46ff768978a6897199daa478860b8cd25af655b1
+    class base_template_df562f12800ad133cdbc6f040ca106a099504656
     {
         protected $parent;
         protected $child;
@@ -58,7 +58,7 @@ namespace {
     /** 
      *  Template class generated from Trigger.tpl.php
      */
-    class class_11ca6999533bd9c460f246ff122fc6c9341f7a1f extends base_template_46ff768978a6897199daa478860b8cd25af655b1
+    class class_11ca6999533bd9c460f246ff122fc6c9341f7a1f extends base_template_df562f12800ad133cdbc6f040ca106a099504656
     {
 
         public function render(Array $vars = array(), $return = false)
@@ -98,7 +98,7 @@ namespace {
     /** 
      *  Template class generated from Validate.tpl.php
      */
-    class class_9e8794c44ad8c1631f7e215c9edaf7dbac875fb4 extends base_template_46ff768978a6897199daa478860b8cd25af655b1
+    class class_9e8794c44ad8c1631f7e215c9edaf7dbac875fb4 extends base_template_df562f12800ad133cdbc6f040ca106a099504656
     {
 
         public function render(Array $vars = array(), $return = false)
@@ -136,7 +136,7 @@ namespace {
     /** 
      *  Template class generated from Reference/Update.tpl.php
      */
-    class class_f8c39509b1fb331e8b8ef22a135640af98725ce5 extends base_template_46ff768978a6897199daa478860b8cd25af655b1
+    class class_f8c39509b1fb331e8b8ef22a135640af98725ce5 extends base_template_df562f12800ad133cdbc6f040ca106a099504656
     {
 
         public function render(Array $vars = array(), $return = false)
@@ -211,7 +211,7 @@ namespace {
     /** 
      *  Template class generated from Documents.tpl.php
      */
-    class class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b extends base_template_46ff768978a6897199daa478860b8cd25af655b1
+    class class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b extends base_template_df562f12800ad133cdbc6f040ca106a099504656
     {
 
         public function render(Array $vars = array(), $return = false)
@@ -625,7 +625,7 @@ namespace {
                         echo "])) {\n                throw new \\RuntimeException(\"" . ($prop['property']) . " cannot be empty\");\n            }\n";
                     }
                     echo "\n";
-                    ActiveMongo2\Templates::exec('validate', compact('propname', 'validators', 'files', 'prop'), $this->context);
+                    ActiveMongo2\Template\Templates::exec('validate', compact('propname', 'validators', 'files', 'prop'), $this->context);
                 }
                 echo "\n        return \$doc;\n    }\n\n    protected function update_property_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$document, \$property, \$value)\n    {\n";
                 if ($doc['parent']) {
@@ -662,7 +662,7 @@ namespace {
                     }
                     echo "\n";
                     foreach($doc['annotation']->getMethods() as $method) {
-                        ActiveMongo2\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'], $this->context);
+                        ActiveMongo2\Template\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'], $this->context);
                     }
                     echo "\n";
                     if ($ev =="postCreate" || $ev == "postUpdate") {
@@ -737,7 +737,7 @@ namespace {
                     }
                     echo "\n";
                     if ($ev == "postUpdate" && !empty($references[$doc['class']])) {
-                        ActiveMongo2\Templates::exec('reference/update.tpl.php', compact('doc', 'references'), $this->context);
+                        ActiveMongo2\Template\Templates::exec('reference/update.tpl.php', compact('doc', 'references'), $this->context);
                     }
                     echo "\n";
                     foreach($doc['annotation']->getAll() as $zmethod) {
@@ -757,7 +757,7 @@ namespace {
                                         echo "                                // " . ($method[0]['method']) . "\n                                \$plugin = new \\" . ($temp['class']) . "(" . (var_export($zmethod['args'], true)) . ");\n";
                                         $first_time = true;
                                     }
-                                    ActiveMongo2\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin', 'args' => $zmethod['args']], $this->context);
+                                    ActiveMongo2\Template\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin', 'args' => $zmethod['args']], $this->context);
                                 }
                             }
                         }
@@ -787,7 +787,7 @@ namespace {
 
 }
 
-namespace ActiveMongo2 {
+namespace ActiveMongo2\Template {
 
     class Templates
     {
