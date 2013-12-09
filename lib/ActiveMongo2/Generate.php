@@ -125,6 +125,17 @@ class Generate
         return $return;
     }
 
+    protected function getCallback($annotation)
+    {
+        if ($annotation->isMethod()) {
+            $function = "\\" . $annotation['class'] . "::" . $annotation['function'];
+        } else if ($annotation->isFunction()) {
+            $function = "\\" . $annotation['function'];
+        }
+
+        return $function;
+    }
+
     protected function generateUniqueIndex($annotations, &$indexes, $class_mapper)
     {
         foreach ($annotations->get('Unique') as $prop) {
@@ -165,11 +176,7 @@ class Generate
                 foreach ($validator->get($operation) as $val) {
                     $type = current($val['args']);
                     if (!empty($type)) {
-                        if ($validator->isMethod()) {
-                            $return[$var][$type] = "\\" . $validator['class'] . "::" . $validator['function'];
-                        } else if ($validator->isFunction()) {
-                            $return[$var][$type] = "\\" . $validator['function'];
-                        }
+                        $return[$var][$type] = $this->GetCallback($validator);
                         $files[$type] = $this->getRelativePath($validator['file']);
                     }
                 }
