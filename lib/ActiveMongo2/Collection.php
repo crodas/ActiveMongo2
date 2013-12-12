@@ -97,6 +97,7 @@ class Collection implements IteratorAggregate
             $opts['w'] = $this->config->getWriteConcern();
         }
         $opts = array_merge(self::$defaultOpts, $opts);
+        $this->mapper->onQuery($this->zclass, $filter);
         return $this->zcol->remove($filter, $opts);
     }
 
