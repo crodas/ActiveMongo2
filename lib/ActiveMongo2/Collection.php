@@ -83,6 +83,7 @@ class Collection implements IteratorAggregate
 
     public function update($filter, $update, $opts = array())
     {
+        $this->mapper->onQuery($this->zclass, $filter);
         $this->analizeUpdate($update);
         if (empty($opts['w'])) {
             $opts['w'] = $this->config->getWriteConcern();
