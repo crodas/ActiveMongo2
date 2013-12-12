@@ -45,18 +45,20 @@ class Collection implements IteratorAggregate
     protected $mapper;
     protected $zcol;
     protected $cache;
+    protected $zclass;
 
     protected static $defaultOpts = array(
         'multiple' => true,
     );
 
-    public function __construct(Connection $conn, $mapper, MongoCollection $col, $cache, $config)
+    public function __construct(Connection $conn, $mapper, MongoCollection $col, $cache, $config, $name)
     {
         $this->config = $config;
         $this->cache  = $cache;
         $this->zconn  = $conn;
         $this->zcol   = $col;
         $this->mapper = $mapper;
+        $this->zclass = $name;
     }
 
     public function getIterator()
@@ -100,6 +102,7 @@ class Collection implements IteratorAggregate
 
     public function sum($key, $filter = array())
     {
+        $this->mapper->onQuery($this->zclass, $filter);
         $object = $this->zcol->aggregate([
             ['$match' => $filter],
             ['$group' => [
@@ -117,6 +120,7 @@ class Collection implements IteratorAggregate
 
     public function count($filter = array(), $skip = 0, $limit = 0)
     {
+        $this->mapper->onQuery($this->zclass, $filter);
         return $this->zcol->count($filter, $skip, $limit);
     }
 
@@ -142,6 +146,7 @@ class Collection implements IteratorAggregate
 
     public function findAndModify($query, $update, $options = [])
     {
+        $this->mapper->onQuery($this->zclass, $query);
         $response = $this->zcol->findAndModify($query, $update, null, $options);
 
         if (empty($response)) {
@@ -153,6 +158,7 @@ class Collection implements IteratorAggregate
 
     public function find($query = array(), $fields = array())
     {
+        $this->mapper->onQuery($this->zclass, $query);
         return new Cursor\Cursor($query, $fields, $this->zconn, $this->zcol, $this->mapper);
     }
 
@@ -183,6 +189,7 @@ class Collection implements IteratorAggregate
 
     public function findOne($query = array(), $fields = array())
     {
+        $this->mapper->onQuery($this->zclass, $query);
         $doc =  $this->zcol->findOne($query, $fields);
         if (empty($doc)) {
             return $doc;

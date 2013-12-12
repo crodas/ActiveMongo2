@@ -122,8 +122,8 @@ class Connection
             $data = $this->mapper->mapClass($collection);
         }
 
-        if (!empty($this->collections[$data['name']])) {
-            return $this->collections[$data['name']];
+        if (!empty($this->collections[$data['class']])) {
+            return $this->collections[$data['class']];
         }
 
         $cache = $this->cache;
@@ -134,9 +134,9 @@ class Connection
             $mongoCol = $this->db->selectCollection($data['name']);
         }
 
-        $this->collections[$data['name']] = new Collection($this, $this->mapper, $mongoCol, $cache, $this->config);
+        $this->collections[$data['class']] = new Collection($this, $this->mapper, $mongoCol, $cache, $this->config, $data['class']);
 
-        return $this->collections[$data['name']];
+        return $this->collections[$data['class']];
     }
 
     public function registerDocument($class, $document)

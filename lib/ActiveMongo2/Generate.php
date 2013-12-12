@@ -339,10 +339,7 @@ class Generate
                 'refCache'
             ), $hooks), true);
 
-        $code = FixCode::fix($code);
-
-        File::write($target, $code);
-
+        File::write($target, FixCode::fix($code));
         $this->files = array_unique($this->files);
 
         foreach ($this->files as $file) {

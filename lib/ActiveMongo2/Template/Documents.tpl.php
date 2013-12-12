@@ -70,6 +70,19 @@ class Mapper
         return $data;
     }
 
+    public function onQuery($table, Array &$query)
+    {
+        switch ($table) {
+        @foreach($docs as $doc)
+        case {{@$doc['class']}}:
+            @if (!empty($doc['disc']) && !empty($doc['parent']))
+                $query[{{@$doc['disc']}}] = $table;
+            @end
+            break;
+        @end
+        }
+    }
+
     public function mapClass($class)
     {
         if (is_object($class)) {
