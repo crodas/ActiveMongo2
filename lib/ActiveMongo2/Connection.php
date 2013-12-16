@@ -238,7 +238,6 @@ class Connection
         if ($obj instanceof DocumentProxy) {
             throw new \RuntimeException("Cannot update a reference");
         }
-
         $data = $this->mapper->mapClass($this->mapper->get_class($obj));;
         if (!$data['is_gridfs']) {
             throw new \RuntimeException("Missing @GridFS argument");
@@ -268,6 +267,11 @@ class Connection
                 return $this;
             }
         }
+
+        if ($trigger_events) {
+            $this->mapper->trigger('preSave', $obj, array(&$update, $this));
+        }
+
         $class = $this->mapper->get_class($obj);
         if (empty($this->classes[$class])) {
             $data = $this->mapper->mapClass($class);;
