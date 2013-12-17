@@ -88,7 +88,15 @@ class Reference implements DocumentProxy, \JsonSerializable
     private function _loadDocument()
     {
         if (!$this->doc) {
-            $this->doc = $this->class->getById($this->ref['$id']);
+            try {
+                $this->doc = $this->class->getById($this->ref['$id']);
+            } catch (\Exception $e) {
+                if ($this->conn->GetConfiguration()->failOnMissingReference()) {
+                    // throw exception
+                    throw $e;
+                }
+                // do nothing
+            }
         }
     }
 

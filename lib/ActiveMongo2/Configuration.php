@@ -46,11 +46,21 @@ class Configuration
     protected $devel = false;
     protected $cache;
     protected $default = array('w' => 1);
+    protected $failOnMissRef = true;
 
     public function __construct($loader)
     {
         $this->loader = $loader;
         $this->cache  = new Cache\Cache;
+    }
+
+    public function failOnMissingReference($fail = null)
+    {
+        if ($fail === null) {
+            return $this->failOnMissRef;
+        }
+        $this->failOnMissRef = (bool)$fail;
+        return true;
     }
 
     public function setWriteConcern($w)

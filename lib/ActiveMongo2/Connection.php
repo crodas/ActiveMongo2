@@ -99,6 +99,12 @@ class Connection
         return $this->db;
     }
 
+    public function getConfiguration()
+    {
+        return $this->config;
+    }
+
+
     public function getConnection()
     {
         return $this->conn;
