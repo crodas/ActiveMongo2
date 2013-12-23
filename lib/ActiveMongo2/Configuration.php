@@ -60,7 +60,7 @@ class Configuration
             return $this->failOnMissRef;
         }
         $this->failOnMissRef = (bool)$fail;
-        return true;
+        return $this;
     }
 
     public function setWriteConcern($w)
