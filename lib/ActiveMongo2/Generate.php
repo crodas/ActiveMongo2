@@ -94,7 +94,7 @@ class Generate
             $dir = new Notoj\Dir(__DIR__ . "/$d");
             $dir->getAnnotations($annotations);
         }
-        
+
         return $annotations;
     }
 
@@ -103,7 +103,7 @@ class Generate
         if (!$object->has('GridFs')) {
             foreach ($object->getProperties() as $prop) {
                 if ($prop->has('Stream')) {
-                    throw new \RuntimeException('@Stream only works with @GridFS');
+                    throw new \RuntimeException('@Stream nly works with @GridFS');
                 }
             }
         }
@@ -192,6 +192,8 @@ class Generate
         $this->files  = array();
         $this->config = $config;
         $annotations  = $this->loadAnnotations();
+
+        $documents = new Generate\Documents((array)$config->getModelPath(), $this);
 
         $parents  = $this->getParentClasses($annotations); 
         $refCache = $this->getReferenceCache($annotations); 
