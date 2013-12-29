@@ -3,20 +3,20 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "0fc1c5c0a2bb74b8e5ad383bfd18873b",
+    "hash": "5aaa93c334fa12cf91ddbbb9a77269b0",
     "packages": [
         {
             "name": "crodas/class-info",
-            "version": "v0.1.6",
+            "version": "v0.1.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/ClassInfo.git",
-                "reference": "1c1e9c5f2fda39dca06009991f1d995d7a069275"
+                "reference": "2cc4cfa379667ec9f26b420c2f315c8d876b2ad3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/ClassInfo/zipball/1c1e9c5f2fda39dca06009991f1d995d7a069275",
-                "reference": "1c1e9c5f2fda39dca06009991f1d995d7a069275",
+                "url": "https://api.github.com/repos/crodas/ClassInfo/zipball/2cc4cfa379667ec9f26b420c2f315c8d876b2ad3",
+                "reference": "2cc4cfa379667ec9f26b420c2f315c8d876b2ad3",
                 "shasum": ""
             },
             "type": "library",
@@ -36,7 +36,7 @@
                 }
             ],
             "description": "Get classes and functions defined in a given file",
-            "time": "2013-11-15 09:33:07"
+            "time": "2013-12-27 00:37:05"
         },
         {
             "name": "crodas/cli",
@@ -81,12 +81,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/Notoj.git",
-                "reference": "bfc41fccc3f729e88386cc463efcfbfaebab898e"
+                "reference": "363ff5964ab3919c195bde0c726975afa97f5340"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/Notoj/zipball/bfc41fccc3f729e88386cc463efcfbfaebab898e",
-                "reference": "bfc41fccc3f729e88386cc463efcfbfaebab898e",
+                "url": "https://api.github.com/repos/crodas/Notoj/zipball/363ff5964ab3919c195bde0c726975afa97f5340",
+                "reference": "363ff5964ab3919c195bde0c726975afa97f5340",
                 "shasum": ""
             },
             "require": {
@@ -110,7 +110,7 @@
                 }
             ],
             "description": "Annotation parser. Uses reflection and provides cache out of the box.",
-            "time": "2013-12-25 20:05:19"
+            "time": "2013-12-29 06:21:02"
         },
         {
             "name": "crodas/path",
@@ -226,12 +226,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console.git",
-                "reference": "b44aa6a612802bd0f60df09cea469522e0bf72ee"
+                "reference": "1a4a528bf808418a720a5c4b9db7c855ec0e4e00"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Console/zipball/b44aa6a612802bd0f60df09cea469522e0bf72ee",
-                "reference": "b44aa6a612802bd0f60df09cea469522e0bf72ee",
+                "url": "https://api.github.com/repos/symfony/Console/zipball/1a4a528bf808418a720a5c4b9db7c855ec0e4e00",
+                "reference": "1a4a528bf808418a720a5c4b9db7c855ec0e4e00",
                 "shasum": ""
             },
             "require": {
@@ -270,7 +270,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "http://symfony.com",
-            "time": "2013-12-23 16:03:00"
+            "time": "2013-12-28 21:40:48"
         },
         {
             "name": "symfony/finder",
@@ -279,12 +279,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Finder.git",
-                "reference": "46881af03b48e942001e8e9450c2c4ccaeccfc8d"
+                "reference": "da13e76b337421acdb739f5bb5af06c120212971"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Finder/zipball/46881af03b48e942001e8e9450c2c4ccaeccfc8d",
-                "reference": "46881af03b48e942001e8e9450c2c4ccaeccfc8d",
+                "url": "https://api.github.com/repos/symfony/Finder/zipball/da13e76b337421acdb739f5bb5af06c120212971",
+                "reference": "da13e76b337421acdb739f5bb5af06c120212971",
                 "shasum": ""
             },
             "require": {
@@ -317,7 +317,7 @@
             ],
             "description": "Symfony Finder Component",
             "homepage": "http://symfony.com",
-            "time": "2013-11-26 16:42:52"
+            "time": "2013-12-28 08:12:58"
         }
     ],
     "packages-dev": [

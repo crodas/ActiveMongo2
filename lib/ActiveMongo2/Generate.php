@@ -219,11 +219,23 @@ class Generate
                 $data['name'] = $ann['args'] ? current($ann['args']) : null;
                 while ($parent) {
                     $class = strtolower($parent['class']);
-                    if (empty($parents[$class])) break;
-                    if ($parents[$class]->has('SingleCollection') || empty($data['name'])) {
-                        $data['name'] = current($parents[$class]->getOne('Persist'));
-                        $data['disc'] = $parents[$class]->getOne('SingleCollection') ?: ['__type'];
-                        $data['disc'] = current($data['disc']);
+                    if (!empty($parents[$class])) {
+                        if ($parents[$class]->has('SingleCollection') || empty($data['name'])) {
+                            $data['name'] = current($parents[$class]->getOne('Persist'));
+                            $data['disc'] = $parents[$class]->getOne('SingleCollection') ?: ['__type'];
+                            $data['disc'] = current($data['disc']);
+                        }
+                    } else {
+                        // Exception to the rule, the parent class
+                        // doesn't have any @Persist
+                        $docs[$parent['class']] = array(
+                            'class' => strtolower($parent['class']),
+                            'is_gridfs' => false,
+                            'name'      => sha1($parent['class']),
+                            'annotation' => $parent,
+                            'file'       => $this->getRelativePath($parent['file']),
+                            'parent'    => ($p = $parent->getParent()) ? strtolower($p['class']) : NULL,
+                        );
                     }
                     $parent = $parent->GetParent();
                 } 
@@ -264,7 +276,6 @@ class Generate
             'preSave', 'postSave', 'preCreate', 'postCreate', 'onHydratation', 
             'preUpdate', 'postUpdate', 'preDelete', 'postDelete'
         );
-
 
         $indexes = array();
         $plugins = $this->generatePlugins($annotations);
