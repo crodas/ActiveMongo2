@@ -193,7 +193,10 @@ class Generate
         $this->config = $config;
         $annotations  = $this->loadAnnotations();
 
-        $documents = new Generate\Documents((array)$config->getModelPath(), $this);
+        $collections = new Generate\Collections((array)$config->getModelPath(), $this);
+        $collections->map(function($value) {
+            $value->setPath($this->getRelativePath($value->getPath()));
+        });
 
         $parents  = $this->getParentClasses($annotations); 
         $refCache = $this->getReferenceCache($annotations); 
@@ -349,7 +352,7 @@ class Generate
             ->render(array_merge(compact(
                 'docs', 'namespace', 'class_mapper', 'events',
                 'mapper', 'indexes', 'plugins', 'self', 'references',
-                'refCache'
+                'refCache',  'collections'
             ), $hooks), true);
 
         File::write($target, FixCode::fix($code));

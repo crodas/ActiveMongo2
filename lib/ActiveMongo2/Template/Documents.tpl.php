@@ -8,8 +8,8 @@ use ActiveMongo2\Connection;
 
 class Mapper
 {
-    protected $mapper = {{ var_export($mapper, true) }};
-    protected $class_mapper = {{ var_export($class_mapper, true) }};
+    protected $mapper = {{ var_export($collections->byName(), true) }};
+    protected $class_mapper = {{ var_export($collections->byClass(), true) }};
     protected $loaded = array();
     protected $connection;
 

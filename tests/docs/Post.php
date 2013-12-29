@@ -7,7 +7,8 @@ class Middle extends BaseDocument
     /**
      *  @preSave
      */
-    public function foobar() {
+    public function foobar()
+    {
     }
 }
 

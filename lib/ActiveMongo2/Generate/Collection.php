@@ -36,55 +36,116 @@
 */
 namespace ActiveMongo2\Generate;
 
-use Notoj\Annotations;
-use Notoj\Dir as NDir;
-use ArrayObject;
+use Notoj\Annotation\AnnClass;
+use ActiveMongo2\Generate;
 
-class Documents extends ArrayObject
+class Collection
 {
-    protected $files = array();
-    protected $annotations;
+    protected $annotation;
+    protected $file;
+    protected $docs;
 
-    public function offsetExists($name)
+    public function __construct(AnnClass $annotation, Collections $docs)
     {
-        return parent::offsetExists(strtolower($name));
+        $this->annotation = $annotation;
+        $this->docs = $docs;
+        $parent     = $annotation->getParent();
+        while ($parent) {
+            if (empty($docs[$parent['class']])) {
+                $docs[$parent['class']] = new self($parent, $docs);
+            }
+            $parent = $parent->getParent();
+        }
     }
 
-    public function offsetGet($name)
+    public function isGridFs()
     {
-        return parent::offsetGet(strtolower($name));
+        return $this->annotation->has('GridFs');
     }
 
-    public function __construct(Array $dirs, $generator)
+    public function getArray()
     {
-        $annotations  = new Annotations;
-        foreach ($dirs as $dir) {
-            $dir = new NDir($dir);
-            $dir->getAnnotations($annotations);
-            $this->files = array_merge($this->files, $dir->getFiles());
+        return [
+            'class' => $this->getClass(),
+            'file'  => $this->getPath(),
+            'name'  => $this->getName(),
+            'is_gridfs' => $this->isGridFs(),
+            'parent' => $this->getParent() ? $this->GetParent()->getClass() : NULL,
+            'disc'   => $this->isSingleCollection() ? $this->getDiscriminator() : NULL,
+        ];
+    }
+
+    public function getDiscriminator()
+    {
+        $args = $this->annotation->getOne('SingleCollection') ?: ['__type'];
+        return current($args);
+    }
+
+    public function isSingleCollection()
+    {
+        return $this->annotation->has('SingleCollection');
+    }
+
+    public function getClass()
+    {
+        return strtolower($this->annotation['class']);
+    }
+
+    public function getName()
+    {
+        $parent = $this->getParent();
+        while ($parent) {
+            if ($parent->isSingleCollection()) {
+                return $parent->getName();
+            }
+            $parent = $parent->getParent();
         }
 
-        foreach (array('Persist', 'Embeddable') as $type) {
-            foreach ($annotations->get($type) as $object) {
-                $object = new Document($object, $generator);
-                $this[$object->getClass()] = $object;
+        if (!$this->annotation->has('Persist') && !$this->annotation->has('Embeddable')) {
+            // not a real collection but it may have events 
+            // or other needed things
+            return NULL;
+        }
+
+        $args = $this->annotation->GetOne('Persist') ?: $this->annotation->getOne('Embeddable');
+        $name = null;
+        if (!empty($args[0])) {
+            $name = $args[0];
+        } else if (!empty($args['collection'])) {
+            $name = $args['collection'];
+        } else {
+            if ($this->isGridFs()) {
+                $name = "fs";
+            } else {
+                $parts = explode("\\", $this->getClass());
+                $name  = strtolower(end($parts)); 
             }
         }
+        return $name;
+    }
 
-        foreach ($this as $doc) {
-            $parent = $doc->getAnnotation()->getParent();
-            if (!empty($parent)) {
-                while ($parent) {
-                    if (!empty($this[$parent['class']])) {
-                        $doc->setParent($this[$parent['class']]);
-                        break;
-                    }
-                    $parent = $parent->GetParent();
-                }
-            }
+    public function setPath($path)
+    {
+        $this->file = $path;
+        return $this;
+    }
+
+    public function getPath()
+    {
+        return $this->file ?: $this->annotation['file'];
+    }
+
+    public function getAnnotation()
+    {
+        return $this->annotation;
+    }
+    
+    public function getParent()
+    {
+        $parent = $this->annotation->getParent();
+        if (empty($parent)) {
+            return NULL;
         }
-
-        $this->files       = array_unique($this->files);
-        $this->annotations = $annotations;
+        return $this->docs[$parent['class']];
     }
 }

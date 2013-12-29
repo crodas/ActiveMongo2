@@ -36,71 +36,86 @@
 */
 namespace ActiveMongo2\Generate;
 
-use Notoj\Annotation\AnnClass;
-use ActiveMongo2\Generate;
+use Notoj\Annotations;
+use Notoj\Dir as NDir;
+use ArrayObject;
 
-class Document
+class Collections extends ArrayObject
 {
-    protected $annotation;
-    protected $generator;
-    protected $parent;
+    protected $files = array();
+    protected $annotations;
 
-    public function __construct(AnnClass $annotation, Generate $generator)
+    public function offsetExists($name)
     {
-        $this->annotation = $annotation;
-        $this->generator  = $generator;
+        return parent::offsetExists(strtolower($name));
     }
 
-    public function isGridFs()
+    public function offsetSet($name, $value)
     {
-        return $this->annotation->has('GridFs');
+        return parent::offsetSet(strtolower($name), $value);
     }
 
-    public function getClass()
+
+    public function offsetGet($name)
     {
-        return strtolower($this->annotation['class']);
+        return parent::offsetGet(strtolower($name));
     }
 
-    public function setParent(Document $d)
+    public function byClass()
     {
-        $this->parent = $d;
+        $cols = array();
+        foreach ($this as $key => $value) {
+            $name = $value->GetName();
+            if ($name) {
+                $cols[$value->getClass()] = $value->getArray();
+            }
+        } 
+        return $cols;
+    }
+
+    public function byName()
+    {
+        $cols = array();
+        foreach ($this as $key => $value) {
+            $name = $value->GetName();
+            if ($name) {
+                $cols[$name] = $value->getArray();
+            }
+        } 
+        return $cols;
+    }
+
+    public function map(\Closure $fnc)
+    {
+        foreach ($this as $key => $value) {
+            $fnc($value, $key);
+        }
         return $this;
     }
 
-    public function getName()
+    public function __construct(Array $dirs)
     {
-        $args = !empty($this->annotation['args']) ? $this->annotation['args'] :  [];
-        $name = null;
-        if (!empty($args[0])) {
-            $name = $args[0];
-        } else if (!empty($args['name'])) {
-            $name = $args['name'];
-        } else {
-            if ($this->isGridFs()) {
-                $name = "fs";
-            } else {
-                $parts = explode("\\", $this->getClass());
-                $name  = strtolower(end($parts)); 
+        $annotations  = new Annotations;
+        foreach ($dirs as $dir) {
+            $dir = new NDir($dir);
+            $dir->getAnnotations($annotations);
+            $this->files = array_merge($this->files, $dir->getFiles());
+        }
+
+        foreach (array('Filter', 'Plugin') as $d) {
+            $dir = new NDir(__DIR__ . "/../$d");
+            $dir->getAnnotations($annotations);
+            $this->files = array_merge($this->files, $dir->getFiles());
+        }
+
+        foreach (array('Persist', 'Embeddable') as $type) {
+            foreach ($annotations->get($type) as $object) {
+                $object = new Collection($object, $this);
+                $this[$object->getClass()] = $object;
             }
         }
-        return $name;
-    }
 
-    public function getPath()
-    {
-        return $this->generator->getRelativePath($this->annotation['file']);
-    }
-
-    public function getAnnotation()
-    {
-        return $this->annotation;
-    }
-    
-    public function getParentClass()
-    {
-        $parent = $annotation->getParent();
-        if (empty($parent)) {
-            return NULL;
-        }
+        $this->files       = array_unique($this->files);
+        $this->annotations = $annotations;
     }
 }
