@@ -37,6 +37,7 @@
 namespace ActiveMongo2\Generate;
 
 use Notoj\Annotation;
+use ActiveMongo2\Template\Templates;
 
 class Type
 {
@@ -45,5 +46,17 @@ class Type
     public function __construct(Annotation $ann)
     {
         $this->annotation = $ann;
+    }
+
+    public function getFile()
+    {
+        return $this->annotation['file'];
+    }
+
+    public function toCode(Property $prop)
+    {
+        $self = $this;
+        return Templates::get('callback')
+            ->render(compact('prop', 'self'), true);
     }
 }

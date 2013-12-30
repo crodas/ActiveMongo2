@@ -93,19 +93,35 @@ class Collections extends ArrayObject
         return $this;
     }
 
+    protected function getAnnotationByName($name)
+    {
+        $anns = array();
+        foreach ($this->annotations->get($name) as $ann) {
+            $type = new Type($ann);
+            foreach ($ann->get($name) as $arg) {
+                $name = current($arg['args'] ?: []);
+                if (!empty($name)) {
+                    $anns[$name] = $type;
+                }
+            }
+        }
+        return $anns;
+    }
+
+    public function getDefaults()
+    {
+        static $types = array();
+        if (empty($types)) {
+            $types = $this->getAnnotationByName('DefaultValue');
+        }
+        return $types;
+    }
+
     public function getTypes()
     {
         static $types = array();
         if (empty($types)) {
-            foreach ($this->annotations->get('Validate') as $ann) {
-                $type = new Type($ann);
-                foreach ($ann->get('Validate') as $arg) {
-                    $name = current($arg['args'] ?: []);
-                    if (!empty($name)) {
-                        $types[$name] = $type;
-                    }
-                }
-            }
+            $types = $this->getAnnotationByName('Validate');
         }
         return $types;
     }

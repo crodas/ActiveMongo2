@@ -65,6 +65,17 @@ class Property
         return in_array('public', $this->annotation['visibility']);
     }
 
+    public function getDefault() 
+    {
+        $defaults = array();
+        foreach ($this->collection->getDefaults() as $name => $type) {
+            if ($this->annotation->has($name)) {
+                $defaults[] = $type;
+            }
+        }
+        return $defaults;
+    }
+
     public function getType()
     {
         $types = array();
@@ -76,7 +87,16 @@ class Property
         return $types;
     }
 
-    public function getName($raw = false)
+    public function getPHPVariable()
+    {
+        $prefix = '$doc';
+        if (!$this->isId() && $this->collection->isGridFS()) {
+            $prefix = '$doc["metadata"]';
+        }
+        return $prefix . "[" . var_export($this->getName(), true) . "]";
+    }
+
+    public function getName($prefix = false)
     {
         if ($this->isId()) {
             return '_id';
@@ -84,7 +104,7 @@ class Property
 
         $property = $this->getPHPName();
 
-        if (!$raw && $this->collection->isGridFs()) {
+        if ($prefix && $this->collection->isGridFs()) {
             // It is an special case
             $property = "metadata.$property";
         }

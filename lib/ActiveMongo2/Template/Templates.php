@@ -56,6 +56,35 @@ namespace {
     }
 
     /** 
+     *  Template class generated from Callback.tpl
+     */
+    class class_1895ec604b22a2e3f627b9d8d7ae6142d332247e extends base_template_df562f12800ad133cdbc6f040ca106a099504656
+    {
+
+        public function render(Array $vars = array(), $return = false)
+        {
+            $this->context = $vars;
+
+            extract($vars);
+            if ($return) {
+                ob_start();
+            }
+            echo "if (empty(\$this->loaded[";
+            var_export($self->getFile());
+            echo "])) {\n    //require_once __DIR__ . ";
+            var_export($self->getFile());
+            echo ";\n    \$this->loaded[";
+            var_export($self->getFile());
+            echo "] = true;\n}\n";
+
+            if ($return) {
+                return ob_get_clean();
+            }
+
+        }
+    }
+
+    /** 
      *  Template class generated from Trigger.tpl.php
      */
     class class_11ca6999533bd9c460f246ff122fc6c9341f7a1f extends base_template_df562f12800ad133cdbc6f040ca106a099504656
@@ -554,40 +583,20 @@ namespace {
                     echo "            \$doc = \$recursive ? \$this->get_array_" . (sha1($doc['parent'])) . "(\$object) : array();\n";
                 }
                 echo "\n";
-                $docz = '$doc';
-                if ($collection->isGridFS()) {
-                    $docz = '$doc["metadata"]';
-                }
-                echo "\n";
                 foreach($collection->getProperties() as $prop) {
                     if ($prop->isPublic()) {
-                        echo "                /* Public property " . ($prop->getPHPName()) . " -> " . ($prop->getName()) . " */\n                if (\$object->" . ($prop->getPHPName()) . " !== NULL) {\n";
-                        if ($prop->isId()) {
-                            echo "                        \$doc[";
-                            var_export($prop->getName(true));
-                            echo "] = \$object->" . ($prop->getPHPName()) . ";\n";
-                        }
-                        else {
-                            echo "                        " . ($docz) . "[";
-                            var_export($prop->getName(true));
-                            echo "] = \$object->" . ($prop->getPHPName()) . ";\n";
-                        }
-                        echo "                }\n";
+                        echo "                /* Public property " . ($prop->getPHPName()) . " -> " . ($prop->getName()) . " */\n                if (\$object->" . ($prop->getPHPName()) . " !== NULL) {\n                    " . ($prop->getPHPVariable()) . " = \$object->" . ($prop->getPHPName()) . ";\n                }\n";
                     }
                     else {
                         echo "                \$property = new \\ReflectionProperty(\$object, ";
                         var_export($prop->getPHPName());
-                        echo ");\n                \$property->setAccessible(true);\n";
-                        if ($prop->isId()) {
-                            echo "                    \$doc[";
-                            var_export($prop->getName(true));
-                            echo "] = \$property->getValue(\$object);\n";
-                        }
-                        else {
-                            echo "                    " . ($docz) . "[";
-                            var_export($prop->getName(true));
-                            echo "] = \$property->getValue(\$object);\n";
-                        }
+                        echo ");\n                \$property->setAccessible(true);\n                " . ($prop->getPHPVariable()) . " = \$property->getValue(\$object);\n";
+                    }
+                }
+                echo "\n";
+                foreach($collection->getProperties() as $prop) {
+                    foreach($prop->getDefault() as $default) {
+                        echo "                if (empty(" . ($prop->getPHPVariable()) . ")) {\n                    " . ($default->toCode($prop)) . "\n                }\n";
                     }
                 }
                 echo "\n";
@@ -814,10 +823,11 @@ namespace ActiveMongo2\Template {
         public static function getAll()
         {
             return array (
-                0 => 'trigger',
-                1 => 'validate',
-                2 => 'reference/update',
-                3 => 'documents',
+                0 => 'callback',
+                1 => 'trigger',
+                2 => 'validate',
+                3 => 'reference/update',
+                4 => 'documents',
             );
         }
 
@@ -830,6 +840,8 @@ namespace ActiveMongo2\Template {
         public static function get($name, Array $context = array())
         {
             static $classes = array (
+                'callback.tpl' => 'class_1895ec604b22a2e3f627b9d8d7ae6142d332247e',
+                'callback' => 'class_1895ec604b22a2e3f627b9d8d7ae6142d332247e',
                 'trigger.tpl.php' => 'class_11ca6999533bd9c460f246ff122fc6c9341f7a1f',
                 'trigger' => 'class_11ca6999533bd9c460f246ff122fc6c9341f7a1f',
                 'validate.tpl.php' => 'class_9e8794c44ad8c1631f7e215c9edaf7dbac875fb4',

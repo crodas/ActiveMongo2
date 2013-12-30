@@ -58,6 +58,12 @@ class Collection
         }
     }
 
+    public function getDefaults()
+    {
+        return $this->collections->getDefaults();
+    }
+
+
     public function getTypes()
     {
         return $this->collections->getTypes();

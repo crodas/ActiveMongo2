@@ -610,29 +610,24 @@ class Mapper
             $doc = $recursive ? $this->get_array_{{sha1($doc['parent'])}}($object) : array();
         @end
 
-        @set($docz, '$doc')
-        @if ($collection->isGridFS())
-            @set($docz, '$doc["metadata"]')
-        @end
-
         @foreach ($collection->getProperties() as $prop)
             @if ($prop->isPublic())
                 /* Public property {{$prop->getPHPName()}} -> {{$prop->getName()}} */
                 if ($object->{{$prop->getPHPName()}} !== NULL) {
-                    @if ($prop->isId())
-                        $doc[{{@$prop->getName(true)}}] = $object->{{ $prop->getPHPName() }};
-                    @else
-                        {{$docz}}[{{@$prop->getName(true)}}] = $object->{{ $prop->getPHPName() }};
-                    @end
+                    {{ $prop->getPHPVariable()}} = $object->{{ $prop->getPHPName() }};
                 }
             @else
                 $property = new \ReflectionProperty($object, {{ @$prop->getPHPName() }});
                 $property->setAccessible(true);
-                @if ($prop->isId())
-                    $doc[{{@$prop->getName(true)}}] = $property->getValue($object);
-                @else
-                    {{$docz}}[{{@$prop->getName(true)}}] = $property->getValue($object);
-                @end
+                {{$prop->getPHPVariable()}} = $property->getValue($object);
+            @end
+        @end
+
+        @foreach ($collection->getProperties() as $prop)
+            @foreach($prop->getDefault() as $default)
+                if (empty({{ $prop->getPHPVariable() }})) {
+                    {{ $default->toCode($prop) }}
+                }
             @end
         @end
 
