@@ -225,13 +225,13 @@ namespace {
             echo "<?php\n\nnamespace ActiveMongo2\\Generated" . ($namespace) . ";\n\nuse ActiveMongo2\\Connection;\n\n";
             $instance = '_' . uniqid(true);
             echo "\nclass Mapper\n{\n    protected \$mapper = " . (var_export($collections->byName(), true)) . ";\n    protected \$class_mapper = " . (var_export($collections->byClass(), true)) . ";\n    protected \$loaded = array();\n    protected \$connection;\n\n    public function __construct(Connection \$conn)\n    {\n        \$this->connection = \$conn;\n        spl_autoload_register(array(\$this, '__autoloader'));\n    }\n\n    public function getClass(\$name)\n    {\n        \$class = __NAMESPACE__ . \"\\\\\$name\";\n        if (!class_exists(\$class, false)) {\n            \$define = __NAMESPACE__ . \"\\\\define_class_\" . sha1(strtolower(\$name));\n            \$define();\n        }\n\n        return \$class;\n    }\n\n    protected function array_diff(Array \$arr1, Array \$arr2)\n    {\n        \$diff = array();\n        foreach (\$arr1 as \$key => \$value) {\n            if (empty(\$arr2[\$key]) || \$arr2[\$key] !== \$arr1[\$key]) {\n                \$diff[\$key] = \$value;\n            }\n        }\n        return \$diff;\n    }\n\n\n    public function __autoloader(\$class)\n    {\n        \$class = strtolower(\$class);\n        if (!empty(\$this->class_mapper[\$class])) {\n            \$this->loaded[\$this->class_mapper[\$class]['file']] = true;\n            require __DIR__ . \$this->class_mapper[\$class]['file'];\n\n            return true;\n        }\n        return false;\n    }\n\n    public function mapCollection(\$col)\n    {\n        if (empty(\$this->mapper[\$col])) {\n            throw new \\RuntimeException(\"Cannot map {\$col} collection to its class\");\n        }\n\n        \$data = \$this->mapper[\$col];\n\n        if (empty(\$this->loaded[\$data['file']])) {\n            require_once __DIR__ .  \$data['file'];\n            \$this->loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    public function onQuery(\$table, Array &\$query)\n    {\n        switch (\$table) {\n";
-            foreach($docs as $doc) {
+            foreach($collections as $doc) {
                 echo "        case ";
-                var_export($doc['class']);
+                var_export($doc->getClass());
                 echo ":\n";
-                if (!empty($doc['disc']) && !empty($doc['parent'])) {
+                if ($doc->isSingleCollection()) {
                     echo "                \$query[";
-                    var_export($doc['disc']);
+                    var_export($doc->getDiscriminator());
                     echo "] = \$table;\n";
                 }
                 echo "            break;\n";
@@ -282,7 +282,8 @@ namespace {
             }
             echo "    }\n\n";
             foreach($docs as $doc) {
-                echo "    /**\n     *  Get update object " . ($doc['class']) . " \n     */\n    protected function update_" . (sha1($doc['class'])) . "(Array &\$current, Array \$old, \$embed = false)\n    {\n        if (!\$embed && !empty(\$current['_id']) && \$current['_id'] != \$old['_id']) {\n            throw new \\RuntimeException(\"document ids cannot be updated\");\n        }\n\n";
+                $collection = $collections[$doc['class']];
+                echo "\n    /**\n     *  Get update object " . ($doc['class']) . " \n     */\n    protected function update_" . (sha1($doc['class'])) . "(Array &\$current, Array \$old, \$embed = false)\n    {\n        if (!\$embed && !empty(\$current['_id']) && \$current['_id'] != \$old['_id']) {\n            throw new \\RuntimeException(\"document ids cannot be updated\");\n        }\n\n";
                 if (empty($doc['parent'])) {
                     echo "            \$change = array();\n";
                 }
@@ -554,32 +555,39 @@ namespace {
                 }
                 echo "\n";
                 $docz = '$doc';
-                if ($doc['is_gridfs']) {
+                if ($collection->isGridFS()) {
                     $docz = '$doc["metadata"]';
                 }
-                echo "\n\n";
-                foreach($doc['annotation']->getProperties() as $prop) {
-                    echo "            /* " . ($prop['property']) . " */\n";
-                    $propname = $prop['property'];
-                    $docname = $propname;
-                    if ($prop->has('Id')) {
-                        $docz = '$doc';
-                        $docname = '_id';
-                    }
-                    if (in_array('public', $prop['visibility'])) {
-                        echo "                if (\$object->" . ($propname) . " !== NULL) {\n                    " . ($docz) . "[";
-                        var_export($docname);
-                        echo "] = \$object->" . ($propname) . ";\n                }\n";
+                echo "\n";
+                foreach($collection->getProperties() as $prop) {
+                    if ($prop->isPublic()) {
+                        echo "                /* Public property " . ($prop->getPHPName()) . " -> " . ($prop->getName()) . " */\n                if (\$object->" . ($prop->getPHPName()) . " !== NULL) {\n";
+                        if ($prop->isId()) {
+                            echo "                        \$doc[";
+                            var_export($prop->getName(true));
+                            echo "] = \$object->" . ($prop->getPHPName()) . ";\n";
+                        }
+                        else {
+                            echo "                        " . ($docz) . "[";
+                            var_export($prop->getName(true));
+                            echo "] = \$object->" . ($prop->getPHPName()) . ";\n";
+                        }
+                        echo "                }\n";
                     }
                     else {
                         echo "                \$property = new \\ReflectionProperty(\$object, ";
-                        var_export($propname);
-                        echo ");\n                \$property->setAccessible(true);\n                " . ($docz) . "[";
-                        var_export($docname);
-                        echo "] = \$property->getValue(\$object);\n";
-                    }
-                    if ($doc['is_gridfs']) {
-                        $docz = '$doc["metadata"]';
+                        var_export($prop->getPHPName());
+                        echo ");\n                \$property->setAccessible(true);\n";
+                        if ($prop->isId()) {
+                            echo "                    \$doc[";
+                            var_export($prop->getName(true));
+                            echo "] = \$property->getValue(\$object);\n";
+                        }
+                        else {
+                            echo "                    " . ($docz) . "[";
+                            var_export($prop->getName(true));
+                            echo "] = \$property->getValue(\$object);\n";
+                        }
                     }
                 }
                 echo "\n";

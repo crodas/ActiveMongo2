@@ -73,10 +73,10 @@ class Mapper
     public function onQuery($table, Array &$query)
     {
         switch ($table) {
-        @foreach($docs as $doc)
-        case {{@$doc['class']}}:
-            @if (!empty($doc['disc']) && !empty($doc['parent']))
-                $query[{{@$doc['disc']}}] = $table;
+        @foreach($collections as $doc)
+        case {{@$doc->getClass()}}:
+            @if ($doc->isSingleCollection()) {
+                $query[{{@$doc->getDiscriminator()}}] = $table;
             @end
             break;
         @end
@@ -298,6 +298,8 @@ class Mapper
     }
 
     @foreach($docs as $doc)
+        @set($collection, $collections[$doc['class']])
+
     /**
      *  Get update object {{$doc['class']}} 
      */
@@ -609,30 +611,28 @@ class Mapper
         @end
 
         @set($docz, '$doc')
-        @if ($doc['is_gridfs'])
+        @if ($collection->isGridFS())
             @set($docz, '$doc["metadata"]')
         @end
 
-
-        @foreach ($doc['annotation']->getProperties() as $prop)
-            /* {{$prop['property']}} */
-            @set($propname, $prop['property'])
-            @set($docname, $propname)
-            @if ($prop->has('Id'))
-                @set($docz, '$doc')
-                @set($docname, '_id')
-            @end
-            @if (in_array('public', $prop['visibility']))
-                if ($object->{{$propname}} !== NULL) {
-                    {{$docz}}[{{@$docname}}] = $object->{{$propname}};
+        @foreach ($collection->getProperties() as $prop)
+            @if ($prop->isPublic())
+                /* Public property {{$prop->getPHPName()}} -> {{$prop->getName()}} */
+                if ($object->{{$prop->getPHPName()}} !== NULL) {
+                    @if ($prop->isId())
+                        $doc[{{@$prop->getName(true)}}] = $object->{{ $prop->getPHPName() }};
+                    @else
+                        {{$docz}}[{{@$prop->getName(true)}}] = $object->{{ $prop->getPHPName() }};
+                    @end
                 }
             @else
-                $property = new \ReflectionProperty($object, {{ @$propname }});
+                $property = new \ReflectionProperty($object, {{ @$prop->getPHPName() }});
                 $property->setAccessible(true);
-                {{$docz}}[{{@$docname}}] = $property->getValue($object);
-            @end
-            @if ($doc['is_gridfs'])
-                @set($docz, '$doc["metadata"]')
+                @if ($prop->isId())
+                    $doc[{{@$prop->getName(true)}}] = $property->getValue($object);
+                @else
+                    {{$docz}}[{{@$prop->getName(true)}}] = $property->getValue($object);
+                @end
             @end
         @end
 

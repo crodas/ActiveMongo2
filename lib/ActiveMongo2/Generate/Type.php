@@ -36,103 +36,14 @@
 */
 namespace ActiveMongo2\Generate;
 
-use Notoj\Annotations;
-use Notoj\Dir as NDir;
-use ArrayObject;
+use Notoj\Annotation;
 
-class Collections extends ArrayObject
+class Type
 {
-    protected $files = array();
-    protected $annotations;
+    protected $annotation;
 
-    public function offsetExists($name)
+    public function __construct(Annotation $ann)
     {
-        return parent::offsetExists(strtolower($name));
-    }
-
-    public function offsetSet($name, $value)
-    {
-        return parent::offsetSet(strtolower($name), $value);
-    }
-
-
-    public function offsetGet($name)
-    {
-        return parent::offsetGet(strtolower($name));
-    }
-
-    public function byClass()
-    {
-        $cols = array();
-        foreach ($this as $key => $value) {
-            $name = $value->GetName();
-            if ($name) {
-                $cols[$value->getClass()] = $value->getArray();
-            }
-        } 
-        return $cols;
-    }
-
-    public function byName()
-    {
-        $cols = array();
-        foreach ($this as $key => $value) {
-            $name = $value->GetName();
-            if ($name) {
-                $cols[$name] = $value->getArray();
-            }
-        } 
-        return $cols;
-    }
-
-    public function map(\Closure $fnc)
-    {
-        foreach ($this as $key => $value) {
-            $fnc($value, $key);
-        }
-        return $this;
-    }
-
-    public function getTypes()
-    {
-        static $types = array();
-        if (empty($types)) {
-            foreach ($this->annotations->get('Validate') as $ann) {
-                $type = new Type($ann);
-                foreach ($ann->get('Validate') as $arg) {
-                    $name = current($arg['args'] ?: []);
-                    if (!empty($name)) {
-                        $types[$name] = $type;
-                    }
-                }
-            }
-        }
-        return $types;
-    }
-
-    public function __construct(Array $dirs)
-    {
-        $annotations  = new Annotations;
-        foreach ($dirs as $dir) {
-            $dir = new NDir($dir);
-            $dir->getAnnotations($annotations);
-            $this->files = array_merge($this->files, $dir->getFiles());
-        }
-
-        foreach (array('Filter', 'Plugin') as $d) {
-            $dir = new NDir(__DIR__ . "/../$d");
-            $dir->getAnnotations($annotations);
-            $this->files = array_merge($this->files, $dir->getFiles());
-        }
-
-        foreach (array('Persist', 'Embeddable') as $type) {
-            foreach ($annotations->get($type) as $object) {
-                $object = new Collection($object, $this);
-                $this[$object->getClass()] = $object;
-            }
-        }
-
-        $this->files       = array_unique($this->files);
-        $this->annotations = $annotations;
+        $this->annotation = $ann;
     }
 }

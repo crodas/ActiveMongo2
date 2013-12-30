@@ -43,19 +43,33 @@ class Collection
 {
     protected $annotation;
     protected $file;
-    protected $docs;
+    protected $collections;
 
-    public function __construct(AnnClass $annotation, Collections $docs)
+    public function __construct(AnnClass $annotation, Collections $collections)
     {
-        $this->annotation = $annotation;
-        $this->docs = $docs;
+        $this->annotation  = $annotation;
+        $this->collections = $collections;
         $parent     = $annotation->getParent();
         while ($parent) {
-            if (empty($docs[$parent['class']])) {
-                $docs[$parent['class']] = new self($parent, $docs);
+            if (empty($collections[$parent['class']])) {
+                $collections[$parent['class']] = new self($parent, $collections);
             }
             $parent = $parent->getParent();
         }
+    }
+
+    public function getTypes()
+    {
+        return $this->collections->getTypes();
+    }
+
+    public function getProperties()
+    {
+        $properties = array();
+        foreach ($this->annotation->getProperties() as $prop) {
+            $properties[] = new Property($this, $prop);
+        }
+        return $properties;
     }
 
     public function isGridFs()
@@ -146,6 +160,6 @@ class Collection
         if (empty($parent)) {
             return NULL;
         }
-        return $this->docs[$parent['class']];
+        return $this->collections[$parent['class']];
     }
 }

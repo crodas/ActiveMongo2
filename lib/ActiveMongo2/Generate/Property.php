@@ -36,103 +36,59 @@
 */
 namespace ActiveMongo2\Generate;
 
-use Notoj\Annotations;
-use Notoj\Dir as NDir;
-use ArrayObject;
+use Notoj\Annotation;
+use ActiveMongo2\Generate;
 
-class Collections extends ArrayObject
+class Property
 {
-    protected $files = array();
-    protected $annotations;
+    protected $collection;
+    protected $annotation;
 
-    public function offsetExists($name)
+    public function __construct(Collection $col, Annotation $prop)
     {
-        return parent::offsetExists(strtolower($name));
+        $this->collection = $col;
+        $this->annotation = $prop;
     }
 
-    public function offsetSet($name, $value)
+    public function isId()
     {
-        return parent::offsetSet(strtolower($name), $value);
+        return $this->annotation->has('Id');
     }
 
-
-    public function offsetGet($name)
+    public function getPHPName()
     {
-        return parent::offsetGet(strtolower($name));
+        return $this->annotation['property'];
     }
 
-    public function byClass()
+    public function isPublic()
     {
-        $cols = array();
-        foreach ($this as $key => $value) {
-            $name = $value->GetName();
-            if ($name) {
-                $cols[$value->getClass()] = $value->getArray();
-            }
-        } 
-        return $cols;
+        return in_array('public', $this->annotation['visibility']);
     }
 
-    public function byName()
+    public function getType()
     {
-        $cols = array();
-        foreach ($this as $key => $value) {
-            $name = $value->GetName();
-            if ($name) {
-                $cols[$name] = $value->getArray();
-            }
-        } 
-        return $cols;
-    }
-
-    public function map(\Closure $fnc)
-    {
-        foreach ($this as $key => $value) {
-            $fnc($value, $key);
-        }
-        return $this;
-    }
-
-    public function getTypes()
-    {
-        static $types = array();
-        if (empty($types)) {
-            foreach ($this->annotations->get('Validate') as $ann) {
-                $type = new Type($ann);
-                foreach ($ann->get('Validate') as $arg) {
-                    $name = current($arg['args'] ?: []);
-                    if (!empty($name)) {
-                        $types[$name] = $type;
-                    }
-                }
+        $types = array();
+        foreach ($this->collection->getTypes() as $name => $type) {
+            if ($this->annotation->has($name)) {
+                $types[] = $type;
             }
         }
         return $types;
     }
 
-    public function __construct(Array $dirs)
+    public function getName($raw = false)
     {
-        $annotations  = new Annotations;
-        foreach ($dirs as $dir) {
-            $dir = new NDir($dir);
-            $dir->getAnnotations($annotations);
-            $this->files = array_merge($this->files, $dir->getFiles());
+        if ($this->isId()) {
+            return '_id';
         }
 
-        foreach (array('Filter', 'Plugin') as $d) {
-            $dir = new NDir(__DIR__ . "/../$d");
-            $dir->getAnnotations($annotations);
-            $this->files = array_merge($this->files, $dir->getFiles());
-        }
+        $property = $this->getPHPName();
 
-        foreach (array('Persist', 'Embeddable') as $type) {
-            foreach ($annotations->get($type) as $object) {
-                $object = new Collection($object, $this);
-                $this[$object->getClass()] = $object;
-            }
+        if (!$raw && $this->collection->isGridFs()) {
+            // It is an special case
+            $property = "metadata.$property";
         }
-
-        $this->files       = array_unique($this->files);
-        $this->annotations = $annotations;
+        return $property;
     }
+
 }
