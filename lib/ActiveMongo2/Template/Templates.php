@@ -281,13 +281,13 @@ namespace {
             echo "<?php\n\nnamespace ActiveMongo2\\Generated" . ($namespace) . ";\n\nuse ActiveMongo2\\Connection;\n\n";
             $instance = '_' . uniqid(true);
             echo "\nclass Mapper\n{\n    protected \$mapper = " . (var_export($collections->byName(), true)) . ";\n    protected \$class_mapper = " . (var_export($collections->byClass(), true)) . ";\n    protected \$loaded = array();\n    protected \$connection;\n\n    public function __construct(Connection \$conn)\n    {\n        \$this->connection = \$conn;\n        spl_autoload_register(array(\$this, '__autoloader'));\n    }\n\n    public function getClass(\$name)\n    {\n        \$class = __NAMESPACE__ . \"\\\\\$name\";\n        if (!class_exists(\$class, false)) {\n            \$define = __NAMESPACE__ . \"\\\\define_class_\" . sha1(\$name);\n            \$define();\n        }\n\n        return \$class;\n    }\n\n    protected function array_diff(Array \$arr1, Array \$arr2)\n    {\n        \$diff = array();\n        foreach (\$arr1 as \$key => \$value) {\n            if (empty(\$arr2[\$key]) || \$arr2[\$key] !== \$arr1[\$key]) {\n                \$diff[\$key] = \$value;\n            }\n        }\n        return \$diff;\n    }\n\n\n    public function __autoloader(\$class)\n    {\n        \$class = strtolower(\$class);\n        if (!empty(\$this->class_mapper[\$class])) {\n            \$this->loaded[\$this->class_mapper[\$class]['file']] = true;\n            require __DIR__ . \$this->class_mapper[\$class]['file'];\n\n            return true;\n        }\n        return false;\n    }\n\n    public function mapCollection(\$col)\n    {\n        if (empty(\$this->mapper[\$col])) {\n            throw new \\RuntimeException(\"Cannot map {\$col} collection to its class\");\n        }\n\n        \$data = \$this->mapper[\$col];\n\n        if (empty(\$this->loaded[\$data['file']])) {\n            require_once __DIR__ .  \$data['file'];\n            \$this->loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    public function onQuery(\$table, Array &\$query)\n    {\n        switch (\$table) {\n";
-            foreach($collections as $doc) {
+            foreach($collections as $collection) {
                 echo "        case ";
-                var_export($doc->getClass());
+                var_export($collection->getClass());
                 echo ":\n";
-                if ($doc->isSingleCollection()) {
+                if ($collection->isSingleCollection()) {
                     echo "                \$query[";
-                    var_export($doc->getDiscriminator());
+                    var_export($collection->getDiscriminator());
                     echo "] = \$table;\n";
                 }
                 echo "            break;\n";
@@ -336,11 +336,11 @@ namespace {
             foreach($docs as $doc) {
                 $collection = $collections[$doc['class']];
                 echo "\n    /**\n     *  Get update object " . ($collection->getClass()) . " \n     */\n    protected function update_" . (sha1($collection->getClass())) . "(Array &\$current, Array \$old, \$embed = false)\n    {\n        if (!\$embed && !empty(\$current['_id']) && \$current['_id'] != \$old['_id']) {\n            throw new \\RuntimeException(\"document ids cannot be updated\");\n        }\n\n";
-                if (empty($doc['parent'])) {
+                if (!$collection->getParent()) {
                     echo "            \$change = array();\n";
                 }
                 else {
-                    echo "            \$change = \$this->update_" . (sha1($doc['parent'])) . "(\$current, \$old, \$embed);\n";
+                    echo "            \$change = \$this->update_" . (sha1($collection->getParent())) . "(\$current, \$old, \$embed);\n";
                 }
                 echo "\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
@@ -508,7 +508,7 @@ namespace {
                     echo ",\n";
                 }
                 echo "        );\n    }\n\n    /**\n     *  Populate objects " . ($collection->getClass()) . " \n     */\n    protected function populate_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " &\$object, \$data)\n    {\n        if (!\$object instanceof ActiveMongo2Mapped) {\n            \$class    = \$this->getClass(";
-                var_export($doc['name'] . '_');
+                var_export($collection->getName() . '_');
                 echo " .  sha1(strtolower(get_class(\$object))));\n            \$populate = get_object_vars(\$object);\n            \$object = new \$class;\n            foreach (\$populate as \$key => \$value) {\n                \$object->\$key = \$value;\n            }\n        }\n\n";
                 if (!empty($doc['parent'])) {
                     echo "            \$this->populate_" . (sha1($doc['parent'])) . "(\$object, \$data);\n";
@@ -593,17 +593,17 @@ namespace {
                     echo "\n            ));\n";
                 }
                 echo "        \n        foreach (\$extra as \$key => \$value) {\n            if (is_object(\$value)) {\n                if (\$value instanceof \\ActiveMongo2\\Reference) {\n                    \$extra[\$key] = \$value->getReference();\n                } else {\n                    \$extra[\$key] = \$this->getReference(\$value);\n                }\n            }\n        }\n\n        return array_merge(array(\n                '\$id'   => \$document['_id'],\n                '\$ref'  => ";
-                var_export($doc['name']);
+                var_export($collection->getName());
                 echo ", \n                '__class' => ";
                 var_export($collection->getClass());
                 echo ",\n                '__instance' => ";
-                var_export($doc['name']);
-                echo " . ':' . serialize(\$document['_id']),\n            )\n            , \$extra\n        );\n\n    }\n\n    /**\n     *  Validate " . ($collection->getClass()) . " object\n     */\n    protected function get_array_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " \$object, \$recursive = true)\n    {\n";
-                if (empty($doc['parent'])) {
+                var_export($collection->getName());
+                echo " . ':' . serialize(\$document['_id']),\n            )\n            , \$extra\n        );\n\n    }\n\n    /**\n     *  Validate " . ($collection->getClass()) . " object\n     */\n    protected function get_array_" . (sha1($collection)) . "(\\" . ($collection) . " \$object, \$recursive = true)\n    {\n";
+                if (!$collection->getParent()) {
                     echo "            \$doc = array();\n";
                 }
                 else {
-                    echo "            \$doc = \$recursive ? \$this->get_array_" . (sha1($doc['parent'])) . "(\$object) : array();\n";
+                    echo "            \$doc = \$recursive ? \$this->get_array_" . (sha1($collection->getParent())) . "(\$object) : array();\n";
                 }
                 echo "\n";
                 foreach($collection->getProperties() as $prop) {
@@ -629,15 +629,15 @@ namespace {
                     echo ";\n";
                 }
                 echo "\n        return \$doc;\n    }\n\n    /**\n     *  Validate " . ($collection->getClass()) . " object\n     */\n    protected function validate_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " \$object)\n    {\n";
-                if (!empty($doc['parent'])) {
-                    echo "            \$doc = array_merge(\n                \$this->validate_" . (sha1($doc['parent'])) . "(\$object),\n                \$this->get_array_" . (sha1($collection->getClass())) . "(\$object, false)\n            );\n";
+                if ($collection->getParent()) {
+                    echo "            \$doc = array_merge(\n                \$this->validate_" . (sha1($collection->getParent())) . "(\$object),\n                \$this->get_array_" . (sha1($collection->getClass())) . "(\$object, false)\n            );\n";
                 }
                 else {
                     echo "            \$doc = \$this->get_array_" . (sha1($collection->getClass())) . "(\$object);\n";
                 }
                 echo "\n";
                 $docz = '$doc';
-                if ($doc['is_gridfs']) {
+                if ($collection->isGridFS()) {
                     $docz = '$doc["metadata"]';
                 }
                 foreach($doc['annotation']->getProperties() as $prop) {
@@ -654,8 +654,8 @@ namespace {
                     ActiveMongo2\Template\Templates::exec('validate', compact('propname', 'validators', 'files', 'prop', 'collection'), $this->context);
                 }
                 echo "\n        return \$doc;\n    }\n\n    protected function update_property_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " \$document, \$property, \$value)\n    {\n";
-                if ($doc['parent']) {
-                    echo "            \$this->update_property_" . (sha1($doc['parent'])) . "(\$document, \$property, \$value);\n";
+                if ($collection->getParent()) {
+                    echo "            \$this->update_property_" . (sha1($collection->getParent())) . "(\$document, \$property, \$value);\n";
                 }
                 foreach($doc['annotation']->getProperties() as $prop) {
                     $propname = $prop['property'];

@@ -73,10 +73,10 @@ class Mapper
     public function onQuery($table, Array &$query)
     {
         switch ($table) {
-        @foreach($collections as $doc)
-        case {{@$doc->getClass()}}:
-            @if ($doc->isSingleCollection()) {
-                $query[{{@$doc->getDiscriminator()}}] = $table;
+        @foreach($collections as $collection)
+        case {{@$collection->getClass()}}:
+            @if ($collection->isSingleCollection()) {
+                $query[{{@$collection->getDiscriminator()}}] = $table;
             @end
             break;
         @end
@@ -309,10 +309,10 @@ class Mapper
             throw new \RuntimeException("document ids cannot be updated");
         }
 
-        @if (empty($doc['parent']))
+        @if (!$collection->getParent()) {
             $change = array();
         @else
-            $change = $this->update_{{sha1($doc['parent'])}}($current, $old, $embed);
+            $change = $this->update_{{sha1($collection->getParent())}}($current, $old, $embed);
         @end
 
         @foreach ($doc['annotation']->getProperties() as $prop)
@@ -470,7 +470,7 @@ class Mapper
     protected function populate_{{sha1($collection->getClass())}}(\{{$collection->getClass()}} &$object, $data)
     {
         if (!$object instanceof ActiveMongo2Mapped) {
-            $class    = $this->getClass({{@$colleciton->getName() . '_' }} .  sha1(strtolower(get_class($object))));
+            $class    = $this->getClass({{@$collection->getName() . '_' }} .  sha1(strtolower(get_class($object))));
             $populate = get_object_vars($object);
             $object = new $class;
             foreach ($populate as $key => $value) {
@@ -590,9 +590,9 @@ class Mapper
 
         return array_merge(array(
                 '$id'   => $document['_id'],
-                '$ref'  => {{@$colleciton->getName()}}, 
+                '$ref'  => {{@$collection->getName()}}, 
                 '__class' => {{@$collection->getClass()}},
-                '__instance' => {{@$colleciton->getName()}} . ':' . serialize($document['_id']),
+                '__instance' => {{@$collection->getName()}} . ':' . serialize($document['_id']),
             )
             , $extra
         );
@@ -602,12 +602,12 @@ class Mapper
     /**
      *  Validate {{$collection->getClass()}} object
      */
-    protected function get_array_{{sha1($collection->getClass())}}(\{{$collection->getClass()}} $object, $recursive = true)
+    protected function get_array_{{sha1($collection)}}(\{{$collection}} $object, $recursive = true)
     {
-        @if (empty($doc['parent']))
+        @if (!$collection->getParent())
             $doc = array();
         @else
-            $doc = $recursive ? $this->get_array_{{sha1($doc['parent'])}}($object) : array();
+            $doc = $recursive ? $this->get_array_{{sha1($collection->getParent())}}($object) : array();
         @end
 
         @foreach ($collection->getProperties() as $prop)
@@ -645,9 +645,9 @@ class Mapper
      */
     protected function validate_{{sha1($collection->getClass())}}(\{{$collection->getClass()}} $object)
     {
-        @if (!empty($doc['parent']))
+        @if ($collection->getParent())
             $doc = array_merge(
-                $this->validate_{{sha1($doc['parent'])}}($object),
+                $this->validate_{{sha1($collection->getParent())}}($object),
                 $this->get_array_{{sha1($collection->getClass())}}($object, false)
             );
         @else 
@@ -655,7 +655,7 @@ class Mapper
         @end
 
         @set($docz, '$doc')
-        @if ($doc['is_gridfs'])
+        @if ($collection->isGridFS())
             @set($docz, '$doc["metadata"]')
         @end
         @foreach ($doc['annotation']->getProperties() as $prop)
@@ -677,8 +677,8 @@ class Mapper
 
     protected function update_property_{{sha1($collection->getClass())}}(\{{$collection->getClass()}} $document, $property, $value)
     {
-        @if ($doc['parent'])
-            $this->update_property_{{sha1($doc['parent'])}}($document, $property, $value);
+        @if ($collection->getParent())
+            $this->update_property_{{sha1($collection->getParent())}}($document, $property, $value);
         @end
         @foreach ($doc['annotation']->getProperties() as $prop)
             @set($propname, $prop['property'])

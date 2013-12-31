@@ -83,6 +83,11 @@ class Collection extends Base
         return $this->annotation->has('GridFs');
     }
 
+    public function __toString()
+    {
+        return $this->getClass();
+    }
+
     public function getArray()
     {
         return [
