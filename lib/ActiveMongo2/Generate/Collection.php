@@ -144,6 +144,14 @@ class Collection extends Base
         return NULL;
     }
 
+    protected function getAnnotationArgs()
+    {
+        if (!$this->annotation->has('Persist') && !$this->annotation->has('Embeddable')) {
+            return false;
+        }
+        return $this->annotation->getOne('Persist') ?: $this->annotation->getOne('Embeddable');
+    }
+
     protected function getNameFromAnnotation($args, $ann)
     {
         foreach ($ann as $name) {
@@ -156,17 +164,15 @@ class Collection extends Base
 
     public function getName()
     {
-        if (!$this->annotation->has('Persist') && !$this->annotation->has('Embeddable')) {
-            return NULL;
-        }
-
-        $args = $this->annotation->getOne('Persist') ?: $this->annotation->getOne('Embeddable');
-        $name = $this->getNameFromParent();
-        $name = $name ?: $this->getNameFromAnnotation($args, [0, 'collection']);
-
-        if (!$name && $this->isGridFs()) {
+        $args = $this->getAnnotationArgs();
+        if ($args === FALSE) {
+            $name = NULL;
+        } else if (($pname = $this->getNameFromParent())
+            || ($pname = $this->getNameFromAnnotation($args, [0, 'collection']))) {
+            $name = $pname;
+        } else if ($this->isGridFs()) {
             $name = "fs";
-        } else if (!$name && $args) {
+        } else {
             $parts = explode("\\", $this->getClass());
             $name  = strtolower(end($parts)); 
         }
