@@ -301,9 +301,9 @@ class Mapper
         @set($collection, $collections[$doc['class']])
 
     /**
-     *  Get update object {{$doc['class']}} 
+     *  Get update object {{$collection->getClass()}} 
      */
-    protected function update_{{sha1($doc['class'])}}(Array &$current, Array $old, $embed = false)
+    protected function update_{{sha1($collection->getClass())}}(Array &$current, Array $old, $embed = false)
     {
         if (!$embed && !empty($current['_id']) && $current['_id'] != $old['_id']) {
             throw new \RuntimeException("document ids cannot be updated");
@@ -448,7 +448,7 @@ class Mapper
         return $change;
     }
 
-    protected function get_mapping_{{sha1($doc['class'])}}() 
+    protected function get_mapping_{{sha1($collection->getClass())}}() 
     {
         return array(
             @foreach ($doc['annotation']->getProperties() as $prop)
@@ -465,9 +465,9 @@ class Mapper
     }
 
     /**
-     *  Populate objects {{$doc['class']}} 
+     *  Populate objects {{$collection->getClass()}} 
      */
-    protected function populate_{{sha1($doc['class'])}}(\{{$doc['class']}} &$object, $data)
+    protected function populate_{{sha1($collection->getClass())}}(\{{$collection->getClass()}} &$object, $data)
     {
         if (!$object instanceof ActiveMongo2Mapped) {
             $class    = $this->getClass({{@$doc['name'] . '_' }} .  sha1(strtolower(get_class($object))));
@@ -561,20 +561,20 @@ class Mapper
     }
 
     /**
-     *  Get reference of  {{$doc['class']}} object
+     *  Get reference of  {{$collection->getClass()}} object
      */
-    protected function get_reference_{{sha1($doc['class'])}}(\{{$doc['class']}} $object, $include = Array())
+    protected function get_reference_{{sha1($collection->getClass())}}(\{{$collection->getClass()}} $object, $include = Array())
     {
-        $document = $this->get_array_{{sha1($doc['class'])}}($object);
+        $document = $this->get_array_{{sha1($collection->getClass())}}($object);
         $extra    = array();
         if ($include) {
             $extra  = array_intersect_key($document, $include);
         }
 
-        @if (!empty($refCache[$doc['class']]))
+        @if (!empty($refCache[$collection->getClass()]))
             $extra = array_merge($extra,  array_intersect_key(
                 $document, 
-                {{@array_combine($refCache[$doc['class']], $refCache[$doc['class']])}}
+                {{@array_combine($refCache[$collection->getClass()], $refCache[$collection->getClass()])}}
             ));
         @end
         
@@ -591,7 +591,7 @@ class Mapper
         return array_merge(array(
                 '$id'   => $document['_id'],
                 '$ref'  => {{@$doc['name']}}, 
-                '__class' => {{@$doc['class']}},
+                '__class' => {{@$collection->getClass()}},
                 '__instance' => {{@$doc['name']}} . ':' . serialize($document['_id']),
             )
             , $extra
@@ -600,9 +600,9 @@ class Mapper
     }
 
     /**
-     *  Validate {{$doc['class']}} object
+     *  Validate {{$collection->getClass()}} object
      */
-    protected function get_array_{{sha1($doc['class'])}}(\{{$doc['class']}} $object, $recursive = true)
+    protected function get_array_{{sha1($collection->getClass())}}(\{{$collection->getClass()}} $object, $recursive = true)
     {
         @if (empty($doc['parent']))
             $doc = array();
@@ -641,17 +641,17 @@ class Mapper
     }
 
     /**
-     *  Validate {{$doc['class']}} object
+     *  Validate {{$collection->getClass()}} object
      */
-    protected function validate_{{sha1($doc['class'])}}(\{{$doc['class']}} $object)
+    protected function validate_{{sha1($collection->getClass())}}(\{{$collection->getClass()}} $object)
     {
         @if (!empty($doc['parent']))
             $doc = array_merge(
                 $this->validate_{{sha1($doc['parent'])}}($object),
-                $this->get_array_{{sha1($doc['class'])}}($object, false)
+                $this->get_array_{{sha1($collection->getClass())}}($object, false)
             );
         @else 
-            $doc = $this->get_array_{{sha1($doc['class'])}}($object);
+            $doc = $this->get_array_{{sha1($collection->getClass())}}($object);
         @end
 
         @set($docz, '$doc')
@@ -675,7 +675,7 @@ class Mapper
         return $doc;
     }
 
-    protected function update_property_{{sha1($doc['class'])}}(\{{$doc['class']}} $document, $property, $value)
+    protected function update_property_{{sha1($collection->getClass())}}(\{{$collection->getClass()}} $document, $property, $value)
     {
         @if ($doc['parent'])
             $this->update_property_{{sha1($doc['parent'])}}($document, $property, $value);
@@ -701,13 +701,13 @@ class Mapper
 
         @foreach ($events as $ev)
     /**
-     *  Code for {{$ev}} events for objects {{$doc['class']}}
+     *  Code for {{$ev}} events for objects {{$collection->getClass()}}
      */
-        protected function event_{{$ev}}_{{sha1($doc['class'])}}($document, Array $args)
+        protected function event_{{$ev}}_{{sha1($collection->getClass())}}($document, Array $args)
         {
             $class = $this->get_class($document);
-            if ($class != {{@$doc['class']}} && !is_subclass_of($class, {{@$doc['class']}})) {
-                throw new \Exception("Class invalid class name ($class) expecting  "  . {{@$doc['class']}});
+            if ($class != {{@$collection->getClass()}} && !is_subclass_of($class, {{@$collection->getClass()}})) {
+                throw new \Exception("Class invalid class name ($class) expecting  "  . {{@$collection->getClass()}});
             }
             @if ($collection->getParent())
                 $this->event_{{$ev}}_{{sha1($collection->getParent()->getClass())}}($document, $args);
@@ -721,7 +721,7 @@ class Mapper
                 $col = $args[1]->getDatabase()->references_queue;
                 @foreach ($references as $col => $refs)
                     @foreach ($refs as $ref)
-                        @if ($ref['class'] == $doc['class'] && $ref['deferred'])
+                        @if ($ref['class'] == $collection->getClass() && $ref['deferred'])
                             @if ($ev == "postCreate")
                             if (!empty($args[0][{{@$ref['property']}}])) {
                             @else
@@ -774,7 +774,7 @@ class Mapper
                 @end
             @end
 
-            @if ($ev == "postUpdate" && !empty($references[$doc['class']]))
+            @if ($ev == "postUpdate" && !empty($references[$collection->getClass()]))
                 @include('reference/update.tpl.php', compact('doc', 'references'))
             @end
 

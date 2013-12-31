@@ -335,7 +335,7 @@ namespace {
             echo "    }\n\n";
             foreach($docs as $doc) {
                 $collection = $collections[$doc['class']];
-                echo "\n    /**\n     *  Get update object " . ($doc['class']) . " \n     */\n    protected function update_" . (sha1($doc['class'])) . "(Array &\$current, Array \$old, \$embed = false)\n    {\n        if (!\$embed && !empty(\$current['_id']) && \$current['_id'] != \$old['_id']) {\n            throw new \\RuntimeException(\"document ids cannot be updated\");\n        }\n\n";
+                echo "\n    /**\n     *  Get update object " . ($collection->getClass()) . " \n     */\n    protected function update_" . (sha1($collection->getClass())) . "(Array &\$current, Array \$old, \$embed = false)\n    {\n        if (!\$embed && !empty(\$current['_id']) && \$current['_id'] != \$old['_id']) {\n            throw new \\RuntimeException(\"document ids cannot be updated\");\n        }\n\n";
                 if (empty($doc['parent'])) {
                     echo "            \$change = array();\n";
                 }
@@ -490,7 +490,7 @@ namespace {
 
                     echo "                }\n            }\n";
                 }
-                echo "\n        return \$change;\n    }\n\n    protected function get_mapping_" . (sha1($doc['class'])) . "() \n    {\n        return array(\n";
+                echo "\n        return \$change;\n    }\n\n    protected function get_mapping_" . (sha1($collection->getClass())) . "() \n    {\n        return array(\n";
                 foreach($doc['annotation']->getProperties() as $prop) {
                     $cname = $prop['property'];
                     $pname = $cname;
@@ -507,7 +507,7 @@ namespace {
                     var_export($cname);
                     echo ",\n";
                 }
-                echo "        );\n    }\n\n    /**\n     *  Populate objects " . ($doc['class']) . " \n     */\n    protected function populate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " &\$object, \$data)\n    {\n        if (!\$object instanceof ActiveMongo2Mapped) {\n            \$class    = \$this->getClass(";
+                echo "        );\n    }\n\n    /**\n     *  Populate objects " . ($collection->getClass()) . " \n     */\n    protected function populate_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " &\$object, \$data)\n    {\n        if (!\$object instanceof ActiveMongo2Mapped) {\n            \$class    = \$this->getClass(";
                 var_export($doc['name'] . '_');
                 echo " .  sha1(strtolower(get_class(\$object))));\n            \$populate = get_object_vars(\$object);\n            \$object = new \$class;\n            foreach (\$populate as \$key => \$value) {\n                \$object->\$key = \$value;\n            }\n        }\n\n";
                 if (!empty($doc['parent'])) {
@@ -586,19 +586,19 @@ namespace {
                     }
                     echo "                \n            }\n";
                 }
-                echo "\n        \$object->" . ($instance) . "_setOriginal(\$zData);\n\n\n    }\n\n    /**\n     *  Get reference of  " . ($doc['class']) . " object\n     */\n    protected function get_reference_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, \$include = Array())\n    {\n        \$document = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n        \$extra    = array();\n        if (\$include) {\n            \$extra  = array_intersect_key(\$document, \$include);\n        }\n\n";
-                if (!empty($refCache[$doc['class']])) {
+                echo "\n        \$object->" . ($instance) . "_setOriginal(\$zData);\n\n\n    }\n\n    /**\n     *  Get reference of  " . ($collection->getClass()) . " object\n     */\n    protected function get_reference_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " \$object, \$include = Array())\n    {\n        \$document = \$this->get_array_" . (sha1($collection->getClass())) . "(\$object);\n        \$extra    = array();\n        if (\$include) {\n            \$extra  = array_intersect_key(\$document, \$include);\n        }\n\n";
+                if (!empty($refCache[$collection->getClass()])) {
                     echo "            \$extra = array_merge(\$extra,  array_intersect_key(\n                \$document, \n                ";
-                    var_export(array_combine($refCache[$doc['class']], $refCache[$doc['class']]));
+                    var_export(array_combine($refCache[$collection->getClass()], $refCache[$collection->getClass()]));
                     echo "\n            ));\n";
                 }
                 echo "        \n        foreach (\$extra as \$key => \$value) {\n            if (is_object(\$value)) {\n                if (\$value instanceof \\ActiveMongo2\\Reference) {\n                    \$extra[\$key] = \$value->getReference();\n                } else {\n                    \$extra[\$key] = \$this->getReference(\$value);\n                }\n            }\n        }\n\n        return array_merge(array(\n                '\$id'   => \$document['_id'],\n                '\$ref'  => ";
                 var_export($doc['name']);
                 echo ", \n                '__class' => ";
-                var_export($doc['class']);
+                var_export($collection->getClass());
                 echo ",\n                '__instance' => ";
                 var_export($doc['name']);
-                echo " . ':' . serialize(\$document['_id']),\n            )\n            , \$extra\n        );\n\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    protected function get_array_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object, \$recursive = true)\n    {\n";
+                echo " . ':' . serialize(\$document['_id']),\n            )\n            , \$extra\n        );\n\n    }\n\n    /**\n     *  Validate " . ($collection->getClass()) . " object\n     */\n    protected function get_array_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " \$object, \$recursive = true)\n    {\n";
                 if (empty($doc['parent'])) {
                     echo "            \$doc = array();\n";
                 }
@@ -628,12 +628,12 @@ namespace {
                     var_export($collection->getClass());
                     echo ";\n";
                 }
-                echo "\n        return \$doc;\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    protected function validate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n";
+                echo "\n        return \$doc;\n    }\n\n    /**\n     *  Validate " . ($collection->getClass()) . " object\n     */\n    protected function validate_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " \$object)\n    {\n";
                 if (!empty($doc['parent'])) {
-                    echo "            \$doc = array_merge(\n                \$this->validate_" . (sha1($doc['parent'])) . "(\$object),\n                \$this->get_array_" . (sha1($doc['class'])) . "(\$object, false)\n            );\n";
+                    echo "            \$doc = array_merge(\n                \$this->validate_" . (sha1($doc['parent'])) . "(\$object),\n                \$this->get_array_" . (sha1($collection->getClass())) . "(\$object, false)\n            );\n";
                 }
                 else {
-                    echo "            \$doc = \$this->get_array_" . (sha1($doc['class'])) . "(\$object);\n";
+                    echo "            \$doc = \$this->get_array_" . (sha1($collection->getClass())) . "(\$object);\n";
                 }
                 echo "\n";
                 $docz = '$doc';
@@ -653,7 +653,7 @@ namespace {
                     echo "\n";
                     ActiveMongo2\Template\Templates::exec('validate', compact('propname', 'validators', 'files', 'prop', 'collection'), $this->context);
                 }
-                echo "\n        return \$doc;\n    }\n\n    protected function update_property_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$document, \$property, \$value)\n    {\n";
+                echo "\n        return \$doc;\n    }\n\n    protected function update_property_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " \$document, \$property, \$value)\n    {\n";
                 if ($doc['parent']) {
                     echo "            \$this->update_property_" . (sha1($doc['parent'])) . "(\$document, \$property, \$value);\n";
                 }
@@ -676,12 +676,12 @@ namespace {
                 }
                 echo "    }\n\n\n";
                 foreach($events as $ev) {
-                    echo "    /**\n     *  Code for " . ($ev) . " events for objects " . ($doc['class']) . "\n     */\n        protected function event_" . ($ev) . "_" . (sha1($doc['class'])) . "(\$document, Array \$args)\n        {\n            \$class = \$this->get_class(\$document);\n            if (\$class != ";
-                    var_export($doc['class']);
+                    echo "    /**\n     *  Code for " . ($ev) . " events for objects " . ($collection->getClass()) . "\n     */\n        protected function event_" . ($ev) . "_" . (sha1($collection->getClass())) . "(\$document, Array \$args)\n        {\n            \$class = \$this->get_class(\$document);\n            if (\$class != ";
+                    var_export($collection->getClass());
                     echo " && !is_subclass_of(\$class, ";
-                    var_export($doc['class']);
+                    var_export($collection->getClass());
                     echo ")) {\n                throw new \\Exception(\"Class invalid class name (\$class) expecting  \"  . ";
-                    var_export($doc['class']);
+                    var_export($collection->getClass());
                     echo ");\n            }\n";
                     if ($collection->getParent()) {
                         echo "                \$this->event_" . ($ev) . "_" . (sha1($collection->getParent()->getClass())) . "(\$document, \$args);\n";
@@ -695,7 +695,7 @@ namespace {
                         echo "                \$col = \$args[1]->getDatabase()->references_queue;\n";
                         foreach($references as $col => $refs) {
                             foreach($refs as $ref) {
-                                if ($ref['class'] == $doc['class'] && $ref['deferred']) {
+                                if ($ref['class'] == $collection->getClass() && $ref['deferred']) {
                                     if ($ev == "postCreate") {
                                         echo "                            if (!empty(\$args[0][";
                                         var_export($ref['property']);
@@ -762,7 +762,7 @@ namespace {
                         }
                     }
                     echo "\n";
-                    if ($ev == "postUpdate" && !empty($references[$doc['class']])) {
+                    if ($ev == "postUpdate" && !empty($references[$collection->getClass()])) {
                         ActiveMongo2\Template\Templates::exec('reference/update.tpl.php', compact('doc', 'references'), $this->context);
                     }
                     echo "\n";
