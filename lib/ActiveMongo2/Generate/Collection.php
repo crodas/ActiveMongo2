@@ -116,10 +116,10 @@ class Collection extends Base
         return $prop;
     }
 
-    public function isSingleCollection()
+    public function isSingleCollection($recursive = true)
     {
         return $this->annotation->has('SingleCollection') ||
-            ($this->getParent() && $this->getParent()->isSingleCollection());
+            ($recursive && $this->getParent() && $this->getParent()->isSingleCollection());
     }
 
     public function getClass()
@@ -132,37 +132,45 @@ class Collection extends Base
         return $this->getName() . '_' . sha1($this->getClass());
     }
 
-
-    public function getName()
+    protected function getNameFromParent()
     {
         $parent = $this->getParent();
         while ($parent) {
-            if ($parent->isSingleCollection()) {
+            if ($parent->isSingleCollection(false)) {
                 return $parent->getName();
             }
             $parent = $parent->getParent();
         }
+        return NULL;
+    }
 
+    protected function getNameFromAnnotation($args, $ann)
+    {
+        foreach ($ann as $name) {
+            if (!empty($args[$name])) {
+                return $args[$name];
+            }
+        }
+        return NULL;
+    }
+
+    public function getName()
+    {
         if (!$this->annotation->has('Persist') && !$this->annotation->has('Embeddable')) {
-            // not a real collection but it may have events 
-            // or other needed things
             return NULL;
         }
 
-        $args = $this->annotation->GetOne('Persist') ?: $this->annotation->getOne('Embeddable');
-        $name = null;
-        if (!empty($args[0])) {
-            $name = $args[0];
-        } else if (!empty($args['collection'])) {
-            $name = $args['collection'];
-        } else {
-            if ($this->isGridFs()) {
-                $name = "fs";
-            } else {
-                $parts = explode("\\", $this->getClass());
-                $name  = strtolower(end($parts)); 
-            }
+        $args = $this->annotation->getOne('Persist') ?: $this->annotation->getOne('Embeddable');
+        $name = $this->getNameFromParent();
+        $name = $name ?: $this->getNameFromAnnotation($args, [0, 'collection']);
+
+        if (!$name && $this->isGridFs()) {
+            $name = "fs";
+        } else if (!$name && $args) {
+            $parts = explode("\\", $this->getClass());
+            $name  = strtolower(end($parts)); 
         }
+
         return $name;
     }
 
