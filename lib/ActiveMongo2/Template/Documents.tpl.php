@@ -470,7 +470,7 @@ class Mapper
     protected function populate_{{sha1($collection->getClass())}}(\{{$collection->getClass()}} &$object, $data)
     {
         if (!$object instanceof ActiveMongo2Mapped) {
-            $class    = $this->getClass({{@$doc['name'] . '_' }} .  sha1(strtolower(get_class($object))));
+            $class    = $this->getClass({{@$colleciton->getName() . '_' }} .  sha1(strtolower(get_class($object))));
             $populate = get_object_vars($object);
             $object = new $class;
             foreach ($populate as $key => $value) {
@@ -590,9 +590,9 @@ class Mapper
 
         return array_merge(array(
                 '$id'   => $document['_id'],
-                '$ref'  => {{@$doc['name']}}, 
+                '$ref'  => {{@$colleciton->getName()}}, 
                 '__class' => {{@$collection->getClass()}},
-                '__instance' => {{@$doc['name']}} . ':' . serialize($document['_id']),
+                '__instance' => {{@$colleciton->getName()}} . ':' . serialize($document['_id']),
             )
             , $extra
         );
