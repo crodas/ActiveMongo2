@@ -491,20 +491,11 @@ namespace {
                     echo "                }\n            }\n";
                 }
                 echo "\n        return \$change;\n    }\n\n    protected function get_mapping_" . (sha1($collection->getClass())) . "() \n    {\n        return array(\n";
-                foreach($doc['annotation']->getProperties() as $prop) {
-                    $cname = $prop['property'];
-                    $pname = $cname;
-                    if ($prop->has('Id')) {
-                        $cname = '_id';
-                    }
-                    else if ($doc['is_gridfs']) {
-                        $pname = 'metadata.' . $pname;
-                    }
-
+                foreach($collection->getProperties() as $prop) {
                     echo "                ";
-                    var_export($pname);
+                    var_export($prop->getName(true));
                     echo " => ";
-                    var_export($cname);
+                    var_export($prop->getProperty());
                     echo ",\n";
                 }
                 echo "        );\n    }\n\n    /**\n     *  Populate objects " . ($collection->getClass()) . " \n     */\n    protected function populate_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " &\$object, \$data)\n    {\n        if (!\$object instanceof ActiveMongo2Mapped) {\n            \$class    = \$this->getClass(";

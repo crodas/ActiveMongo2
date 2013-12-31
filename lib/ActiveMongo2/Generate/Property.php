@@ -76,6 +76,11 @@ class Property extends Base
         return $defaults;
     }
 
+    public function getProperty()
+    {
+        return $this->annotation['property'];
+    }
+
     public function getType()
     {
         $types = array();

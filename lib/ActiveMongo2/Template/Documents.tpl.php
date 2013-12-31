@@ -451,15 +451,8 @@ class Mapper
     protected function get_mapping_{{sha1($collection->getClass())}}() 
     {
         return array(
-            @foreach ($doc['annotation']->getProperties() as $prop)
-                @set($cname, $prop['property'])
-                @set($pname, $cname);
-                @if ($prop->has('Id'))
-                    @set($cname, '_id')
-                @elif ($doc['is_gridfs']) 
-                    @set($pname, 'metadata.' . $pname)
-                @end
-                {{@$pname}} => {{@$cname}},
+            @foreach ($collection->getProperties() as $prop)
+                {{@$prop->getName(true)}} => {{@$prop->getProperty()}},
             @end
         );
     }
