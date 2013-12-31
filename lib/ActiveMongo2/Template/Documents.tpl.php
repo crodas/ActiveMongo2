@@ -669,7 +669,7 @@ class Mapper
             }
             @end
 
-            @include('validate', compact('propname', 'validators', 'files', 'prop'));
+            @include('validate', compact('propname', 'validators', 'files', 'prop', 'collection'));
         @end
 
         return $doc;

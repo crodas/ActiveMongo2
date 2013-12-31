@@ -60,6 +60,11 @@ class Type extends Base
         return $this->annotation['function'];
     }
 
+    public function getMethod()
+    {
+        return $this->getFunction();
+    }
+
     public function setPath($file)
     {
         $this->file = $file;

@@ -77,6 +77,26 @@ namespace {
             var_export($self->getPath());
             echo "] = true;\n}\n";
             if ($self->isMethod()) {
+                if ($self->isPublic()) {
+                    if ($self->isStatic()) {
+                        echo "            \$return = \\" . ($self->getClass()) . "::" . ($self->getMethod()) . "(\n";
+                    }
+                    else {
+                        echo "            \$return = " . ($self->getInstance()) . "->" . ($self->getMethod()) . "(\n";
+                    }
+                    echo "            " . ($var) . ", // document variable \n            ";
+                    var_export($args);
+                    echo ", // annotation arguments\n            \$this->connection, // connection\n            empty(\$args) ? [] : \$args,  // external arguments (defined at run time)\n            \$this // mapper instance\n        );\n";
+                }
+                else {
+                    echo "        \$reflection = new \\ReflectionMethod(";
+                    var_export("\\". $self->getClass());
+                    echo ", ";
+                    var_export($self->getMethod());
+                    echo ");\n        \$reflection->setAccessible(true);\n        \$return = \$reflection->invoke(\n            " . ($var) . ", // document variable \n            ";
+                    var_export($args);
+                    echo ", // annotation arguments\n            \$this->connection, // connection\n            empty(\$args) ? [] : \$args,  // external arguments (defined at run time)\n            \$this // mapper instance\n        );\n";
+                }
             }
             else {
                 echo "    \$return = \\" . ($self->getFunction()) . "(\n        " . ($var) . ", // document variable \n        ";
@@ -635,7 +655,7 @@ namespace {
                         echo "])) {\n                throw new \\RuntimeException(\"" . ($prop['property']) . " cannot be empty\");\n            }\n";
                     }
                     echo "\n";
-                    ActiveMongo2\Template\Templates::exec('validate', compact('propname', 'validators', 'files', 'prop'), $this->context);
+                    ActiveMongo2\Template\Templates::exec('validate', compact('propname', 'validators', 'files', 'prop', 'collection'), $this->context);
                 }
                 echo "\n        return \$doc;\n    }\n\n    protected function update_property_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$document, \$property, \$value)\n    {\n";
                 if ($doc['parent']) {
