@@ -23,7 +23,7 @@ class Mapper
     {
         $class = __NAMESPACE__ . "\\$name";
         if (!class_exists($class, false)) {
-            $define = __NAMESPACE__ . "\\define_class_" . sha1(strtolower($name));
+            $define = __NAMESPACE__ . "\\define_class_" . sha1($name);
             $define();
         }
 
@@ -91,10 +91,10 @@ class Mapper
 
         $class = strtolower($class);
         if (empty($this->class_mapper[$class])) {
-            @foreach ($docs as $doc)
-                @if (!empty($doc['disc']))
-                if ($class == {{@$doc['class']}} ||  $class == {{@$doc['name']}}){
-                    return {{@['name' => $doc['name'], 'dynamic' => true, 'prop' => $doc['disc'], 'class' => NULL]}};
+            @foreach($collections as $collection)
+                @if ($collection->isSingleCollection())
+                if ($class == {{@$collection->getClass()}} ||  $class == {{@$collection->getName()}}){
+                    return {{@['name' => $collection->getName(), 'dynamic' => true, 'prop' => $collection->getDiscriminator(), 'class' => NULL]}};
                 }
                 @end
             @end
@@ -709,8 +709,8 @@ class Mapper
             if ($class != {{@$doc['class']}} && !is_subclass_of($class, {{@$doc['class']}})) {
                 throw new \Exception("Class invalid class name ($class) expecting  "  . {{@$doc['class']}});
             }
-            @if (!empty($doc['parent']))
-                $this->event_{{$ev}}_{{sha1($doc['parent'])}}($document, $args);
+            @if ($collection->getParent())
+                $this->event_{{$ev}}_{{sha1($collection->getParent()->getClass())}}($document, $args);
             @end
 
             @foreach($doc['annotation']->getMethods() as $method)
@@ -812,26 +812,24 @@ interface ActiveMongo2Mapped
     public function {{$instance}}_getOriginal();
 }
 
-@foreach ($docs as $doc) 
-    @set($name, strtolower($doc['name']) . '_' . sha1($doc['class']))
-
+@foreach ($collections as $collection)
 /**
  * 
  */
-function define_class_{{sha1($name)}}()
+function define_class_{{sha1($collection->getHash())}}()
 {
 
-    if (!class_exists({{@"\\".$doc['class']}}, false)) {
-        require_once __DIR__ . {{@$doc['file']}};
+    if (!class_exists({{@"\\".$collection->getClass()}}, false)) {
+        require_once __DIR__ . {{@$collection->getPath()}};
     }
 
-    final class {{$name}} extends \{{$doc['class']}} implements ActiveMongo2Mapped
+    final class {{$collection->getHash()}} extends \{{$collection->getClass()}} implements ActiveMongo2Mapped
     {
         private ${{$instance}}_original;
 
         public function {{$instance}}_getClass()
         {
-            return {{@$doc['class']}};
+            return {{@$collection->getClass()}};
         }
 
         public function {{$instance}}_setOriginal(Array $data)

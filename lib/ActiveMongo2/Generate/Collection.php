@@ -122,6 +122,12 @@ class Collection extends Base
         return strtolower($this->annotation['class']);
     }
 
+    public function getHash()
+    {
+        return $this->getName() . '_' . sha1($this->getClass());
+    }
+
+
     public function getName()
     {
         $parent = $this->getParent();

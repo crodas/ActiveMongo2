@@ -280,7 +280,7 @@ namespace {
             }
             echo "<?php\n\nnamespace ActiveMongo2\\Generated" . ($namespace) . ";\n\nuse ActiveMongo2\\Connection;\n\n";
             $instance = '_' . uniqid(true);
-            echo "\nclass Mapper\n{\n    protected \$mapper = " . (var_export($collections->byName(), true)) . ";\n    protected \$class_mapper = " . (var_export($collections->byClass(), true)) . ";\n    protected \$loaded = array();\n    protected \$connection;\n\n    public function __construct(Connection \$conn)\n    {\n        \$this->connection = \$conn;\n        spl_autoload_register(array(\$this, '__autoloader'));\n    }\n\n    public function getClass(\$name)\n    {\n        \$class = __NAMESPACE__ . \"\\\\\$name\";\n        if (!class_exists(\$class, false)) {\n            \$define = __NAMESPACE__ . \"\\\\define_class_\" . sha1(strtolower(\$name));\n            \$define();\n        }\n\n        return \$class;\n    }\n\n    protected function array_diff(Array \$arr1, Array \$arr2)\n    {\n        \$diff = array();\n        foreach (\$arr1 as \$key => \$value) {\n            if (empty(\$arr2[\$key]) || \$arr2[\$key] !== \$arr1[\$key]) {\n                \$diff[\$key] = \$value;\n            }\n        }\n        return \$diff;\n    }\n\n\n    public function __autoloader(\$class)\n    {\n        \$class = strtolower(\$class);\n        if (!empty(\$this->class_mapper[\$class])) {\n            \$this->loaded[\$this->class_mapper[\$class]['file']] = true;\n            require __DIR__ . \$this->class_mapper[\$class]['file'];\n\n            return true;\n        }\n        return false;\n    }\n\n    public function mapCollection(\$col)\n    {\n        if (empty(\$this->mapper[\$col])) {\n            throw new \\RuntimeException(\"Cannot map {\$col} collection to its class\");\n        }\n\n        \$data = \$this->mapper[\$col];\n\n        if (empty(\$this->loaded[\$data['file']])) {\n            require_once __DIR__ .  \$data['file'];\n            \$this->loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    public function onQuery(\$table, Array &\$query)\n    {\n        switch (\$table) {\n";
+            echo "\nclass Mapper\n{\n    protected \$mapper = " . (var_export($collections->byName(), true)) . ";\n    protected \$class_mapper = " . (var_export($collections->byClass(), true)) . ";\n    protected \$loaded = array();\n    protected \$connection;\n\n    public function __construct(Connection \$conn)\n    {\n        \$this->connection = \$conn;\n        spl_autoload_register(array(\$this, '__autoloader'));\n    }\n\n    public function getClass(\$name)\n    {\n        \$class = __NAMESPACE__ . \"\\\\\$name\";\n        if (!class_exists(\$class, false)) {\n            \$define = __NAMESPACE__ . \"\\\\define_class_\" . sha1(\$name);\n            \$define();\n        }\n\n        return \$class;\n    }\n\n    protected function array_diff(Array \$arr1, Array \$arr2)\n    {\n        \$diff = array();\n        foreach (\$arr1 as \$key => \$value) {\n            if (empty(\$arr2[\$key]) || \$arr2[\$key] !== \$arr1[\$key]) {\n                \$diff[\$key] = \$value;\n            }\n        }\n        return \$diff;\n    }\n\n\n    public function __autoloader(\$class)\n    {\n        \$class = strtolower(\$class);\n        if (!empty(\$this->class_mapper[\$class])) {\n            \$this->loaded[\$this->class_mapper[\$class]['file']] = true;\n            require __DIR__ . \$this->class_mapper[\$class]['file'];\n\n            return true;\n        }\n        return false;\n    }\n\n    public function mapCollection(\$col)\n    {\n        if (empty(\$this->mapper[\$col])) {\n            throw new \\RuntimeException(\"Cannot map {\$col} collection to its class\");\n        }\n\n        \$data = \$this->mapper[\$col];\n\n        if (empty(\$this->loaded[\$data['file']])) {\n            require_once __DIR__ .  \$data['file'];\n            \$this->loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    public function onQuery(\$table, Array &\$query)\n    {\n        switch (\$table) {\n";
             foreach($collections as $doc) {
                 echo "        case ";
                 var_export($doc->getClass());
@@ -293,14 +293,14 @@ namespace {
                 echo "            break;\n";
             }
             echo "        }\n    }\n\n    public function mapClass(\$class)\n    {\n        if (is_object(\$class)) {\n            \$class = \$this->get_class(\$class);\n        }\n\n        \$class = strtolower(\$class);\n        if (empty(\$this->class_mapper[\$class])) {\n";
-            foreach($docs as $doc) {
-                if (!empty($doc['disc'])) {
+            foreach($collections as $collection) {
+                if ($collection->isSingleCollection()) {
                     echo "                if (\$class == ";
-                    var_export($doc['class']);
+                    var_export($collection->getClass());
                     echo " ||  \$class == ";
-                    var_export($doc['name']);
+                    var_export($collection->getName());
                     echo "){\n                    return ";
-                    var_export(['name' => $doc['name'], 'dynamic' => true, 'prop' => $doc['disc'], 'class' => NULL]);
+                    var_export(['name' => $collection->getName(), 'dynamic' => true, 'prop' => $collection->getDiscriminator(), 'class' => NULL]);
                     echo ";\n                }\n";
                 }
             }
@@ -687,8 +687,8 @@ namespace {
                     echo ")) {\n                throw new \\Exception(\"Class invalid class name (\$class) expecting  \"  . ";
                     var_export($doc['class']);
                     echo ");\n            }\n";
-                    if (!empty($doc['parent'])) {
-                        echo "                \$this->event_" . ($ev) . "_" . (sha1($doc['parent'])) . "(\$document, \$args);\n";
+                    if ($collection->getParent()) {
+                        echo "                \$this->event_" . ($ev) . "_" . (sha1($collection->getParent()->getClass())) . "(\$document, \$args);\n";
                     }
                     echo "\n";
                     foreach($doc['annotation']->getMethods() as $method) {
@@ -797,14 +797,13 @@ namespace {
                 echo "\n";
             }
             echo "}\n\ninterface ActiveMongo2Mapped\n{\n    public function " . ($instance) . "_getClass();\n    public function " . ($instance) . "_setOriginal(Array \$data);\n    public function " . ($instance) . "_getOriginal();\n}\n\n";
-            foreach($docs as $doc) {
-                $name = strtolower($doc['name']) . '_' . sha1($doc['class']);
-                echo "\n/**\n * \n */\nfunction define_class_" . (sha1($name)) . "()\n{\n\n    if (!class_exists(";
-                var_export("\\".$doc['class']);
+            foreach($collections as $collection) {
+                echo "/**\n * \n */\nfunction define_class_" . (sha1($collection->getHash())) . "()\n{\n\n    if (!class_exists(";
+                var_export("\\".$collection->getClass());
                 echo ", false)) {\n        require_once __DIR__ . ";
-                var_export($doc['file']);
-                echo ";\n    }\n\n    final class " . ($name) . " extends \\" . ($doc['class']) . " implements ActiveMongo2Mapped\n    {\n        private \$" . ($instance) . "_original;\n\n        public function " . ($instance) . "_getClass()\n        {\n            return ";
-                var_export($doc['class']);
+                var_export($collection->getPath());
+                echo ";\n    }\n\n    final class " . ($collection->getHash()) . " extends \\" . ($collection->getClass()) . " implements ActiveMongo2Mapped\n    {\n        private \$" . ($instance) . "_original;\n\n        public function " . ($instance) . "_getClass()\n        {\n            return ";
+                var_export($collection->getClass());
                 echo ";\n        }\n\n        public function " . ($instance) . "_setOriginal(Array \$data)\n        {\n            \$this->" . ($instance) . "_original = \$data;\n        }\n\n        public function " . ($instance) . "_getOriginal()\n        {\n            return \$this->" . ($instance) . "_original;\n        }\n\n        public function __destruct()\n        {\n            if(is_callable('parent::__destruct')) {\n                parent::__destruct();\n            }\n        }\n    }\n}\n";
             }
 

@@ -39,7 +39,7 @@ namespace ActiveMongo2\Plugin;
 use Notoj\Annotation;
 use ActiveMongo2\Runtime\Utils;
 
-/** @Persist(table="universal") */
+/** @Persist(collection="universal") */
 class UniversalDocument
 {
     /** @Id */
