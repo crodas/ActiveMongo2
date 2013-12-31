@@ -228,28 +228,28 @@ class Mapper
         return $this->$func();
     }
 
-    public function getObjectClass($col, $array)
+    public function getObjectClass($col, $doc)
     {
-        if ($array instanceof \MongoGridFsFile) {
-            $array = $array->file;
+        if ($doc instanceof \MongoGridFsFile) {
+            $doc = $doc->file;
         }
         if ($col instanceof \MongoCollection) {
             $col = $col->getName();
         }
         $class = NULL;
         switch ($col) {
-        @foreach ($docs as $doc)
-            @if ($doc['is_gridfs'])
-            case {{@$doc['name'] . '.files'}}:
-            case {{@$doc['name'] . '.chunks'}}:
+        @foreach ($collections as $collection)
+            @if ($collection->isGridFS())
+            case {{@$collection->getName() . '.files'}}:
+            case {{@$collection->getName() . '.chunks'}}:
             @else
-            case {{@$doc['name']}}:
+            case {{@$collection->getName()}}:
             @end
-                @if (empty($doc['disc']))
-                    $class = {{@$doc['class']}};
+                @if (!$collection->isSingleCollection())
+                    $class = {{@$collection->getClass()}};
                 @else
-                    if (!empty($array[{{@$doc['disc']}}])) {
-                        $class = $array[{{@$doc['disc']}}];
+                    if (!empty({{$collection->getDiscriminator(true)->getPHPVariable()}})) {
+                        $class = {{ $collection->getDiscriminator(true)->getPHPVariable()}};
                     }
                 @end
                 break;
