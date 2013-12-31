@@ -44,6 +44,15 @@ class Collections extends ArrayObject
 {
     protected $files = array();
     protected $annotations;
+    protected static $events = array(
+        'preSave', 'postSave', 'preCreate', 'postCreate', 'onHydratation', 
+        'preUpdate', 'postUpdate', 'preDelete', 'postDelete'
+    );
+
+    public function getEvents()
+    {
+        return self::$events;
+    }
 
     public function offsetExists($name)
     {

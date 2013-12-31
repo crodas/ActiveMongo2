@@ -666,7 +666,7 @@ namespace {
                     echo "            }\n";
                 }
                 echo "    }\n\n\n";
-                foreach($events as $ev) {
+                foreach($collections->getEvents() as $ev) {
                     echo "    /**\n     *  Code for " . ($ev) . " events for objects " . ($collection->getClass()) . "\n     */\n        protected function event_" . ($ev) . "_" . (sha1($collection->getClass())) . "(\$document, Array \$args)\n        {\n            \$class = \$this->get_class(\$document);\n            if (\$class != ";
                     var_export($collection->getClass());
                     echo " && !is_subclass_of(\$class, ";

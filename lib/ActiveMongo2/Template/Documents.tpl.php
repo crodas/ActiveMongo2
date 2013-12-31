@@ -692,7 +692,7 @@ class Mapper
     }
 
 
-        @foreach ($events as $ev)
+        @foreach ($collections->getEvents() as $ev)
     /**
      *  Code for {{$ev}} events for objects {{$collection->getClass()}}
      */

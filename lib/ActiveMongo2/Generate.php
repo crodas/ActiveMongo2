@@ -276,12 +276,7 @@ class Generate
 
         $target       = $config->getLoader();
         $namespace    = sha1($target);
-        $mapper       = $this->getDocumentMapper($docs);
         $class_mapper = $this->getClassMapper($docs);
-        $events       = array(
-            'preSave', 'postSave', 'preCreate', 'postCreate', 'onHydratation', 
-            'preUpdate', 'postUpdate', 'preDelete', 'postDelete'
-        );
 
         $indexes = array();
         $plugins = $this->generatePlugins($annotations);
@@ -353,7 +348,7 @@ class Generate
         $self = $this;
         $code = Template\Templates::get('documents')
             ->render(array_merge(compact(
-                'docs', 'namespace', 'class_mapper', 'events',
+                'docs', 'namespace',
                 'mapper', 'indexes', 'plugins', 'self', 'references',
                 'refCache',  'collections'
             ), $hooks), true);
@@ -377,17 +372,6 @@ class Generate
         }
 
         return Path::getRelative($dir1, $dir2);
-    }
-
-    public function getDocumentMapper(Array $map)
-    {
-        $docs = array();
-        foreach ($map as $key => $doc) {
-            unset($doc['annotation']);
-            $docs[$key] = $doc;
-        }
-
-        return $docs;
     }
 
     public function getClassMapper(Array $map)
