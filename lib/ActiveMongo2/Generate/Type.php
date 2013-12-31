@@ -39,24 +39,43 @@ namespace ActiveMongo2\Generate;
 use Notoj\Annotation;
 use ActiveMongo2\Template\Templates;
 
-class Type
+class Type extends Base
 {
-    protected $annotation;
+    protected $file;
+    protected $type;
 
-    public function __construct(Annotation $ann)
+    public function __construct(Annotation $ann, $type)
     {
         $this->annotation = $ann;
+        $this->type       = $type;
     }
 
-    public function getFile()
+    public function isMethod()
     {
-        return $this->annotation['file'];
+        return !empty($this->annotation['class']) && !empty($this->annotation['function']);
     }
 
-    public function toCode(Property $prop)
+    public function getFunction()
+    {
+        return $this->annotation['function'];
+    }
+
+    public function setPath($file)
+    {
+        $this->file = $file;
+        return $this;
+    }
+
+    public function getPath()
+    {
+        return $this->file ?: $this->annotation['file'];
+    }
+
+    public function toCode(Property $prop, $var = '$doc')
     {
         $self = $this;
+        $args = $prop->annotation->getOne($this->name);
         return Templates::get('callback')
-            ->render(compact('prop', 'self'), true);
+            ->render(compact('args', 'prop', 'self', 'var'), true);
     }
 }

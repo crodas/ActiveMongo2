@@ -97,7 +97,7 @@ class Collections extends ArrayObject
     {
         $anns = array();
         foreach ($this->annotations->get($name) as $ann) {
-            $type = new Type($ann);
+            $type = new Type($ann, $name);
             foreach ($ann->get($name) as $arg) {
                 $name = current($arg['args'] ?: []);
                 if (!empty($name)) {

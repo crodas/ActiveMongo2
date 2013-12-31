@@ -70,12 +70,19 @@ namespace {
                 ob_start();
             }
             echo "if (empty(\$this->loaded[";
-            var_export($self->getFile());
-            echo "])) {\n    //require_once __DIR__ . ";
-            var_export($self->getFile());
+            var_export($self->getPath());
+            echo "])) {\n    require_once __DIR__ . ";
+            var_export($self->getPath());
             echo ";\n    \$this->loaded[";
-            var_export($self->getFile());
+            var_export($self->getPath());
             echo "] = true;\n}\n";
+            if ($self->isMethod()) {
+            }
+            else {
+                echo "    \$return = \\" . ($self->getFunction()) . "(\n        " . ($var) . ", // document variable \n        ";
+                var_export($args);
+                echo ", // annotation arguments\n        \$this->connection, // connection\n        empty(\$args) ? [] : \$args,  // external arguments (defined at run time)\n        \$this // mapper instance\n    );\n";
+            }
 
             if ($return) {
                 return ob_get_clean();
@@ -596,39 +603,13 @@ namespace {
                 echo "\n";
                 foreach($collection->getProperties() as $prop) {
                     foreach($prop->getDefault() as $default) {
-                        echo "                if (empty(" . ($prop->getPHPVariable()) . ")) {\n                    " . ($default->toCode($prop)) . "\n                }\n";
+                        echo "                if (empty(" . ($prop->getPHPVariable()) . ")) {\n                    " . ($default->toCode($prop)) . "\n                    " . ($prop->getPHPVariable()) . " = \$return;\n                }\n";
                     }
                 }
                 echo "\n";
-                foreach($doc['annotation']->getProperties() as $prop) {
-                    $propname = $prop['property'];
-                    if ($prop->has('Id')) {
-                        $propname = '_id';
-                    }
-                    foreach($defaults as $name => $callback) {
-                        if ($prop->has($name)) {
-                            echo "                    // default: " . ($name) . "\n                    if (empty(" . ($docz) . "[";
-                            var_export($propname);
-                            echo "])) {\n                        if (empty(\$this->loaded[";
-                            var_export($files[$name]);
-                            echo "])) {\n                            require_once __DIR__ . ";
-                            var_export($files[$name]);
-                            echo ";\n                            \$this->loaded[";
-                            var_export($files[$name]);
-                            echo "] = true;\n                        }\n                        " . ($docz) . "[";
-                            var_export($propname);
-                            echo "] = " . ($callback) . "(" . ($docz) . ", ";
-                            var_export($prop->getOne($name));
-                            echo ", \$this->connection, \$this); \n                    }\n";
-                        }
-                    }
-                }
-                echo "\n";
-                if (!empty($doc['disc'])) {
-                    echo "            " . ($docz) . "[";
-                    var_export($doc['disc']);
-                    echo "] = ";
-                    var_export($doc['class']);
+                if ($collection->isSingleCollection()) {
+                    echo "            // SINGLE COLLECTION\n            " . ($collection->getDiscriminator(true)->getPHPVariable()) . " = ";
+                    var_export($collection->getClass());
                     echo ";\n";
                 }
                 echo "\n        return \$doc;\n    }\n\n    /**\n     *  Validate " . ($doc['class']) . " object\n     */\n    protected function validate_" . (sha1($doc['class'])) . "(\\" . ($doc['class']) . " \$object)\n    {\n";

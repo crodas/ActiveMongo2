@@ -194,9 +194,12 @@ class Generate
         $annotations  = $this->loadAnnotations();
 
         $collections = new Generate\Collections((array)$config->getModelPath(), $this);
-        $collections->map(function($value) {
+        $fixPath = function($value) {
             $value->setPath($this->getRelativePath($value->getPath()));
-        });
+        };
+        $collections->map($fixPath);
+        array_map($fixPath, $collections->getDefaults());
+        array_map($fixPath, $collections->getTypes());
 
         $parents  = $this->getParentClasses($annotations); 
         $refCache = $this->getReferenceCache($annotations); 

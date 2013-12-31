@@ -39,10 +39,9 @@ namespace ActiveMongo2\Generate;
 use Notoj\Annotation;
 use ActiveMongo2\Generate;
 
-class Property
+class Property extends Base
 {
     protected $collection;
-    protected $annotation;
 
     public function __construct(Collection $col, Annotation $prop)
     {
@@ -71,6 +70,7 @@ class Property
         foreach ($this->collection->getDefaults() as $name => $type) {
             if ($this->annotation->has($name)) {
                 $defaults[] = $type;
+                $type->name = $name;
             }
         }
         return $defaults;

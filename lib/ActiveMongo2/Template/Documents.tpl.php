@@ -625,34 +625,17 @@ class Mapper
 
         @foreach ($collection->getProperties() as $prop)
             @foreach($prop->getDefault() as $default)
-                if (empty({{ $prop->getPHPVariable() }})) {
-                    {{ $default->toCode($prop) }}
+                if (empty({{$prop->getPHPVariable()}})) {
+                    {{$default->toCode($prop)}}
+                    {{$prop->getPHPVariable()}} = $return;
                 }
             @end
         @end
 
-        @foreach ($doc['annotation']->getProperties() as $prop)
-            @set($propname, $prop['property'])
-            @if ($prop->has('Id'))
-                @set($propname, '_id')
-            @end
-            @foreach ($defaults as $name => $callback) 
-                @if ($prop->has($name))
-                    // default: {{$name}}
-                    if (empty({{$docz}}[{{@$propname}}])) {
-                        if (empty($this->loaded[{{@$files[$name]}}])) {
-                            require_once __DIR__ . {{@$files[$name]}};
-                            $this->loaded[{{@$files[$name]}}] = true;
-                        }
-                        {{$docz}}[{{@$propname}}] = {{$callback}}({{$docz}}, {{@$prop->getOne($name)}}, $this->connection, $this); 
-                    }
-                @end
-            @end
-        @end
-
-        @if (!empty($doc['disc']))
-            {{$docz}}[{{@$doc['disc']}}] = {{@$doc['class']}};
-        @end
+        @if ($collection->isSingleCollection())
+            // SINGLE COLLECTION
+            {{$collection->getDiscriminator(true)->getPHPVariable()}} = {{@$collection->getClass()}};
+        @end 
 
         return $doc;
     }

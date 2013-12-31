@@ -36,12 +36,12 @@
 */
 namespace ActiveMongo2\Generate;
 
+use Notoj\Annotation;
 use Notoj\Annotation\AnnClass;
 use ActiveMongo2\Generate;
 
-class Collection
+class Collection extends Base
 {
-    protected $annotation;
     protected $file;
     protected $collections;
 
@@ -95,15 +95,26 @@ class Collection
         ];
     }
 
-    public function getDiscriminator()
+    public function getDiscriminator($obj = false)
     {
         $args = $this->annotation->getOne('SingleCollection') ?: ['__type'];
-        return current($args);
+        $prop = current($args);
+        if ($obj) {
+            // we expect it as an annotation object
+            $ann = new Annotation;
+            $ann->setMetadata([
+                'type' => 'property',
+                'property' => $prop,
+            ]);
+            $prop = new Property($this, $ann);
+        }
+        return $prop;
     }
 
     public function isSingleCollection()
     {
-        return $this->annotation->has('SingleCollection');
+        return $this->annotation->has('SingleCollection') ||
+            ($this->getParent() && $this->getParent()->isSingleCollection());
     }
 
     public function getClass()
