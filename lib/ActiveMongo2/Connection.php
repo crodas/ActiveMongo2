@@ -317,13 +317,20 @@ class Connection
         return $this;
     }
 
-    public function save(&$obj, $w = null, $trigger_events = true)
+    protected function handleSaveProxy($obj)
     {
         if ($obj instanceof DocumentProxy) {
             $obj = $obj->getObject();
             if (empty($obj)) {
-                return $this;
+                return true;
             }
+        }
+    }
+
+    public function save(&$obj, $w = null, $trigger_events = true)
+    {
+        if ($this->handleSaveProxy($obj)) {
+            return $this;
         }
 
         $w = $w ?: $this->config->getWriteConcern();
