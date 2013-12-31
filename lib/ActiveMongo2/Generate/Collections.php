@@ -135,29 +135,35 @@ class Collections extends ArrayObject
         return $types;
     }
 
-    public function __construct(Array $dirs)
+    protected function addDirs(Array $dirs)
     {
-        $annotations  = new Annotations;
         foreach ($dirs as $dir) {
             $dir = new NDir($dir);
-            $dir->getAnnotations($annotations);
+            $dir->getAnnotations($this->annotations);
             $this->files = array_merge($this->files, $dir->getFiles());
         }
+    }
 
-        foreach (array('Filter', 'Plugin') as $d) {
-            $dir = new NDir(__DIR__ . "/../$d");
-            $dir->getAnnotations($annotations);
-            $this->files = array_merge($this->files, $dir->getFiles());
-        }
-
+    protected function readCollections()
+    {
         foreach (array('Persist', 'Embeddable') as $type) {
-            foreach ($annotations->get($type) as $object) {
+            foreach ($this->annotations->get($type) as $object) {
                 $object = new Collection($object, $this);
                 $this[$object->getClass()] = $object;
             }
         }
 
-        $this->files       = array_unique($this->files);
-        $this->annotations = $annotations;
+    }
+
+    public function __construct(Array $dirs)
+    {
+        $this->annotations = new Annotations;
+        $this->addDirs($dirs);
+        $this->addDirs(array_map(function($dir) {
+            return __DIR__ . '/../' . $dir;
+        }, array('Filter', 'Plugin')));
+        $this->readCollections();
+
+        $this->files = array_unique($this->files);
     }
 }
