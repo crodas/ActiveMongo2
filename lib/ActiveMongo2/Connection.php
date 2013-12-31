@@ -278,9 +278,7 @@ class Connection
 
     protected function create(&$obj, $document, $col, $trigger_events)
     {
-        if ($trigger_events) {
-            $this->mapper->trigger('preCreate', $obj, array(&$document, $this));
-        }
+        $trigger_events && $this->mapper->trigger('preCreate', $obj, array(&$document, $this));
 
         $document['_id'] = empty($document['_id']) ?  new MongoId : $document['_id'];
 
@@ -288,10 +286,8 @@ class Connection
 
         $ret = $col->save($document, compact('w'));
 
-        if ($trigger_events) {
-            $this->mapper->trigger('postCreate', $obj, array($document, $this));
-            $this->mapper->trigger('postSave', $obj, array($document, $this));
-        }
+        $trigger_events && $this->mapper->trigger('postCreate', $obj, array($document, $this));
+        $trigger_events && $this->mapper->trigger('postSave', $obj, array($document, $this));
 
         return $this;
     }
@@ -303,9 +299,7 @@ class Connection
             return $this;
         }
 
-        if ($trigger_events) {
-            $this->mapper->trigger('preUpdate', $obj, array(&$update, $this));
-        }
+        $trigger_events && $this->mapper->trigger('preUpdate', $obj, array(&$update, $this));
 
         foreach ($update as $op => $value) {
             $col->update(
@@ -317,17 +311,14 @@ class Connection
 
         $this->setObjectDocument($obj, $document);
 
-        if ($trigger_events) {
-            $this->mapper->trigger('postUpdate', $obj, array($update, $this,$oldDoc['_id']));
-            $this->mapper->trigger('postSave', $obj, array($update, $this));
-        }
+        $trigger_events && $this->mapper->trigger('postUpdate', $obj, array($update, $this,$oldDoc['_id']));
+        $trigger_events && $this->mapper->trigger('postSave', $obj, array($update, $this));
 
         return $this;
     }
 
     public function save(&$obj, $w = null, $trigger_events = true)
     {
-        if ($w === null) $w = $this->config->getWriteConcern();
         if ($obj instanceof DocumentProxy) {
             $obj = $obj->getObject();
             if (empty($obj)) {
@@ -335,9 +326,9 @@ class Connection
             }
         }
 
-        if ($trigger_events) {
-            $this->mapper->trigger('preSave', $obj, array(&$update, $this));
-        }
+        $w = $w ?: $this->config->getWriteConcern();
+
+        $trigger_events && $this->mapper->trigger('preSave', $obj, array(&$update, $this));
 
         $col = $this->getMongoCollection($obj);
         if ($col instanceof \MongoGridFS) {
