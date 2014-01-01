@@ -204,14 +204,12 @@ class Connection
 
     public function file($obj)
     {
+        $col = $this->getMongoCollection($obj);
         if ($obj instanceof DocumentProxy) {
             throw new \RuntimeException("Cannot update a reference");
+        } else if (!$col instanceof \MongoGridFS) {
+            throw new \RuntimeException("@GridFS Annotation missing");
         }
-        $data = $this->mapper->mapClass($this->mapper->get_class($obj));;
-        if (!$data['is_gridfs']) {
-            throw new \RuntimeException("Missing @GridFS argument");
-        }
-        $col      = $this->db->getGridFs($data['name']);
         $document = $this->mapper->validate($obj);
         $oldDoc   = $this->mapper->getRawDocument($obj, false);
 
@@ -220,9 +218,7 @@ class Connection
         }
 
         $this->mapper->trigger('preCreate', $obj, array(&$document, $this));
-        if (empty($document['_id'])) {
-            $document['_id'] = new MongoId;
-        }
+        $document['_id'] = empty($document['_id']) ?  new MongoId : $document['_id'];
 
         return new StoreFile($col, $document, $this, $obj);
     }
