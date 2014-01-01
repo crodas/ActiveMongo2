@@ -74,9 +74,9 @@ class Worker
             }
             $col = $this->db->{$row['collection']};
             $col->update(
-                    ['_id' => $row['id']],
-                    $update
-                    );
+                ['_id' => $row['id']],
+                $update
+            );
             $done++;
         }
         $this->queue->remove(['_id' => $task['_id']]);
