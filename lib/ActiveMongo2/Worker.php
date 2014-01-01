@@ -61,6 +61,28 @@ class Worker
         );
     }
 
+    protected function doTask($task, $all)
+    {
+        $done = 0;
+        foreach ($all as $row) {
+            $update = $task['update'];
+            foreach ($update as $op => $fields) {
+                foreach ($fields as $field => $value) {
+                    unset($update[$op][$field]);
+                    $update[$op][$row['property'] . '.' . $field] = $value;
+                }
+            }
+            $col = $this->db->{$row['collection']};
+            $col->update(
+                    ['_id' => $row['id']],
+                    $update
+                    );
+            $done++;
+        }
+        $this->queue->remove(['_id' => $task['_id']]);
+        return $done;
+    }
+
     public function main()
     {
         $done = 0;
@@ -69,23 +91,8 @@ class Worker
             if (empty($work)) {
                 break;
             }
-            $all  = $this->refs->find(['source_id' => $work['source_id']]);
-            foreach ($all as $row) {
-                $update = $work['update'];
-                foreach ($update as $op => $fields) {
-                    foreach ($fields as $field => $value) {
-                        unset($update[$op][$field]);
-                        $update[$op][$row['property'] . '.' . $field] = $value;
-                    }
-                }
-                $col = $this->db->{$row['collection']};
-                $col->update(
-                    ['_id' => $row['id']],
-                    $update
-                );
-                $done++;
-            }
-            $this->queue->remove(['_id' => $work['_id']]);
+            $done += $this->doTask($work, $this->refs->find(['source_id' => $work['source_id']]));
+
         } while(true);
         return $done;
     }
