@@ -179,45 +179,12 @@ class Connection
 
     public function worker($daemon = true)
     {
-        $queue = $this->db->deferred_queue;
-        $refs  = $this->db->references_queue;
-
-        $queue->ensureIndex(['processed' => 1]);
-        $refs->ensureIndex(['source_id' => 1]);
-
-        $done = 0;
+        $worker = new Worker($this);
+        $done   = 0;
         do {
-            $work = $queue->findAndModify(
-                ['processed' => false], 
-                ['$set' => ['processed' => true, 'started' => new \MongoDate]], 
-                null, 
-                ['sort' => ['$natural' => -1]]
-            );
-            if (empty($work)) {
-                if ($daemon) {
-                    usleep(200000);
-                    continue;
-                }
-                break;
-            }
-            $all  = $refs->find(['source_id' => $work['source_id']]);
-            foreach ($all as $row) {
-                $update = $work['update'];
-                foreach ($update as $op => $fields) {
-                    foreach ($fields as $field => $value) {
-                        unset($update[$op][$field]);
-                        $update[$op][$row['property'] . '.' . $field] = $value;
-                    }
-                }
-                $col = $this->db->{$row['collection']};
-                $col->update(
-                    ['_id' => $row['id']],
-                    $update
-                );
-                $done++;
-            }
-            $queue->remove(['_id' => $work['_id']]);
-        } while (true);
+            $done += $worker->main();
+            usleep(200000);
+        } while ($daemon);
         return $done;
     }
 
