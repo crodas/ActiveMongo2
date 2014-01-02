@@ -706,8 +706,11 @@ class Mapper
                 $this->event_{{$ev}}_{{sha1($collection->getParent()->getClass())}}($document, $args);
             @end
 
-            @foreach($doc['annotation']->getMethods() as $method)
-                @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'])
+            @foreach ($collection->getMethodsByAnnotation($ev) as $method)
+                {{$method->toCode($collection, '$document')}}
+                if ($return === FALSE) {
+                    throw new \RuntimeException;
+                }
             @end
 
             @if ($ev =="postCreate" || $ev == "postUpdate")

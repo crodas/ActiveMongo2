@@ -51,7 +51,7 @@ abstract class Base
 
     public function getClass()
     {
-        return $this->annotation['class'];
+        return strtolower($this->annotation['class']);
     }
 
     public function isPublic()

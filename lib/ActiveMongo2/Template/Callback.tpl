@@ -9,6 +9,8 @@ $args = empty($args) ? [] : $args;
     @if ($self->isPublic())
         @if ($self->isStatic())
             $return = \{{$self->getClass()}}::{{$self->getMethod()}}(
+        @elif ($prop->getClass() == $self->getClass())
+            $return = $document->{{$self->getMethod()}}(
         @else
             // Improve me (should construct once and reuse it)
             $return = (new \{{$self->getClass()}})->{{$self->getMethod()}}(

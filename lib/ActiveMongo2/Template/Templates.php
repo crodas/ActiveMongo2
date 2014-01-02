@@ -81,9 +81,13 @@ namespace {
                     if ($self->isStatic()) {
                         echo "            \$return = \\" . ($self->getClass()) . "::" . ($self->getMethod()) . "(\n";
                     }
+                    else if ($prop->getClass() == $self->getClass()) {
+                        echo "            \$return = \$document->" . ($self->getMethod()) . "(\n";
+                    }
                     else {
                         echo "            // Improve me (should construct once and reuse it)\n            \$return = (new \\" . ($self->getClass()) . ")->" . ($self->getMethod()) . "(\n";
                     }
+
                     echo "            " . ($var) . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
                     var_export($args);
                     echo ", // annotation arguments\n            \$this // mapper instance\n        );\n";
@@ -103,46 +107,6 @@ namespace {
                 var_export($args);
                 echo ", // annotation arguments\n        \$this // mapper instance\n    );\n";
             }
-
-            if ($return) {
-                return ob_get_clean();
-            }
-
-        }
-    }
-
-    /** 
-     *  Template class generated from Trigger.tpl.php
-     */
-    class class_11ca6999533bd9c460f246ff122fc6c9341f7a1f extends base_template_df562f12800ad133cdbc6f040ca106a099504656
-    {
-
-        public function render(Array $vars = array(), $return = false)
-        {
-            $this->context = $vars;
-
-            extract($vars);
-            if ($return) {
-                ob_start();
-            }
-            if ($method->has($ev)) {
-                if (empty($args)) {
-                    $args = NULL;
-                }
-                if (in_array('public', $method['visibility'])) {
-                    if (in_array('static', $method['visibility'])) {
-                        echo "            \$return = \\" . ($method['class']) . "::" . ($method['function']) . "(\$document, \$args, \$this->connection, " . (var_export($args ?: $method[0]['args'], true)) . ", \$this);\n";
-                    }
-                    else {
-                        echo "            \$return = " . ($target) . "->" . ($method['function']) . "(\$document, \$args, \$this->connection, " . (var_export($args ?: $method[0]['args'], true)) . ", \$this);\n";
-                    }
-                }
-                else {
-                    echo "        \$reflection = new \\ReflectionMethod(\"\\\\" . (addslashes($doc['class'])) . "\", \"" . ($method['function']) . "\");\n        \$reflection->setAccessible(true);\n        \$return = \$reflection->invoke(\$document, " . ($target) . ", \$args, \$this->connection, " . (var_export($args ?: $method[0]['args'], true)) . ", \$this);\n";
-                }
-                echo "    if (\$return === FALSE) {\n        throw new \\RuntimeException(\"" . (addslashes($doc['class']) . "::" . $method['function']) . " returned false\");\n    }\n";
-            }
-            echo "\n";
 
             if ($return) {
                 return ob_get_clean();
@@ -678,8 +642,8 @@ namespace {
                         echo "                \$this->event_" . ($ev) . "_" . (sha1($collection->getParent()->getClass())) . "(\$document, \$args);\n";
                     }
                     echo "\n";
-                    foreach($doc['annotation']->getMethods() as $method) {
-                        ActiveMongo2\Template\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $doc, 'target' => '$document'], $this->context);
+                    foreach($collection->getMethodsByAnnotation($ev) as $method) {
+                        echo "                " . ($method->toCode($collection, '$document')) . "\n                if (\$return === FALSE) {\n                    throw new \\RuntimeException;\n                }\n";
                     }
                     echo "\n";
                     if ($ev =="postCreate" || $ev == "postUpdate") {
@@ -792,10 +756,9 @@ namespace ActiveMongo2\Template {
         {
             return array (
                 0 => 'callback',
-                1 => 'trigger',
-                2 => 'validate',
-                3 => 'reference/update',
-                4 => 'documents',
+                1 => 'validate',
+                2 => 'reference/update',
+                3 => 'documents',
             );
         }
 
@@ -810,8 +773,6 @@ namespace ActiveMongo2\Template {
             static $classes = array (
                 'callback.tpl' => 'class_1895ec604b22a2e3f627b9d8d7ae6142d332247e',
                 'callback' => 'class_1895ec604b22a2e3f627b9d8d7ae6142d332247e',
-                'trigger.tpl.php' => 'class_11ca6999533bd9c460f246ff122fc6c9341f7a1f',
-                'trigger' => 'class_11ca6999533bd9c460f246ff122fc6c9341f7a1f',
                 'validate.tpl.php' => 'class_9e8794c44ad8c1631f7e215c9edaf7dbac875fb4',
                 'validate' => 'class_9e8794c44ad8c1631f7e215c9edaf7dbac875fb4',
                 'reference/update.tpl.php' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
