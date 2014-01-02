@@ -175,6 +175,18 @@ class Collection extends Base
         return NULL;
     }
 
+    public function getRefCache()
+    {
+        $cache = $this->collections->getReferenceCache();
+        if (!empty($cache[$this->getClass()])) {
+            return array_combine(
+                $cache[$this->getClass()],
+                $cache[$this->getClass()]
+            );
+        }
+        return NULL;
+    }
+
     public function getName()
     {
         $args = $this->getAnnotationArgs();

@@ -564,10 +564,10 @@ class Mapper
             $extra  = array_intersect_key($document, $include);
         }
 
-        @if (!empty($refCache[$collection->getClass()]))
+        @if ($cache = $collection->getRefCache())
             $extra = array_merge($extra,  array_intersect_key(
                 $document, 
-                {{@array_combine($refCache[$collection->getClass()], $refCache[$collection->getClass()])}}
+                {{@$cache}}
             ));
         @end
         

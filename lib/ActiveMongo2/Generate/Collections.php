@@ -102,6 +102,27 @@ class Collections extends ArrayObject
         return $this;
     }
 
+    public function getReferenceCache()
+    {
+        static $refCache = [];
+        if (!empty($refCache)) {
+            return $refCache;
+        }
+        foreach ($this as $document) {
+            $class = $document->getClass();
+            $refCache[$class] = [];
+            foreach ($document->getAnnotation()->get('RefCache') as $args) {
+                if (empty($args)) {
+                    throw new \Exception("@RefCache expects at least one argument");
+                }
+                $refCache[$class] = array_merge($refCache[$class], $args['args']);
+            }
+            $refCache[$class] = array_unique($refCache[$class]);
+        }
+
+        return $refCache;
+    }
+
     protected function getAnnotationByName($name)
     {
         $anns = array();

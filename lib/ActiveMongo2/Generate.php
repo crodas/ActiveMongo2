@@ -58,25 +58,6 @@ class Generate
         return $parents;
     }
 
-    public function getReferenceCache($annotations)
-    {
-        $refCache = [];
-        foreach ($this->getDocumentClasses($annotations) as $docClass) {
-            list(, $object) = $docClass;
-            $class = strtolower($object['class']);
-            $refCache[$class] = [];
-            foreach ($object->get('RefCache') as $args) {
-                if (empty($args)) {
-                    throw new \Exception("@RefCache expects at least one argument");
-                }
-                $refCache[$class] = array_merge($refCache[$class], $args['args']);
-            }
-            $refCache[$class] = array_unique($refCache[$class]);
-        }
-
-        return $refCache;
-    }
-
     protected function loadAnnotations()
     {
         $annotations  = new Notoj\Annotations;
@@ -183,7 +164,7 @@ class Generate
         array_map($fixPath, $collections->getPlugins());
 
         $parents  = $this->getParentClasses($annotations); 
-        $refCache = $this->getReferenceCache($annotations); 
+        $refCache = $collections->getReferenceCache(); 
 
         foreach ($this->getDocumentClasses($annotations) as $docClass) {
             list($type, $object) = $docClass;

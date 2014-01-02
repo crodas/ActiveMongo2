@@ -542,9 +542,9 @@ namespace {
                     echo "                \n            }\n";
                 }
                 echo "\n        \$object->" . ($instance) . "_setOriginal(\$zData);\n\n\n    }\n\n    /**\n     *  Get reference of  " . ($collection->getClass()) . " object\n     */\n    protected function get_reference_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " \$object, \$include = Array())\n    {\n        \$document = \$this->get_array_" . (sha1($collection->getClass())) . "(\$object);\n        \$extra    = array();\n        if (\$include) {\n            \$extra  = array_intersect_key(\$document, \$include);\n        }\n\n";
-                if (!empty($refCache[$collection->getClass()])) {
+                if ($cache = $collection->getRefCache()) {
                     echo "            \$extra = array_merge(\$extra,  array_intersect_key(\n                \$document, \n                ";
-                    var_export(array_combine($refCache[$collection->getClass()], $refCache[$collection->getClass()]));
+                    var_export($cache);
                     echo "\n            ));\n";
                 }
                 echo "        \n        foreach (\$extra as \$key => \$value) {\n            if (is_object(\$value)) {\n                if (\$value instanceof \\ActiveMongo2\\Reference) {\n                    \$extra[\$key] = \$value->getReference();\n                } else {\n                    \$extra[\$key] = \$this->getReference(\$value);\n                }\n            }\n        }\n\n        return array_merge(array(\n                '\$id'   => \$document['_id'],\n                '\$ref'  => ";

@@ -49,6 +49,11 @@ abstract class Base
         return !empty($this->annotation['class']) && !empty($this->annotation['function']);
     }
 
+    public function getAnnotation()
+    {
+        return $this->annotation;
+    }
+
     public function getClass()
     {
         return strtolower($this->annotation['class']);
