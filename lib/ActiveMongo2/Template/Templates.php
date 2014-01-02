@@ -75,33 +75,33 @@ namespace {
             var_export($self->getPath());
             echo ";\n    \$this->loaded[";
             var_export($self->getPath());
-            echo "] = true;\n}\n";
+            echo "] = true;\n}\n\n\$args = empty(\$args) ? [] : \$args;\n\n";
             if ($self->isMethod()) {
                 if ($self->isPublic()) {
                     if ($self->isStatic()) {
                         echo "            \$return = \\" . ($self->getClass()) . "::" . ($self->getMethod()) . "(\n";
                     }
                     else {
-                        echo "            \$return = " . ($self->getInstance()) . "->" . ($self->getMethod()) . "(\n";
+                        echo "            // Improve me (should construct once and reuse it)\n            \$return = (new \\" . ($self->getClass()) . ")->" . ($self->getMethod()) . "(\n";
                     }
-                    echo "            " . ($var) . ", // document variable \n            ";
+                    echo "            " . ($var) . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
                     var_export($args);
-                    echo ", // annotation arguments\n            \$this->connection, // connection\n            empty(\$args) ? [] : \$args,  // external arguments (defined at run time)\n            \$this // mapper instance\n        );\n";
+                    echo ", // annotation arguments\n            \$this // mapper instance\n        );\n";
                 }
                 else {
                     echo "        \$reflection = new \\ReflectionMethod(";
                     var_export("\\". $self->getClass());
                     echo ", ";
                     var_export($self->getMethod());
-                    echo ");\n        \$reflection->setAccessible(true);\n        \$return = \$reflection->invoke(\n            " . ($var) . ", // document variable \n            ";
+                    echo ");\n        \$reflection->setAccessible(true);\n        \$return = \$reflection->invoke(\n            " . ($var) . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
                     var_export($args);
-                    echo ", // annotation arguments\n            \$this->connection, // connection\n            empty(\$args) ? [] : \$args,  // external arguments (defined at run time)\n            \$this // mapper instance\n        );\n";
+                    echo ", // annotation arguments\n            \$this // mapper instance\n        );\n";
                 }
             }
             else {
-                echo "    \$return = \\" . ($self->getFunction()) . "(\n        " . ($var) . ", // document variable \n        ";
+                echo "    \$return = \\" . ($self->getFunction()) . "(\n        " . ($var) . ", // document variable \n        \$args,  // external arguments (defined at run time)\n        \$this->connection, // connection\n        ";
                 var_export($args);
-                echo ", // annotation arguments\n        \$this->connection, // connection\n        empty(\$args) ? [] : \$args,  // external arguments (defined at run time)\n        \$this // mapper instance\n    );\n";
+                echo ", // annotation arguments\n        \$this // mapper instance\n    );\n";
             }
 
             if ($return) {
@@ -757,27 +757,8 @@ namespace {
                         ActiveMongo2\Template\Templates::exec('reference/update.tpl.php', compact('doc', 'references'), $this->context);
                     }
                     echo "\n";
-                    foreach($doc['annotation']->getAll() as $zmethod) {
-                        $first_time = false;
-                        if (!empty($plugins[$zmethod['method']])) {
-                            $temp = $plugins[$zmethod['method']];
-                            foreach($temp->getMethods() as $method) {
-                                if ($method->has($ev) && empty($first_time)) {
-                                    echo "                            if (empty(\$this->loaded[";
-                                    var_export($self->getRelativePath($temp['file']));
-                                    echo "])) {\n                                require_once __DIR__ .  ";
-                                    var_export($self->getRelativePath($temp['file']));
-                                    echo ";\n                                \$this->loaded[";
-                                    var_export($self->getRelativePath($temp['file']));
-                                    echo "] = true;\n                            }\n";
-                                    if (!in_array('static', $temp['visibility'])) {
-                                        echo "                                // " . ($method[0]['method']) . "\n                                \$plugin = new \\" . ($temp['class']) . "(" . (var_export($zmethod['args'], true)) . ");\n";
-                                        $first_time = true;
-                                    }
-                                    ActiveMongo2\Template\Templates::exec("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin', 'args' => $zmethod['args']], $this->context);
-                                }
-                            }
-                        }
+                    foreach($collection->getPlugins($ev) as $plugin) {
+                        echo "                " . ($plugin->toCode($collection, '$document')) . "\n                if (\$return === FALSE) {\n                    throw new \\RuntimeException;\n                }\n";
                     }
                     echo "        }\n    \n";
                 }

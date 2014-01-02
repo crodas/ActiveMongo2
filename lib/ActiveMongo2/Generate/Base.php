@@ -37,7 +37,69 @@
 
 namespace ActiveMongo2\Generate;
 
+use Notoj\Annotation\AnnClass;
+
 abstract class Base
 {
     protected $annotation;
+    protected $file;
+
+    public function isMethod()
+    {
+        return !empty($this->annotation['class']) && !empty($this->annotation['function']);
+    }
+
+    public function getClass()
+    {
+        return $this->annotation['class'];
+    }
+
+    public function isPublic()
+    {
+        return in_array('public', $this->annotation['visibility']);
+    }
+
+    public function isStatic()
+    {
+        return in_array('static', $this->annotation['visibility']);
+    }
+
+    public function isAbstract()
+    {
+        return in_array('abstract', $this->annotation['visibility']);
+    }
+
+    public function getMethodsByAnnotation($ann)
+    {
+        if (!$this->isClass()) {
+            throw new \RuntimeException("Invalid call, it is not a class");
+        }
+
+        $methods = array();
+        foreach ($this->annotation->getMethods() as $method) {
+            if ($method->has($ann)) {
+                $method = new Type($method, $ann);
+                $method->setPath($this->getPath());
+                $methods[] = $method;
+            }
+        }
+        return $methods;
+    }
+
+    public function isClass()
+    {
+        return $this->annotation instanceof AnnClass;
+    }
+
+
+    public function setPath($file)
+    {
+        $this->file = $file;
+        return $this;
+    }
+
+    public function getPath()
+    {
+        return $this->file ?: $this->annotation['file'];
+    }
 }

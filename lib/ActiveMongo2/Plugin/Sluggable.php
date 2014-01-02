@@ -42,15 +42,6 @@ namespace ActiveMongo2\Plugin;
  */
 class Sluggable
 {
-    protected $args;
-    public function __construct(Array $args)
-    {
-        $this->args = $args;
-        if (count($args) != 2) {
-            throw new \RuntimeException("@Sluggable expects two arguments");
-        }
-    }
-
     public static function sluggify($text)
     {
         // replace non letter or digits by -
@@ -80,10 +71,13 @@ class Sluggable
     /**
      *  @preUpdate
      */
-    public function updateSlugUrl($obj, Array $event_args, $conn)
+    public static function updateSlugUrl($obj, Array $event_args, $conn, $args)
     {
-        $source = $this->args[0];
-        $target = $this->args[1];
+        if (count($args) != 2) {
+            throw new \RuntimeException("@Sluggable expects two arguments");
+        }
+        $source = $args[0];
+        $target = $args[1];
 
         $document = &$event_args[0];
         if (empty($obj->$target)) {
@@ -103,9 +97,12 @@ class Sluggable
     /**
      *  @preCreate
      */
-    public function setSlugUrl($obj, Array $event_args, $conn)
+    public static function setSlugUrl($obj, Array $event_args, $conn, $args)
     {
-        $args = $this->args;
+        if (count($args) != 2) {
+            throw new \RuntimeException("@Sluggable expects two arguments");
+        }
+
         $document = &$event_args[0];
         if (!empty($document[$args[1]])) {
             /* If the slug already exists, and it is different than

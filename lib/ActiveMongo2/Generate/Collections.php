@@ -108,13 +108,22 @@ class Collections extends ArrayObject
         foreach ($this->annotations->get($name) as $ann) {
             $type = new Type($ann, $name);
             foreach ($ann->get($name) as $arg) {
-                $name = current($arg['args'] ?: []);
-                if (!empty($name)) {
-                    $anns[$name] = $type;
+                $xname = current($arg['args'] ?: []);
+                if (!empty($xname)) {
+                    $anns[$xname] = $type;
                 }
             }
         }
         return $anns;
+    }
+
+    public function getPlugins()
+    {
+        static $plugins = array();
+        if (empty($plugins)) {
+            $plugins = $this->getAnnotationByName('Plugin');
+        }
+        return $plugins;
     }
 
     public function getDefaults()

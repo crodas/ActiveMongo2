@@ -771,25 +771,11 @@ class Mapper
                 @include('reference/update.tpl.php', compact('doc', 'references'))
             @end
 
-            @foreach($doc['annotation']->getAll() as $zmethod)
-                @set($first_time, false)
-                @if (!empty($plugins[$zmethod['method']]))
-                    @set($temp, $plugins[$zmethod['method']])
-                    @foreach($temp->getMethods() as $method)
-                        @if ($method->has($ev) && empty($first_time)) 
-                            if (empty($this->loaded[{{@$self->getRelativePath($temp['file'])}}])) {
-                                require_once __DIR__ .  {{@$self->getRelativePath($temp['file'])}};
-                                $this->loaded[{{@$self->getRelativePath($temp['file'])}}] = true;
-                            }
-                            @if (!in_array('static', $temp['visibility']))
-                                // {{$method[0]['method']}}
-                                $plugin = new \{{$temp['class']}}({{ var_export($zmethod['args'], true) }});
-                                @set($first_time, true)
-                            @end
-                            @include("trigger", ['method' => $method, 'ev' => $ev, 'doc' => $temp, 'target' => '$plugin', 'args' => $zmethod['args']])
-                        @end
-                    @end
-                @end
+            @foreach ($collection->getPlugins($ev) as $plugin)
+                {{$plugin->toCode($collection, '$document')}}
+                if ($return === FALSE) {
+                    throw new \RuntimeException;
+                }
             @end
         }
     

@@ -48,11 +48,7 @@ class Type extends Base
     {
         $this->annotation = $ann;
         $this->type       = $type;
-    }
-
-    public function isMethod()
-    {
-        return !empty($this->annotation['class']) && !empty($this->annotation['function']);
+        $this->name       = $type;
     }
 
     public function getFunction()
@@ -65,21 +61,10 @@ class Type extends Base
         return $this->getFunction();
     }
 
-    public function setPath($file)
-    {
-        $this->file = $file;
-        return $this;
-    }
-
-    public function getPath()
-    {
-        return $this->file ?: $this->annotation['file'];
-    }
-
-    public function toCode(Property $prop, $var = '$doc')
+    public function toCode($prop, $var = '$doc')
     {
         $self = $this;
-        $args = $prop->annotation->getOne($this->name);
+        $args = (array)$prop->annotation->getOne($this->name);
         return Templates::get('callback')
             ->render(compact('args', 'prop', 'self', 'var'), true);
     }

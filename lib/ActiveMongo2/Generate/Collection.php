@@ -42,8 +42,21 @@ use ActiveMongo2\Generate;
 
 class Collection extends Base
 {
-    protected $file;
     protected $collections;
+
+    public function getPlugins($type)
+    {
+        $plugins = array();
+        foreach ($this->collections->getPlugins() as $name => $p) {
+            if ($this->annotation->has($name)) {
+                foreach ($p->getMethodsByAnnotation($type) as $method) {
+                    $method->name = $name;
+                    $plugins[] = $method;
+                }
+            } 
+        }
+        return $plugins;
+    }
 
     public function __construct(AnnClass $annotation, Collections $collections)
     {
@@ -178,17 +191,6 @@ class Collection extends Base
         }
 
         return $name;
-    }
-
-    public function setPath($path)
-    {
-        $this->file = $path;
-        return $this;
-    }
-
-    public function getPath()
-    {
-        return $this->file ?: $this->annotation['file'];
     }
 
     public function getAnnotation()

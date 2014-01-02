@@ -63,6 +63,7 @@ class Universal
         if (!empty($annotation_args['set_id']) && !empty($annotation_args['auto_increment'])) {
             $args[0]['_id'] = Autoincrement::getId($conn, __NAMESPACE__ . "\\UniversalDocument");
         }
+        return true;
     }
 
     /**

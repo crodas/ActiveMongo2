@@ -151,22 +151,6 @@ class Generate
     }
 
 
-    protected function generatePlugins($annotations)
-    {
-        $plugins = [];
-        foreach ($annotations->get('Plugin') as $prop) {
-            if (!$prop->isClass()) continue;
-            foreach ($prop->get('Plugin') as $anno) {
-                $name = current($anno['args']);
-                if (empty($name)) continue;
-                $plugins[$name] = $prop;
-            }
-        }
-
-        return $plugins;
-    }
-
-
     protected function generateHooks($types, $annotations)
     {
         $files = array();
@@ -200,6 +184,7 @@ class Generate
         $collections->map($fixPath);
         array_map($fixPath, $collections->getDefaults());
         array_map($fixPath, $collections->getTypes());
+        array_map($fixPath, $collections->getPlugins());
 
         $parents  = $this->getParentClasses($annotations); 
         $refCache = $this->getReferenceCache($annotations); 
@@ -279,7 +264,6 @@ class Generate
         $class_mapper = $this->getClassMapper($docs);
 
         $indexes = array();
-        $plugins = $this->generatePlugins($annotations);
         $this->generateUniqueIndex($annotations, $indexes, $class_mapper);
 
         $references = [];
@@ -349,7 +333,7 @@ class Generate
         $code = Template\Templates::get('documents')
             ->render(array_merge(compact(
                 'docs', 'namespace',
-                'mapper', 'indexes', 'plugins', 'self', 'references',
+                'mapper', 'indexes', 'self', 'references',
                 'refCache',  'collections'
             ), $hooks), true);
 

@@ -41,7 +41,7 @@ use ActiveMongo2\Plugin\Autoincrement;
 use ActiveMongo2\DocumentProxy;
 
 /** @DefaultValue(AutoincrementBy) */
-function __autoincrement_field(Array $docs, Array $args, $conn)
+function __autoincrement_field(Array $docs, Array $rargs, $conn, Array $args)
 {
     if (empty($args)) {
         throw new \Exception("@DefaultType expects at least one argument");
