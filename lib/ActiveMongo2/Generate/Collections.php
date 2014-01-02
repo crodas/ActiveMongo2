@@ -147,18 +147,17 @@ class Collections extends ArrayObject
             foreach ($this->getAllPropertiesWithAnnotation($type) as $ann) {
                 list($ann, $prop) = $ann;
                 $args = $ann['args'];
-                if (!$args) {
-                    continue;
+                if ($args) {
+                    $target = $this->getCollectionByName($args[0]);
+                    $args = array_merge(empty($args[1]) ? [] : $args[1], $refCache[$target->getClass()]);
+                    $refs[] = array(
+                        'property'  => $prop,
+                        'target'    => $target,
+                        'update'    => $args,
+                        'multi'     => $multi,
+                        'deferred'  => $prop->getAnnotation()->has('Deferred'),
+                    );
                 }
-                $target = $this->getCollectionByName($args[0]);
-                $args = array_merge(empty($args[1]) ? [] : $args[1], $refCache[$target->getClass()]);
-                $refs[] = array(
-                    'property'  => $prop,
-                    'target'    => $target,
-                    'update'    => $args,
-                    'multi'     => $multi,
-                    'deferred'  => $prop->getAnnotation()->has('Deferred'),
-                );
             }
         }
 
