@@ -64,7 +64,6 @@ class Collections extends ArrayObject
         return parent::offsetSet(strtolower($name), $value);
     }
 
-
     public function offsetGet($name)
     {
         return parent::offsetGet(strtolower($name));
@@ -100,6 +99,18 @@ class Collections extends ArrayObject
             $fnc($value, $key);
         }
         return $this;
+    }
+
+    public function getIndexes()
+    {
+        $indexes = array();
+        foreach ($this->getAllPropertiesWithAnnotation('Unique') as $prop) {
+            $index['prop']  = $prop[1];
+            $index['field'] = array($prop[1]->getName() => 1);
+            $index['extra']  = array("unique" => true);
+            $indexes[] = $index;
+        }
+        return $indexes;
     }
 
     public function getAllPropertiesWithAnnotation($ann, $with_arg = false)

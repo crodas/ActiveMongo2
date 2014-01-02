@@ -113,21 +113,6 @@ class Generate
         return $function;
     }
 
-    protected function generateUniqueIndex($annotations, &$indexes, $class_mapper)
-    {
-        foreach ($annotations->get('Unique') as $prop) {
-            if (!$prop->isProperty()) continue;
-            if (empty($class_mapper[strtolower($prop['class'])])) {
-                continue;
-            }
-            $collection = $class_mapper[strtolower($prop['class'])]['name'];
-            foreach ($prop->get('Unique') as $anno) {
-                $indexes[] = array($collection,  array($prop['property'] => 1), array('unique' => 1));
-            }
-        }
-    }
-
-
     protected function generateHooks($types, $annotations)
     {
         $files = array();
@@ -164,7 +149,6 @@ class Generate
         array_map($fixPath, $collections->getPlugins());
 
         $parents  = $this->getParentClasses($annotations); 
-        $refCache = $collections->getReferenceCache($annotations); 
 
         foreach ($this->getDocumentClasses($annotations) as $docClass) {
             list($type, $object) = $docClass;
@@ -240,15 +224,12 @@ class Generate
         $namespace    = sha1($target);
         $class_mapper = $this->getClassMapper($docs);
 
-        $indexes = array();
-        $this->generateUniqueIndex($annotations, $indexes, $class_mapper);
-
         $self = $this;
         $code = Template\Templates::get('documents')
             ->render(array_merge(compact(
                 'docs', 'namespace',
                 'mapper', 'indexes', 'self',
-                'refCache',  'collections'
+                'collections'
             ), $hooks), true);
 
         File::write($target, FixCode::fix($code));

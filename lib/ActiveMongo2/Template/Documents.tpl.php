@@ -292,8 +292,11 @@ class Mapper
 
     public function ensureIndex($db)
     {
-        @foreach($indexes as $index)
-            $db->{{$index[0]}}->ensureIndex({{var_export($index[1], true)}}, {{var_export($index[2], true)}});
+        @foreach($collections->getIndexes() as $index)
+            $db->{{$index['prop']->getParent()->getName()}}->ensureIndex(
+                {{@$index['field']}},
+                {{@$index['extra']}}
+            );
         @end
     }
 
