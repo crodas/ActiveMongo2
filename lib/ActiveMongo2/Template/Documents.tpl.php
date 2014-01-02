@@ -471,11 +471,11 @@ class Mapper
             }
         }
 
-        @if (!empty($doc['parent']))
-            $this->populate_{{sha1($doc['parent'])}}($object, $data);
+        @if ($p = $collection->getParent())
+            $this->populate_{{sha1($p->getClass())}}($object, $data);
         @end
 
-        @if ($doc['is_gridfs'])
+        @if ($collection->isGridFs())
             if (!$data instanceof \MongoGridFsFile) {
                 throw new \RuntimeException("Internal error, trying to populate a GridFSFile with an array");
             }

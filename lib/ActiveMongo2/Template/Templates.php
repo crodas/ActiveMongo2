@@ -553,11 +553,11 @@ namespace {
                 echo "        );\n    }\n\n    /**\n     *  Populate objects " . ($collection->getClass()) . " \n     */\n    protected function populate_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " &\$object, \$data)\n    {\n        if (!\$object instanceof ActiveMongo2Mapped) {\n            \$class    = \$this->getClass(";
                 var_export($collection->getName() . '_');
                 echo " .  sha1(strtolower(get_class(\$object))));\n            \$populate = get_object_vars(\$object);\n            \$object = new \$class;\n            foreach (\$populate as \$key => \$value) {\n                \$object->\$key = \$value;\n            }\n        }\n\n";
-                if (!empty($doc['parent'])) {
-                    echo "            \$this->populate_" . (sha1($doc['parent'])) . "(\$object, \$data);\n";
+                if ($p = $collection->getParent()) {
+                    echo "            \$this->populate_" . (sha1($p->getClass())) . "(\$object, \$data);\n";
                 }
                 echo "\n";
-                if ($doc['is_gridfs']) {
+                if ($collection->isGridFs()) {
                     echo "            if (!\$data instanceof \\MongoGridFsFile) {\n                throw new \\RuntimeException(\"Internal error, trying to populate a GridFSFile with an array\");\n            }\n            \$data_file = \$data;\n            \$data      = \$data->file;\n            if (empty(\$data['metadata'])) {\n                \$data['metadata'] = [];\n            }\n";
                 }
                 else {
