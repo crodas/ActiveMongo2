@@ -164,7 +164,7 @@ class Generate
         array_map($fixPath, $collections->getPlugins());
 
         $parents  = $this->getParentClasses($annotations); 
-        $refCache = $collections->getReferenceCache(); 
+        $refCache = $collections->getReferenceCache($annotations); 
 
         foreach ($this->getDocumentClasses($annotations) as $docClass) {
             list($type, $object) = $docClass;

@@ -715,60 +715,60 @@ class Mapper
 
             @if ($ev =="postCreate" || $ev == "postUpdate")
                 $col = $args[1]->getDatabase()->references_queue;
-                @foreach ($references as $col => $refs)
-                    @foreach ($refs as $ref)
-                        @if ($ref['class'] == $collection->getClass() && $ref['deferred'])
-                            @if ($ev == "postCreate")
-                            if (!empty($args[0][{{@$ref['property']}}])) {
-                            @else
-                            if (!empty($args[0]['$set'][{{@$ref['property']}}])) {
-                            @end
-                                /* Keep in track of the reference */
-                                @if ($ref['multi'])
-                                    $data = [];
-                                    @if ($ev == "postCreate")
-                                    foreach ($args[0][{{@$ref['property']}}] as $id => $row) {
-                                    @else
-                                    foreach ($args[0]['$set'][{{@$ref['property']}}] as $id => $row) {
-                                    @end
-                                        $data[] = [
-                                            @if ($ev == "postCreate")
-                                            'source_id'     => {{@$ref['target'] . '::'}} . serialize($row['$id']),
-                                            'id'            => $args[0]['_id'],
-                                            @else
-                                            'source_id'     => {{@$ref['target'] . '::'}} . serialize($row['$id']),
-                                            'id'            => $args[2],
-                                            @end
-                                            'property'      => {{@$ref['property'] . '.'}} . $id,
-                                        ];
-                                    }
-                                @else
-                                    $data = [[
-                                        @if ($ev == "postCreate")
-                                        'source_id'     => {{@$ref['target'] . '::'}} . serialize($args[0][{{@$ref['property']}}]['$id']),
-                                        'id'            => $args[0]['_id'],
-                                        @else
-                                        'source_id'     => {{@$ref['target'] . '::'}} . serialize($args[0]['$set'][{{@$ref['property']}}]['$id']),
-                                        'id'            => $args[2],
-                                        @end
-                                        'property'      => {{@$ref['property']}},
-                                ]];
-                                @end
-                                foreach ($data as $row) {
-                                    $row['collection'] = {{@$ref['collection']}};
-                                    $row['_id'] = array(
-                                        'source' => $row['source_id'], 
-                                        'target_id' => $row['id'], 
-                                        'target_col' => $row['collection'], 
-                                        'target_prop' => $row['property']
-                                    );
-                                    $col->save($row, array('w' => 1));
-                                }
-                            }
+                @foreach ($collection->getBackReferences() as $ref)
+                    @if ($ref['deferred'])
+                        @if ($ev == "postCreate")
+                            $check = !empty($args[0][{{@$ref['property']->getName()}}]);
+                        @else
+                            $check = !empty($args[0]['$set'][{{@$ref['property']->getName()}}]);
                         @end
+                        if ($check) {
+                            @if ($ref['multi'])
+                                $data = array();
+                                @if ($ev == "postCreate")
+                                    $fields = $args[0][{{@$ref['property']->getName()}}];
+                                @else
+                                    $fields = $args[0]['$set'][{{@$ref['property']->getName()}}];
+                                @end
+                                foreach ($fields as $id => $row) {
+                                    $data[] = array(
+                                        @if ($ev == "postCreate")
+                                        'source_id' => {{@$ref['target']->getName() . '::'}} . serialize($row['$id']),
+                                        'id'        => $args[0]['_id'],
+                                        @else
+                                        'source_id' => {{@$ref['target']->getName() . '::'}} . serialize($row['$id']),
+                                        'id'        => $args[2],
+                                        @end
+                                        'property'  => {{@$ref['property']->getName() . '.'}} . $id,
+                                    );
+                                }
+                            @else
+                                $data = array(array(
+                                    @if ($ev == "postCreate")
+                                    'source_id'     => {{@$ref['target']->getName() . '::'}} . serialize($args[0][{{@$ref['property']->getName()}}]['$id']),
+                                    'id'            => $args[0]['_id'],
+                                    @else
+                                    'source_id'     => {{@$ref['target']->getName() . '::'}} . serialize($args[0]['$set'][{{@$ref['property']->getName()}}]['$id']),
+                                    'id'            => $args[2],
+                                    @end
+                                    'property'      => {{@$ref['property']->getName()}},
+                                ));
+                            @end
+                            foreach ($data as $row) {
+                                $row['collection'] = {{@$ref['property']->getParent()->getName()}};
+                                $row['_id'] = array(
+                                    'source' => $row['source_id'], 
+                                    'target_id' => $row['id'], 
+                                    'target_col' => $row['collection'], 
+                                    'target_prop' => $row['property']
+                                );
+                                $col->save($row, array('w' => 1));
+                            }
+                        }
                     @end
                 @end
             @end
+
 
             @if ($ev == "postUpdate" && !empty($references[$collection->getClass()]))
                 @include('reference/update.tpl.php', compact('doc', 'references'))

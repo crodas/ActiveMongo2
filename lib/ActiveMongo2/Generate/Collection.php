@@ -86,7 +86,7 @@ class Collection extends Base
     {
         $properties = array();
         foreach ($this->annotation->getProperties() as $prop) {
-            $properties[] = new Property($this, $prop);
+            $properties[] = (new Property($this, $prop))->setParent($this);
         }
         return $properties;
     }
@@ -173,6 +173,14 @@ class Collection extends Base
             }
         }
         return NULL;
+    }
+
+    public function getBackReferences()
+    {
+        $all  = $this->collections->getAllReferences();
+        $name = $this->getName();
+
+        return empty($all[$name]) ? [] : $all[$name];
     }
 
     public function getRefCache()

@@ -648,75 +648,75 @@ namespace {
                     echo "\n";
                     if ($ev =="postCreate" || $ev == "postUpdate") {
                         echo "                \$col = \$args[1]->getDatabase()->references_queue;\n";
-                        foreach($references as $col => $refs) {
-                            foreach($refs as $ref) {
-                                if ($ref['class'] == $collection->getClass() && $ref['deferred']) {
-                                    if ($ev == "postCreate") {
-                                        echo "                            if (!empty(\$args[0][";
-                                        var_export($ref['property']);
-                                        echo "])) {\n";
-                                    }
-                                    else {
-                                        echo "                            if (!empty(\$args[0]['\$set'][";
-                                        var_export($ref['property']);
-                                        echo "])) {\n";
-                                    }
-                                    echo "                                /* Keep in track of the reference */\n";
-                                    if ($ref['multi']) {
-                                        echo "                                    \$data = [];\n";
-                                        if ($ev == "postCreate") {
-                                            echo "                                    foreach (\$args[0][";
-                                            var_export($ref['property']);
-                                            echo "] as \$id => \$row) {\n";
-                                        }
-                                        else {
-                                            echo "                                    foreach (\$args[0]['\$set'][";
-                                            var_export($ref['property']);
-                                            echo "] as \$id => \$row) {\n";
-                                        }
-                                        echo "                                        \$data[] = [\n";
-                                        if ($ev == "postCreate") {
-                                            echo "                                            'source_id'     => ";
-                                            var_export($ref['target'] . '::');
-                                            echo " . serialize(\$row['\$id']),\n                                            'id'            => \$args[0]['_id'],\n";
-                                        }
-                                        else {
-                                            echo "                                            'source_id'     => ";
-                                            var_export($ref['target'] . '::');
-                                            echo " . serialize(\$row['\$id']),\n                                            'id'            => \$args[2],\n";
-                                        }
-                                        echo "                                            'property'      => ";
-                                        var_export($ref['property'] . '.');
-                                        echo " . \$id,\n                                        ];\n                                    }\n";
-                                    }
-                                    else {
-                                        echo "                                    \$data = [[\n";
-                                        if ($ev == "postCreate") {
-                                            echo "                                        'source_id'     => ";
-                                            var_export($ref['target'] . '::');
-                                            echo " . serialize(\$args[0][";
-                                            var_export($ref['property']);
-                                            echo "]['\$id']),\n                                        'id'            => \$args[0]['_id'],\n";
-                                        }
-                                        else {
-                                            echo "                                        'source_id'     => ";
-                                            var_export($ref['target'] . '::');
-                                            echo " . serialize(\$args[0]['\$set'][";
-                                            var_export($ref['property']);
-                                            echo "]['\$id']),\n                                        'id'            => \$args[2],\n";
-                                        }
-                                        echo "                                        'property'      => ";
-                                        var_export($ref['property']);
-                                        echo ",\n                                ]];\n";
-                                    }
-                                    echo "                                foreach (\$data as \$row) {\n                                    \$row['collection'] = ";
-                                    var_export($ref['collection']);
-                                    echo ";\n                                    \$row['_id'] = array(\n                                        'source' => \$row['source_id'], \n                                        'target_id' => \$row['id'], \n                                        'target_col' => \$row['collection'], \n                                        'target_prop' => \$row['property']\n                                    );\n                                    \$col->save(\$row, array('w' => 1));\n                                }\n                            }\n";
+                        foreach($collection->getBackReferences() as $ref) {
+                            if ($ref['deferred']) {
+                                if ($ev == "postCreate") {
+                                    echo "                            \$check = !empty(\$args[0][";
+                                    var_export($ref['property']->getName());
+                                    echo "]);\n";
                                 }
+                                else {
+                                    echo "                            \$check = !empty(\$args[0]['\$set'][";
+                                    var_export($ref['property']->getName());
+                                    echo "]);\n";
+                                }
+                                echo "                        if (\$check) {\n";
+                                if ($ref['multi']) {
+                                    echo "                                \$data = array();\n";
+                                    if ($ev == "postCreate") {
+                                        echo "                                    \$fields = \$args[0][";
+                                        var_export($ref['property']->getName());
+                                        echo "];\n";
+                                    }
+                                    else {
+                                        echo "                                    \$fields = \$args[0]['\$set'][";
+                                        var_export($ref['property']->getName());
+                                        echo "];\n";
+                                    }
+                                    echo "                                foreach (\$fields as \$id => \$row) {\n                                    \$data[] = array(\n";
+                                    if ($ev == "postCreate") {
+                                        echo "                                        'source_id' => ";
+                                        var_export($ref['target']->getName() . '::');
+                                        echo " . serialize(\$row['\$id']),\n                                        'id'        => \$args[0]['_id'],\n";
+                                    }
+                                    else {
+                                        echo "                                        'source_id' => ";
+                                        var_export($ref['target']->getName() . '::');
+                                        echo " . serialize(\$row['\$id']),\n                                        'id'        => \$args[2],\n";
+                                    }
+                                    echo "                                        'property'  => ";
+                                    var_export($ref['property']->getName() . '.');
+                                    echo " . \$id,\n                                    );\n                                }\n";
+                                }
+                                else {
+                                    echo "                                \$data = array(array(\n";
+                                    if ($ev == "postCreate") {
+                                        echo "                                    'source_id'     => ";
+                                        var_export($ref['target']->getName() . '::');
+                                        echo " . serialize(\$args[0][";
+                                        var_export($ref['property']->getName());
+                                        echo "]['\$id']),\n                                    'id'            => \$args[0]['_id'],\n";
+                                    }
+                                    else {
+                                        echo "                                    'source_id'     => ";
+                                        var_export($ref['target']->getName() . '::');
+                                        echo " . serialize(\$args[0]['\$set'][";
+                                        var_export($ref['property']->getName());
+                                        echo "]['\$id']),\n                                    'id'            => \$args[2],\n";
+                                    }
+                                    echo "                                    'property'      => ";
+                                    var_export($ref['property']->getName());
+                                    echo ",\n                                ));\n";
+                                }
+                                echo "                            foreach (\$data as \$row) {\n                                \$row['collection'] = ";
+                                var_export($ref['property']->getParent()->getName());
+                                echo ";\n                                \$row['_id'] = array(\n                                    'source' => \$row['source_id'], \n                                    'target_id' => \$row['id'], \n                                    'target_col' => \$row['collection'], \n                                    'target_prop' => \$row['property']\n                                );\n                                \$col->save(\$row, array('w' => 1));\n                            }\n                        }\n";
+                            }
+                            else {
                             }
                         }
                     }
-                    echo "\n";
+                    echo "\n\n";
                     if ($ev == "postUpdate" && !empty($references[$collection->getClass()])) {
                         ActiveMongo2\Template\Templates::exec('reference/update.tpl.php', compact('doc', 'references'), $this->context);
                     }

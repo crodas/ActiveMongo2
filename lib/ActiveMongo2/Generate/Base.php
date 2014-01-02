@@ -43,10 +43,22 @@ abstract class Base
 {
     protected $annotation;
     protected $file;
+    protected $parent;
 
     public function isMethod()
     {
         return !empty($this->annotation['class']) && !empty($this->annotation['function']);
+    }
+
+    public function setParent(Base $p)
+    {
+        $this->parent = $p;
+        return $this;
+    }
+
+    public function getParent()
+    {
+        return $this->parent;
     }
 
     public function getAnnotation()

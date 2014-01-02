@@ -101,6 +101,59 @@ class Collections extends ArrayObject
         }
         return $this;
     }
+    
+    public function getAllProperties()
+    {
+        $all = array();
+        foreach ($this as $col) {
+            foreach ($col->getProperties() as $prop) {
+                $all[] = $prop;
+            }
+        }
+        return $all;
+    }
+
+    public function getCollectionByName($name)
+    {
+        foreach ($this as $col) {
+            if ($col->getName() == $name || $col->getClass() == strtolower($name)) {
+                return $col;
+            }
+        }
+        throw new \RuntimeException("Cannot find collection {$name}");
+    }
+
+    public function getAllReferences()
+    {
+        $refCache = $this->getReferenceCache();
+        $references = array(
+            'Reference' => false,
+            'ReferenceOne' => false,
+            'ReferenceMany' => true,
+        );
+
+        foreach ($references as $type => $multi) {
+            foreach ($this->getAllProperties() as $prop) {
+                foreach ($prop->getAnnotation()->get($type) as $ann) {
+                    $args = $ann['args'];
+                    if (!$args) {
+                        continue;
+                    }
+                    $target = $this->getCollectionByName($args[0]);
+                    $args = array_merge(empty($args[1]) ? [] : $args[1], $refCache[$target->getClass()]);
+                    $refs[$prop->getParent()->getName()][] = array(
+                        'property'  => $prop,
+                        'target'    => $target,
+                        'update'    => $args,
+                        'multi'     => $multi,
+                        'deferred'  => $prop->getAnnotation()->has('Deferred'),
+                    );
+                }
+            }
+        }
+
+        return $refs;
+    }
 
     public function getReferenceCache()
     {
