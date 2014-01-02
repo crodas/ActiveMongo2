@@ -101,6 +101,17 @@ class Collections extends ArrayObject
         }
         return $this;
     }
+
+    public function getAllPropertiesWithAnnotation($ann)
+    {
+        $all = array();
+        foreach ($this->getAllProperties() as $prop) {
+            foreach ($prop->getAnnotation()->get($ann) as $a) {
+                $all[] = [$a, $prop];
+            }
+        }
+        return $all;
+    }
     
     public function getAllProperties()
     {
@@ -133,22 +144,21 @@ class Collections extends ArrayObject
         );
 
         foreach ($references as $type => $multi) {
-            foreach ($this->getAllProperties() as $prop) {
-                foreach ($prop->getAnnotation()->get($type) as $ann) {
-                    $args = $ann['args'];
-                    if (!$args) {
-                        continue;
-                    }
-                    $target = $this->getCollectionByName($args[0]);
-                    $args = array_merge(empty($args[1]) ? [] : $args[1], $refCache[$target->getClass()]);
-                    $refs[] = array(
-                        'property'  => $prop,
-                        'target'    => $target,
-                        'update'    => $args,
-                        'multi'     => $multi,
-                        'deferred'  => $prop->getAnnotation()->has('Deferred'),
-                    );
+            foreach ($this->getAllPropertiesWithAnnotation($type) as $ann) {
+                list($ann, $prop) = $ann;
+                $args = $ann['args'];
+                if (!$args) {
+                    continue;
                 }
+                $target = $this->getCollectionByName($args[0]);
+                $args = array_merge(empty($args[1]) ? [] : $args[1], $refCache[$target->getClass()]);
+                $refs[] = array(
+                    'property'  => $prop,
+                    'target'    => $target,
+                    'update'    => $args,
+                    'multi'     => $multi,
+                    'deferred'  => $prop->getAnnotation()->has('Deferred'),
+                );
             }
         }
 
