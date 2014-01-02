@@ -65,17 +65,13 @@ class Generate
             list(, $object) = $docClass;
             $class = strtolower($object['class']);
             $refCache[$class] = [];
-            if ($object->has('RefCache')) {
-                foreach ($object->get('RefCache') as $args) {
-                    $args = $args['args'];
-                    if (empty($args)) {
-                        throw new \Exception("@RefCache expects at least one argument");
-                    }
-                    foreach ($args as $p) {
-                        $refCache[$class][] = $p;
-                    }
+            foreach ($object->get('RefCache') as $args) {
+                if (empty($args)) {
+                    throw new \Exception("@RefCache expects at least one argument");
                 }
+                $refCache[$class] = array_merge($refCache[$class], $args['args']);
             }
+            $refCache[$class] = array_unique($refCache[$class]);
         }
 
         return $refCache;
