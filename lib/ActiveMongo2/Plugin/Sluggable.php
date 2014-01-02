@@ -68,14 +68,19 @@ class Sluggable
         return substr($text, 0, 50);
     }
 
+    protected static function check($args)
+    {
+        if (count($args) != 2) {
+            throw new \RuntimeException("@Sluggable expects two arguments");
+        }
+    }
+
     /**
      *  @preUpdate
      */
     public static function updateSlugUrl($obj, Array $event_args, $conn, $args)
     {
-        if (count($args) != 2) {
-            throw new \RuntimeException("@Sluggable expects two arguments");
-        }
+        self::check($args);
         $source = $args[0];
         $target = $args[1];
 
@@ -99,9 +104,7 @@ class Sluggable
      */
     public static function setSlugUrl($obj, Array $event_args, $conn, $args)
     {
-        if (count($args) != 2) {
-            throw new \RuntimeException("@Sluggable expects two arguments");
-        }
+        self::check($args);
 
         $document = &$event_args[0];
         if (!empty($document[$args[1]])) {
