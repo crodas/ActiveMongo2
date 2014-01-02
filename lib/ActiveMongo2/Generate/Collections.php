@@ -102,12 +102,14 @@ class Collections extends ArrayObject
         return $this;
     }
 
-    public function getAllPropertiesWithAnnotation($ann)
+    public function getAllPropertiesWithAnnotation($ann, $with_arg = false)
     {
         $all = array();
         foreach ($this->getAllProperties() as $prop) {
             foreach ($prop->getAnnotation()->get($ann) as $a) {
-                $all[] = [$a, $prop];
+                if (empty($with_arg) || !empty($a['args'])) {
+                    $all[] = [$a, $prop];
+                }
             }
         }
         return $all;
@@ -144,20 +146,18 @@ class Collections extends ArrayObject
         );
 
         foreach ($references as $type => $multi) {
-            foreach ($this->getAllPropertiesWithAnnotation($type) as $ann) {
+            foreach ($this->getAllPropertiesWithAnnotation($type, true) as $ann) {
                 list($ann, $prop) = $ann;
                 $args = $ann['args'];
-                if ($args) {
-                    $target = $this->getCollectionByName($args[0]);
-                    $args = array_merge(empty($args[1]) ? [] : $args[1], $refCache[$target->getClass()]);
-                    $refs[] = array(
-                        'property'  => $prop,
-                        'target'    => $target,
-                        'update'    => $args,
-                        'multi'     => $multi,
-                        'deferred'  => $prop->getAnnotation()->has('Deferred'),
-                    );
-                }
+                $target = $this->getCollectionByName($args[0]);
+                $args = array_merge(empty($args[1]) ? [] : $args[1], $refCache[$target->getClass()]);
+                $refs[] = array(
+                    'property'  => $prop,
+                    'target'    => $target,
+                    'update'    => $args,
+                    'multi'     => $multi,
+                    'deferred'  => $prop->getAnnotation()->has('Deferred'),
+                );
             }
         }
 
