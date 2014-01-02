@@ -243,74 +243,11 @@ class Generate
         $indexes = array();
         $this->generateUniqueIndex($annotations, $indexes, $class_mapper);
 
-        $references = [];
-        $vars = [
-            'Reference' => false,
-            'ReferenceOne' => false,
-            'ReferenceMany' => true,
-        ];
-
-        foreach ($vars as $type => $multi) {
-            foreach ($annotations->get($type) as $prop) {
-                if (!$prop->isProperty()) continue;
-                foreach ($prop as $id => $ann) {
-                    if (Empty($ann['args'])) continue;
-                    $pzClass = strtolower($prop['class']);
-                    $pzArgs  = !empty($ann['args'][1]) ? $ann['args'][1] :[];
-                    if (empty($docs[$ann['args'][0]])) {
-                        // Document is not found, probably there
-                        // are inheritance
-                        foreach ($docs as $doc) {
-                            if ($doc['name'] != $ann['args'][0]) {
-                                continue;
-                            }
-                            $pxClass = $doc['class'];
-                            $pxArgs  = $pzArgs;
-                            if (!empty($refCache[$pxClass])) {
-                                $pxArgs = array_unique(array_merge($refCache[$pxClass], $pzArgs));
-                            }
-
-                            if (empty($pxArgs)) continue;
-
-                            $references[$pxClass][] = array(
-                                'class'         => $pzClass,
-                                'property'      => $prop['property'],
-                                'target'        => $class_mapper[$pxClass]['name'],
-                                'collection'    => $class_mapper[strtolower($prop['class'])]['name'],
-                                'update'        => $pxArgs,
-                                'multi'         => $multi,
-                                'deferred'      => $prop->has('Deferred'),
-                            );
-                        }
-                        continue;
-                    }
-
-                    $pxClass = $docs[$ann['args'][0]]['class'];
-
-                    if (!empty($refCache[$pxClass])) {
-                        $pzArgs = array_unique(array_merge($refCache[$pxClass], $pzArgs));
-                    }
-
-                    if (empty($pzArgs)) continue;
-
-                    $references[$pxClass][] = array(
-                        'class'         => $pzClass,
-                        'property'      => $prop['property'],
-                        'target'        => $class_mapper[$pxClass]['name'],
-                        'collection'    => $class_mapper[strtolower($prop['class'])]['name'],
-                        'update'        => $pzArgs,
-                        'multi'         => $multi,
-                        'deferred'      => $prop->has('Deferred'),
-                    );
-                }
-            }
-        }   
-
         $self = $this;
         $code = Template\Templates::get('documents')
             ->render(array_merge(compact(
                 'docs', 'namespace',
-                'mapper', 'indexes', 'self', 'references',
+                'mapper', 'indexes', 'self',
                 'refCache',  'collections'
             ), $hooks), true);
 

@@ -175,12 +175,20 @@ class Collection extends Base
         return NULL;
     }
 
+    public function getForwardReferences()
+    {
+        $self = $this;
+        return array_filter($this->collections->getAllReferences(), function($obj) use ($self) {
+            return $obj['target'] == $self;
+        });
+    }
+
     public function getBackReferences()
     {
-        $all  = $this->collections->getAllReferences();
-        $name = $this->getName();
-
-        return empty($all[$name]) ? [] : $all[$name];
+        $self = $this;
+        return array_filter($this->collections->getAllReferences(), function($obj) use ($self) {
+            return $obj['property']->getParent() == $self;
+        });
     }
 
     public function getRefCache()

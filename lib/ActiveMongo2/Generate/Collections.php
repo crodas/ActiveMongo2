@@ -141,7 +141,7 @@ class Collections extends ArrayObject
                     }
                     $target = $this->getCollectionByName($args[0]);
                     $args = array_merge(empty($args[1]) ? [] : $args[1], $refCache[$target->getClass()]);
-                    $refs[$prop->getParent()->getName()][] = array(
+                    $refs[] = array(
                         'property'  => $prop,
                         'target'    => $target,
                         'update'    => $args,
