@@ -39,7 +39,7 @@ namespace ActiveMongo2\Plugin;
 use Notoj\Annotation;
 
 /** 
- * @Persist(table="_autoincrement") 
+ * @Persist(collection="_autoincrement") 
  * @Plugin("Autoincrement")
  */
 class Autoincrement

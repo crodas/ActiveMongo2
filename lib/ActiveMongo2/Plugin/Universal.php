@@ -39,7 +39,7 @@ namespace ActiveMongo2\Plugin;
 use Notoj\Annotation;
 use ActiveMongo2\Runtime\Utils;
 
-/** @Persist(table="universal") */
+/** @Persist(collection="universal") */
 class UniversalDocument
 {
     /** @Id */
@@ -63,6 +63,7 @@ class Universal
         if (!empty($annotation_args['set_id']) && !empty($annotation_args['auto_increment'])) {
             $args[0]['_id'] = Autoincrement::getId($conn, __NAMESPACE__ . "\\UniversalDocument");
         }
+        return true;
     }
 
     /**

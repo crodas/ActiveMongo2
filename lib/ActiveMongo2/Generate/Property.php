@@ -34,32 +34,111 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
+namespace ActiveMongo2\Generate;
 
-namespace ActiveMongo2\Plugin;
+use Notoj\Annotation;
+use ActiveMongo2\Generate;
 
-use ActiveMongo2\Plugin\Autoincrement;
-use ActiveMongo2\DocumentProxy;
-
-/** @DefaultValue(AutoincrementBy) */
-function __autoincrement_field(Array $docs, Array $rargs, $conn, Array $args)
+class Property extends Base
 {
-    if (empty($args)) {
-        throw new \Exception("@DefaultType expects at least one argument");
-    }
-    $ns = [];
-    foreach ($args as $value) {
-        if (empty($docs[$value])) {
-            throw new \Exception("Cannot find {$value} property");
-        }
-        $ns[$value] = $docs[$value];
-        if ($ns[$value] instanceof DocumentProxy) {
-            $ns[$value] = $ns[$value]->getObject();
-        }
-        if (is_object($ns[$value])) {
-            // remove silly 
-            $ns[$value] = $conn->cloneDocument($ns[$value]);
-        }
+    protected $collection;
+
+    public function __construct(Collection $col, Annotation $prop)
+    {
+        $this->collection = $col;
+        $this->annotation = $prop;
     }
 
-    return Autoincrement::getId($conn, json_encode($ns));
+    public function isId()
+    {
+        return $this->annotation->has('Id');
+    }
+
+    public function getPHPName()
+    {
+        return $this->annotation['property'];
+    }
+
+    public function isPublic()
+    {
+        return in_array('public', $this->annotation['visibility']);
+    }
+
+    public function getDefault() 
+    {
+        $defaults = array();
+        foreach ($this->collection->getDefaults() as $name => $type) {
+            if ($this->annotation->has($name)) {
+                $defaults[] = $type;
+                $type->name = $name;
+            }
+        }
+        return $defaults;
+    }
+
+    public function getProperty()
+    {
+        return $this->annotation['property'];
+    }
+
+    public function getType()
+    {
+        return $this->getCallback('getTypes');
+    }
+
+    protected function getCallback($filter)
+    {
+        $types = array();
+        foreach ($this->collection->$filter() as $name => $type) {
+            if ($this->annotation->has($name)) {
+                $types[] = $type;
+            }
+        }
+        return $types;
+    }
+
+    public function getValidators()
+    {
+        return $this->getCallback('getValidators');
+    }
+
+    public function getHydratations()
+    {
+        return $this->getCallback('getHydratators');
+    }
+
+    public function __toString()
+    {
+        return $this->getName();
+    }
+
+    public function getPHPBaseVariable($prefix = '$doc')
+    {
+        if (!$this->isId() && $this->collection->isGridFS()) {
+            $prefix = $prefix . '["metadata"]';
+        }
+        return $prefix;
+    }
+
+    public function getPHPVariable($prefix = '$doc')
+    {
+        $prefix = $this->getPHPBaseVariable($prefix);
+        return $prefix . "[" . var_export($this->getName(), true) . "]";
+    }
+
+    public function getName($prefix = false)
+    {
+        if ($this->isId()) {
+            return '_id';
+        }
+
+        $property = $this->getPHPName();
+
+        if ($prefix && $this->collection->isGridFs()) {
+            // It is an special case
+            $property = "metadata.$property";
+        }
+        return $property;
+    }
+
 }

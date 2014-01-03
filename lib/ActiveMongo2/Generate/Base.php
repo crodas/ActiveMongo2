@@ -35,31 +35,88 @@
   +---------------------------------------------------------------------------------+
 */
 
-namespace ActiveMongo2\Plugin;
+namespace ActiveMongo2\Generate;
 
-use ActiveMongo2\Plugin\Autoincrement;
-use ActiveMongo2\DocumentProxy;
+use Notoj\Annotation\AnnClass;
 
-/** @DefaultValue(AutoincrementBy) */
-function __autoincrement_field(Array $docs, Array $rargs, $conn, Array $args)
+abstract class Base
 {
-    if (empty($args)) {
-        throw new \Exception("@DefaultType expects at least one argument");
-    }
-    $ns = [];
-    foreach ($args as $value) {
-        if (empty($docs[$value])) {
-            throw new \Exception("Cannot find {$value} property");
-        }
-        $ns[$value] = $docs[$value];
-        if ($ns[$value] instanceof DocumentProxy) {
-            $ns[$value] = $ns[$value]->getObject();
-        }
-        if (is_object($ns[$value])) {
-            // remove silly 
-            $ns[$value] = $conn->cloneDocument($ns[$value]);
-        }
+    protected $annotation;
+    protected $file;
+    protected $parent;
+
+    public function isMethod()
+    {
+        return !empty($this->annotation['class']) && !empty($this->annotation['function']);
     }
 
-    return Autoincrement::getId($conn, json_encode($ns));
+    public function setParent(Base $p)
+    {
+        $this->parent = $p;
+        return $this;
+    }
+
+    public function getParent()
+    {
+        return $this->parent;
+    }
+
+    public function getAnnotation()
+    {
+        return $this->annotation;
+    }
+
+    public function getClass()
+    {
+        return strtolower($this->annotation['class']);
+    }
+
+    public function isPublic()
+    {
+        return in_array('public', $this->annotation['visibility']);
+    }
+
+    public function isStatic()
+    {
+        return in_array('static', $this->annotation['visibility']);
+    }
+
+    public function isAbstract()
+    {
+        return in_array('abstract', $this->annotation['visibility']);
+    }
+
+    public function getMethodsByAnnotation($ann)
+    {
+        if (!$this->isClass()) {
+            throw new \RuntimeException("Invalid call, it is not a class");
+        }
+
+        $methods = array();
+        foreach ($this->annotation->getMethods() as $method) {
+            if ($method->has($ann)) {
+                $method = new Type($method, $ann);
+                $method->setPath($this->getPath());
+                $methods[] = $method;
+            }
+        }
+        return $methods;
+    }
+
+    public function isClass()
+    {
+        return $this->annotation instanceof AnnClass;
+    }
+
+
+    public function setPath($file)
+    {
+        $this->file = $file;
+        return $this;
+    }
+
+    public function getPath()
+    {
+        return $this->file ?: $this->annotation['file'];
+    }
 }

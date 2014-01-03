@@ -34,32 +34,38 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
+namespace ActiveMongo2\Generate;
 
-namespace ActiveMongo2\Plugin;
+use Notoj\Annotation;
+use ActiveMongo2\Template\Templates;
 
-use ActiveMongo2\Plugin\Autoincrement;
-use ActiveMongo2\DocumentProxy;
-
-/** @DefaultValue(AutoincrementBy) */
-function __autoincrement_field(Array $docs, Array $rargs, $conn, Array $args)
+class Type extends Base
 {
-    if (empty($args)) {
-        throw new \Exception("@DefaultType expects at least one argument");
-    }
-    $ns = [];
-    foreach ($args as $value) {
-        if (empty($docs[$value])) {
-            throw new \Exception("Cannot find {$value} property");
-        }
-        $ns[$value] = $docs[$value];
-        if ($ns[$value] instanceof DocumentProxy) {
-            $ns[$value] = $ns[$value]->getObject();
-        }
-        if (is_object($ns[$value])) {
-            // remove silly 
-            $ns[$value] = $conn->cloneDocument($ns[$value]);
-        }
+    protected $file;
+    protected $type;
+
+    public function __construct(Annotation $ann, $type)
+    {
+        $this->annotation = $ann;
+        $this->type       = $type;
+        $this->name       = $type;
     }
 
-    return Autoincrement::getId($conn, json_encode($ns));
+    public function getFunction()
+    {
+        return $this->annotation['function'];
+    }
+
+    public function getMethod()
+    {
+        return $this->getFunction();
+    }
+
+    public function toCode($prop, $var = '$doc')
+    {
+        $self = $this;
+        $args = (array)$prop->annotation->getOne($this->name);
+        return Templates::get('callback')
+            ->render(compact('args', 'prop', 'self', 'var'), true);
+    }
 }

@@ -124,7 +124,7 @@ class Reference implements DocumentProxy, \JsonSerializable
         }
     }
 
-    public function __get($name)
+    protected function __getCachedValue($name)
     {
         if (array_key_exists($name, $this->map)) {
             $expected = $this->map[$name];
@@ -142,6 +142,15 @@ class Reference implements DocumentProxy, \JsonSerializable
                 // avoid one query!
                 return $this->ref['$id'];
             }
+        }
+        return FALSE;
+    }
+
+    public function __get($name)
+    {
+        $cached = $this->__getCachedValue($name);
+        if ($cached !== FALSE) {
+            return $cached;
         }
 
         $this->_loadDocument();

@@ -2,7 +2,7 @@
     "name": "crodas/activemongo2",
     "description": "Mongo abstraction",
     "require": {
-        "crodas/notoj": "~0.1",
+        "crodas/notoj": ">=0.1.12",
         "crodas/simple-view-engine": "~0.1",
         "crodas/watch-files": "~0.1",
         "crodas/path": "~0.1",

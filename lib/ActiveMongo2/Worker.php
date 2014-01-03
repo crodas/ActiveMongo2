@@ -34,32 +34,66 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
+namespace ActiveMongo2;
 
-namespace ActiveMongo2\Plugin;
-
-use ActiveMongo2\Plugin\Autoincrement;
-use ActiveMongo2\DocumentProxy;
-
-/** @DefaultValue(AutoincrementBy) */
-function __autoincrement_field(Array $docs, Array $rargs, $conn, Array $args)
+class Worker
 {
-    if (empty($args)) {
-        throw new \Exception("@DefaultType expects at least one argument");
-    }
-    $ns = [];
-    foreach ($args as $value) {
-        if (empty($docs[$value])) {
-            throw new \Exception("Cannot find {$value} property");
-        }
-        $ns[$value] = $docs[$value];
-        if ($ns[$value] instanceof DocumentProxy) {
-            $ns[$value] = $ns[$value]->getObject();
-        }
-        if (is_object($ns[$value])) {
-            // remove silly 
-            $ns[$value] = $conn->cloneDocument($ns[$value]);
-        }
+    protected $conn;
+    protected $refs;
+    protected $queue;
+    protected $db;
+
+    public function __construct(Connection $conn)
+    {
+        $this->conn  = $conn;
+        $this->db    = $conn->getDatabase();
+        $this->queue = $this->db->deferred_queue;
+        $this->refs  = $this->db->references_queue;
     }
 
-    return Autoincrement::getId($conn, json_encode($ns));
+    protected function getTasks()
+    {
+        return $this->queue->findAndModify(
+            ['processed' => false], 
+            ['$set' => ['processed' => true, 'started' => new \MongoDate]], 
+            null, 
+            ['sort' => ['$natural' => -1]]
+        );
+    }
+
+    protected function doTask($task, $all)
+    {
+        $done = 0;
+        foreach ($all as $row) {
+            $update = $task['update'];
+            foreach ($update as $op => $fields) {
+                foreach ($fields as $field => $value) {
+                    unset($update[$op][$field]);
+                    $update[$op][$row['property'] . '.' . $field] = $value;
+                }
+            }
+            $col = $this->db->{$row['collection']};
+            $col->update(
+                ['_id' => $row['id']],
+                $update
+            );
+            $done++;
+        }
+        $this->queue->remove(['_id' => $task['_id']]);
+        return $done;
+    }
+
+    public function main()
+    {
+        $done = 0;
+        do {
+            $work = $this->getTasks();
+            if (empty($work)) {
+                break;
+            }
+            $done += $this->doTask($work, $this->refs->find(['source_id' => $work['source_id']]));
+
+        } while(true);
+        return $done;
+    }
 }

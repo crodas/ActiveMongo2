@@ -44,29 +44,29 @@ require_once __DIR__ . "/Common.php";
 /**
  *  @Hydratate(ReferenceMany)
  */
-function _hydratate_reference_many(&$value, Array $args, $conn, $mapper)
+function _hydratate_reference_many(&$value, Array $args, $conn, $unused, $mapper)
 {
     foreach ((array)$value as $id => $val) {
-        _hydratate_reference_one($value[$id], $args, $conn, $mapper);
+        _hydratate_reference_one($value[$id], $args, $conn, $unused, $mapper);
     }
 }
 
 /**
  *  @Validate(ReferenceMany)
  */
-function _validate_reference_many(&$value, Array $args, $conn, $mapper)
+function _validate_reference_many(&$value, Array $zargs, $conn, $args, $mapper)
 {
     if (!is_array($value)) {
         return false;
     }
 
     foreach ($value as $id => $val) {
-        if (!_validate_reference_one($value[$id], $args, $conn, $mapper)) {
+        if (!_validate_reference_one($value[$id], $zargs, $conn, $args, $mapper)) {
             return false;
         }
     }
 
-    return _validate_array($value, $args, $conn, $mapper);
+    return _validate_array($value, $zargs, $conn, $args, $mapper);
 }
 
 
@@ -74,7 +74,7 @@ function _validate_reference_many(&$value, Array $args, $conn, $mapper)
  *  @Hydratate(Reference)
  *  @Hydratate(ReferenceOne)
  */
-function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
+function _hydratate_reference_one(&$value, Array $args, $conn, $unused, $mapper)
 {
     $expected = current($args);
     if ($expected && $expected != $value['$ref'] && !empty($value['__class']) && $expected != $value['__class']) {
@@ -97,7 +97,7 @@ function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
  *  @Validate(Reference)
  *  @Validate(ReferenceOne)
  */
-function _validate_reference_one(&$value, Array $args, $conn, $mapper)
+function _validate_reference_one(&$value, Array $rargs, $conn, $args, $mapper)
 {
     if ($value instanceof Reference) {
         $value = $value->getObjectOrReference();

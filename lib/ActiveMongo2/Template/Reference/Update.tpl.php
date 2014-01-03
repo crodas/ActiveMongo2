@@ -1,29 +1,27 @@
-// <?php
-// update all the references!
-@foreach ($references[$doc['class']] as $ref)
-    // update {{$doc['name']}} references in  {{$ref['collection']}} 
-    $replicate = array();
-    $target_id = array();
-    @if ($ref['deferred']) 
+@set($deferred_done, false)
+@foreach ($collection->getForwardReferences() as $ref)
+    // update {{$collection->getName()}} references in  {{$ref['property']->getParent()->getName()}} 
+    @if ($ref['deferred'])
         @if (!empty($deferred_done))
             @continue
         @end
-        @set($deferred_done, true)
     @end
+    
+    $replicate = array();
+    @set($deferred_done, true)
     foreach ($args[0] as $operation => $values) {
         @foreach ($ref['update'] as $field)
             if (!empty($values[{{@$field}}])) {
                 @if ($ref['deferred'])
                     $replicate[$operation][{{@$field}}]  = $values[{{@$field}}];
                 @elif ($ref['multi'])
-                    $replicate[$operation][{{@$ref['property'].'.$.'.$field}}] = $values[{{@$field}}];
+                    $replicate[$operation][{{@$ref['property']->getName().'.$.'.$field}}] = $values[{{@$field}}];
                 @else
-                    $replicate[$operation][{{@$ref['property'].'.'.$field}}] = $values[{{@$field}}];
+                    $replicate[$operation][{{@$ref['property']->getName().'.'.$field}}] = $values[{{@$field}}];
                 @end
             }
         @end
     }
-
 
     @if ($ref['deferred']) 
         if (!empty($replicate)) {
@@ -32,28 +30,27 @@
                 'update'    => $replicate,
                 'processed' => false,
                 'created'   => new \DateTime,
-                'source_id' => {{@$doc['name'].'::'}}  . serialize($args[2]),
+                'source_id' => {{@$collection->getName().'::'}}  . serialize($args[2]),
                 'type'      => array(
-                    'source'    => {{@$doc['name']}},
-                    'target'    => {{@$ref['collection']}},
+                    'source'    => {{@$collection->getName()}},
+                    'target'    => {{@$ref['property']->getParent()->getName()}},
                 ),
             );
             $args[1]
                 ->getDatabase()
                 ->deferred_queue
                 ->save($data, array('w' => 0));
-
         }
         @continue
     @end
 
     if (!empty($replicate)) {
         // do the update
-        $args[1]->getCollection({{@$ref['collection']}})
+        $args[1]->getCollection({{@$ref['property']->getParent()->getName()}})
             ->update([
-                '{{$ref['property']}}.$id' => $args[2]], 
+                '{{$ref['property']->getName()}}.$id' => $args[2]], 
                 $replicate, 
                 ['w' => 0, 'multi' => true]
-            );
+        );
     }
 @end
