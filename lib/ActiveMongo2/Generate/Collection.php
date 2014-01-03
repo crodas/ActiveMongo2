@@ -221,6 +221,16 @@ class Collection extends Base
         return $name;
     }
 
+    public function getValidators()
+    {
+        return $this->collections->getValidators();
+    }
+
+    public function getHydratators()
+    {
+        return $this->collections->getHydratators();
+    }
+
     public function getAnnotation()
     {
         return $this->annotation;

@@ -83,8 +83,13 @@ class Property extends Base
 
     public function getType()
     {
+        return $this->getCallback('getTypes');
+    }
+
+    protected function getCallback($filter)
+    {
         $types = array();
-        foreach ($this->collection->getTypes() as $name => $type) {
+        foreach ($this->collection->$filter() as $name => $type) {
             if ($this->annotation->has($name)) {
                 $types[] = $type;
             }
@@ -92,12 +97,32 @@ class Property extends Base
         return $types;
     }
 
-    public function getPHPVariable()
+    public function getValidators()
     {
-        $prefix = '$doc';
+        return $this->getCallback('getValidators');
+    }
+
+    public function getHydratations()
+    {
+        return $this->getCallback('getHydratators');
+    }
+
+    public function __toString()
+    {
+        return $this->getName();
+    }
+
+    public function getPHPBaseVariable($prefix = '$doc')
+    {
         if (!$this->isId() && $this->collection->isGridFS()) {
-            $prefix = '$doc["metadata"]';
+            $prefix = $prefix . '["metadata"]';
         }
+        return $prefix;
+    }
+
+    public function getPHPVariable($prefix = '$doc')
+    {
+        $prefix = $this->getPHPBaseVariable($prefix);
         return $prefix . "[" . var_export($this->getName(), true) . "]";
     }
 

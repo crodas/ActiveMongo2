@@ -47,97 +47,10 @@ class Generate
     protected $files = array();
     protected $config;
 
-    public function getParentClasses($annotations)
-    {
-        $parents = [];
-        foreach ($annotations->get('Persist') as $object) {
-            if (!$object->isClass()) continue;
-            $class = strtolower($object['class']);
-            $parents[$class]  = $object;
-        }
-        return $parents;
-    }
-
-    protected function loadAnnotations()
-    {
-        $annotations  = new Notoj\Annotations;
-        foreach ($this->config->getModelPath() as $path) {
-            $dir = new Notoj\Dir($path);
-            $dir->getAnnotations($annotations);
-            $this->files = array_merge($this->files, $dir->getFiles());
-        }
-
-        foreach (array('Filter', 'Plugin') as $d) {
-            $dir = new Notoj\Dir(__DIR__ . "/$d");
-            $dir->getAnnotations($annotations);
-        }
-
-        return $annotations;
-    }
-
-    protected function checkingGridFsStream($object)
-    {
-        if (!$object->has('GridFs')) {
-            foreach ($object->getProperties() as $prop) {
-                if ($prop->has('Stream')) {
-                    throw new \RuntimeException('@Stream nly works with @GridFS');
-                }
-            }
-        }
-    }
-
-    protected function getDocumentClasses($annotations)
-    {
-        $return = [];
-
-        foreach (array('Persist', 'Embeddable') as $type) {
-            foreach ($annotations->get($type) as $object) {
-                if ($object->isClass()) {
-                    $this->checkingGridFsStream($object);
-                    $return[] = [$type, $object];
-                }
-            }
-        }
-
-        return $return;
-    }
-
-    protected function getCallback($annotation)
-    {
-        if ($annotation->isMethod()) {
-            $function = "\\" . $annotation['class'] . "::" . $annotation['function'];
-        } else if ($annotation->isFunction()) {
-            $function = "\\" . $annotation['function'];
-        }
-
-        return $function;
-    }
-
-    protected function generateHooks($types, $annotations)
-    {
-        $files = array();
-        foreach ($types as $operation => $var) {
-            $$var = array();
-            foreach ($annotations->get($operation) as $validator) {
-                foreach ($validator->get($operation) as $val) {
-                    $type = current($val['args']);
-                    if (!empty($type)) {
-                        $return[$var][$type] = $this->GetCallback($validator);
-                        $files[$type] = $this->getRelativePath($validator['file']);
-                    }
-                }
-            }
-        }
-        $return['files'] = $files;
-
-        return $return;
-    }
-
     public function __construct(Configuration $config, Watch $watcher)
     {
         $this->files  = array();
         $this->config = $config;
-        $annotations  = $this->loadAnnotations();
 
         $collections = new Generate\Collections((array)$config->getModelPath(), $this);
         $fixPath = function($value) {
@@ -147,90 +60,19 @@ class Generate
         array_map($fixPath, $collections->getDefaults());
         array_map($fixPath, $collections->getTypes());
         array_map($fixPath, $collections->getPlugins());
-
-        $parents  = $this->getParentClasses($annotations); 
-
-        foreach ($this->getDocumentClasses($annotations) as $docClass) {
-            list($type, $object) = $docClass;
-            $parent = $object->getParent();
-
-            $data = array(
-                'class' => strtolower($object['class']), 
-                'file'  => $this->getRelativePath($object['file']),
-                'annotation' => $object,
-                'is_gridfs'  => $object->has('GridFs'),
-                'parent'     => $parent ? strtolower($parent['class']) : NULL,
-            );
-
-            if ($object->has('SingleCollection')) {
-                $data['disc'] = $object->getOne('SingleCollection') ?: ['__type'];
-                $data['disc'] = current($data['disc']);
-            }
-
-            foreach ($object->get($type) as $ann) {
-                $data['name'] = $ann['args'] ? current($ann['args']) : null;
-                while ($parent) {
-                    $class = strtolower($parent['class']);
-                    if (!empty($parents[$class])) {
-                        if ($parents[$class]->has('SingleCollection') || empty($data['name'])) {
-                            $data['name'] = current($parents[$class]->getOne('Persist'));
-                            $data['disc'] = $parents[$class]->getOne('SingleCollection') ?: ['__type'];
-                            $data['disc'] = current($data['disc']);
-                        }
-                    } else {
-                        // Exception to the rule, the parent class
-                        // doesn't have any @Persist
-                        $docs[$parent['class']] = array(
-                            'class' => strtolower($parent['class']),
-                            'is_gridfs' => false,
-                            'name'      => sha1($parent['class']),
-                            'annotation' => $parent,
-                            'file'       => $this->getRelativePath($parent['file']),
-                            'parent'    => ($p = $parent->getParent()) ? strtolower($p['class']) : NULL,
-                        );
-                    }
-                    $parent = $parent->GetParent();
-                } 
-
-                if (empty($data['name'])) {
-                    if ($data['is_gridfs']) {
-                        $data['name'] = 'fs';
-                    } else {
-                        $data['name'] = explode("\\", $data['class']);
-                        $data['name'] = strtolower(end($data['name']));
-                    }
-                }
-
-                if (!empty($data['disc'])) {
-                    // give them some weird name
-                    if (empty($docs[$data['name']])) {
-                        $docs[$data['name']] = $data;
-                    } else {
-                        $docs[$data['class']] = $data;
-                    }
-                } else {
-                    $docs[$data['name']] = $data;
-                }
-            }
-        }
-
-        $hookTypes  = [
-            'Validate' => 'validators', 'Hydratate' => 'hydratations',
-            'DefaultValue' => 'defaults',
-        ];
-        $hooks = $this->generateHooks($hookTypes, $annotations);
+        array_map($fixPath, $collections->getHydratators());
+        array_map($fixPath, $collections->getValidators());
 
         $target       = $config->getLoader();
         $namespace    = sha1($target);
-        $class_mapper = $this->getClassMapper($docs);
 
         $self = $this;
         $code = Template\Templates::get('documents')
-            ->render(array_merge(compact(
+            ->render(compact(
                 'docs', 'namespace',
                 'mapper', 'indexes', 'self',
                 'collections'
-            ), $hooks), true);
+            ), true);
 
         File::write($target, FixCode::fix($code));
         $this->files = array_unique($this->files);
@@ -250,17 +92,11 @@ class Generate
             $dir2 = $this->config->getLoader();
         }
 
-        return Path::getRelative($dir1, $dir2);
-    }
-
-    public function getClassMapper(Array $map)
-    {
-        $docs = array();
-        foreach ($map as $doc) {
-            unset($doc['annotation']);
-            $docs[$doc['class']] = $doc;
+        if (substr($dir1, 0, 4) == "/../") {
+            // already relative path
+            return $dir1;
         }
 
-        return $docs;
+        return Path::getRelative($dir1, $dir2);
     }
 }

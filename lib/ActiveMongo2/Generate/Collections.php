@@ -110,6 +110,14 @@ class Collections extends ArrayObject
             $index['extra']  = array("unique" => true);
             $indexes[] = $index;
         }
+
+        foreach ($this->getAllPropertiesWithAnnotation('Index') as $prop) {
+            $index['prop']  = $prop[1];
+            $index['field'] = array($prop[1]->getName() => 1);
+            $index['extra']  = array();
+            $indexes[] = $index;
+        }
+
         return $indexes;
     }
 
@@ -210,6 +218,25 @@ class Collections extends ArrayObject
         }
         return $anns;
     }
+
+    public function getHydratators()
+    {
+        static $h = array();
+        if (empty($h)) {
+            $h = $this->getAnnotationByName('Hydratate');
+        }
+        return $h;
+    }
+
+    public function getValidators()
+    {
+        static $h = array();
+        if (empty($h)) {
+            $h = $this->getAnnotationByName('Validate');
+        }
+        return $h;
+    }
+
 
     public function getPlugins()
     {

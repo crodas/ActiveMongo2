@@ -62,26 +62,26 @@ function _populate_embed_many(&$value, $args, $conn, $mapper)
 /**
  *  @Validate(EmbedMany)
  */
-function _do_embed_many(&$value, $args, $conn, $mapper)
+function _do_embed_many(&$value, $zargs, $conn, $args, $mapper)
 {
     if (!is_array($value)) {
         return false;
     }
 
     foreach ($value as $id => $val) {
-        if (!_do_embed_one($value[$id], $args, $conn, $mapper)) {
+        if (!_do_embed_one($value[$id], $zargs, $conn, $args, $mapper)) {
             return false;
         }
     }
 
-    return _validate_array($value, $args, $conn, $mapper);
+    return _validate_array($value, $zargs, $conn, $args, $mapper);
 }
 
 /**
  *  @Validate(EmbedOne)
  *  @Validate(Embed)
  */
-function _do_embed_one(&$value, $args, $conn, $mapper)
+function _do_embed_one(&$value, $zargs, $conn, $args, $mapper)
 {
     if (!is_object($value)) {
         return false;

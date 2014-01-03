@@ -300,8 +300,7 @@ class Mapper
         @end
     }
 
-    @foreach($docs as $doc)
-        @set($collection, $collections[$doc['class']])
+    @foreach ($collections as $collection)
 
     /**
      *  Get update object {{$collection->getClass()}} 
@@ -318,67 +317,53 @@ class Mapper
             $change = $this->update_{{sha1($collection->getParent())}}($current, $old, $embed);
         @end
 
-        @foreach ($doc['annotation']->getProperties() as $prop)
-            @set($docname, $prop['property'])
-            @set($propname, $prop['property'])
-            @set($current, "current")
-            @if ($prop->has('Id'))
-                @set($propname, '_id')
-            @end
-
-            @if ($doc['is_gridfs'])
-                // GridFS collection detected! it is special :-)
-                @set($current, "current['metadata']")
-                @set($docname, "metadata." . $propname)
-            @end
-
-            if (array_key_exists({{@$propname}}, ${{$current}})
-                || array_key_exists({{@$propname}}, $old)) {
-
-                if (!array_key_exists({{@$propname}}, ${{$current}})) {
-                    $change['$unset'][{{@$docname}}] = 1;
-                } else if (!array_key_exists({{@$propname}}, $old)) {
-                    $change['$set'][{{@$docname}}] = ${{$current}}[{{@$propname}}];
-                } else if (${{$current}}[{{@$propname}}] !== $old[{{@$propname}}]) {
-                    @if ($prop->has('Inc'))
-                        if (empty($old[{{@$propname}}])) {
+        @foreach ($collection->getProperties() as $prop)
+            if (array_key_exists({{@$prop.''}}, {{$prop->getPHPBaseVariable('$current')}})
+                || array_key_exists({{@$prop.''}}, $old)) {
+                if (!array_key_exists({{@$prop.''}}, {{$prop->getPHPBaseVariable('$current')}})) {
+                    $change['$unset'][{{@$prop.''}}] = 1;
+                } else if (!array_key_exists({{@$prop.''}}, $old)) {
+                    $change['$set'][{{@$prop.''}}] = {{$prop->getPHPVariable('$current')}};
+                } else if ({{$prop->getPHPVariable('$current')}} !== $old[{{@$prop.''}}]) {
+                    @if ($prop->getAnnotation()->has('Inc'))
+                        if (empty($old[{{@$prop.''}}])) {
                             $prev = 0;
                         } else {
-                            $prev = $old[{{@$propname}}];
+                            $prev = $old[{{@$prop.''}}];
                         }
-                        $change['$inc'][{{@$docname}}] = ${{$current}}[{{@$propname}}] - $prev;
-                    @elif ($prop->has('Embed'))
-                        if (${{$current}}[{{@$propname}}]['__embed_class'] != $old[{{@$propname}}]['__embed_class']) {
-                            $change['$set'][{{@$docname.'.'}} . $index] = ${{$current}}[{{@$propname}}];
+                        $change['$inc'][{{@$prop.''}}] = {{$prop->GetPHPVariable('$current')}} - $prev;
+                    @elif ($prop->getAnnotation()->has('Embed'))
+                        if ({{$prop->getPHPVariable('$current')}}['__embed_class'] != $old[{{@$prop.''}}]['__embed_class']) {
+                            $change['$set'][{{@$prop.'.'}} . $index] = {{$prop->GetPHPVariable('$current')}};
                         } else {
-                            $update = 'update_' . sha1(${{$current}}[{{@$propname}}]['__embed_class']);
-                            $diff = $this->$update(${{$current}}[{{@$propname}}], $old[{{@$propname}}], true);
+                            $update = 'update_' . sha1({{$prop->getPHPVariable('$current')}}['__embed_class']);
+                            $diff = $this->$update({{$prop->getPHPVariable('$current')}}, $old[{{@$prop.''}}], true);
                             foreach ($diff as $op => $value) {
                                 foreach ($value as $p => $val) {
-                                    $change[$op][{{@$docname.'.'}} . $p] = $val;
+                                    $change[$op][{{@$prop.'.'}} . $p] = $val;
                                 }
                             }
                         }
-                    @elif ($prop->has('EmbedMany'))
+                    @elif ($prop->getAnnotation()->has('EmbedMany'))
                         // add things to the array
-                        $toRemove = array_diff_key($old[{{@$propname}}], ${{$current}}[{{@$propname}}]);
+                        $toRemove = array_diff_key($old[{{@$prop.''}}], {{$prop->getPHPVariable('$current')}});
 
-                        if (count($toRemove) > 0 && $this->array_unique($old[{{@$propname}}], $toRemove)) {
-                            $change['$set'][{{@$docname}}] = array_values(${{$current}}[{{@$propname}}]);
+                        if (count($toRemove) > 0 && $this->array_unique($old[{{@$prop.''}}], $toRemove)) {
+                            $change['$set'][{{@$prop.''}}] = array_values({{$prop->getPHPVariable('$current')}});
                         } else {
-                            foreach (${{$current}}[{{@$propname}}] as $index => $value) {
-                                if (!array_key_exists($index, $old[{{@$propname}}])) {
-                                    $change['$push'][{{@$docname}}] = $value;
+                            foreach ({{$prop->getPHPVariable('$current')}} as $index => $value) {
+                                if (!array_key_exists($index, $old[{{@$prop.''}}])) {
+                                    $change['$push'][{{@$prop.''}}] = $value;
                                     continue;
                                 }
-                                if ($value['__embed_class'] != $old[{{@$propname}}][$index]['__embed_class']) {
-                                    $change['$set'][{{@$docname.'.'}} . $index] = $value;
+                                if ($value['__embed_class'] != $old[{{@$prop.''}}][$index]['__embed_class']) {
+                                    $change['$set'][{{@$prop.'.'}} . $index] = $value;
                                 } else {
                                     $update = 'update_' . sha1($value['__embed_class']);
-                                    $diff = $this->$update($value, $old[{{@$propname}}][$index], true);
+                                    $diff = $this->$update($value, $old[{{@$prop.''}}][$index], true);
                                     foreach ($diff as $op => $value) {
                                         foreach ($value as $p => $val) {
-                                            $change[$op][{{@$docname.'.'}} . $index . '.' . $p] = $val;
+                                            $change[$op][{{@$prop.'.'}} . $index . '.' . $p] = $val;
                                         }
                                     }
                                 }
@@ -386,63 +371,59 @@ class Mapper
 
                             foreach ($toRemove as $value) {
                                 if (!empty($value['__instance'])) {
-                                    $change['$pull'][{{@$docname}}]['__instance']['$in'][] = $value['__instance'];
+                                    $change['$pull'][{{@$prop.''}}]['__instance']['$in'][] = $value['__instance'];
                                 } else {
-                                    $change['$pull'][{{@$docname}}][] = $value;
+                                    $change['$pull'][{{@$prop.''}}][] = $value;
                                 }
                             }
                         }
-
-
-
-                    @elif ($prop->has('ReferenceMany') || $prop->has('Array'))
+                    @elif ($prop->getAnnotation()->has('ReferenceMany') || $prop->getAnnotation()->has('Array'))
                         // add things to the array
-                        $toRemove = array_diff_key($old[{{@$propname}}], ${{$current}}[{{@$propname}}]);
+                        $toRemove = array_diff_key($old[{{@$prop.''}}], {{$prop->getPHPVariable('$current')}});
 
-                        if (count($toRemove) > 0 && $this->array_unique($old[{{@$propname}}], $toRemove)) {
-                            $change['$set'][{{@$docname}}] = array_values(${{$current}}[@{{$propname}}]);
+                        if (count($toRemove) > 0 && $this->array_unique($old[{{@$prop.''}}], $toRemove)) {
+                            $change['$set'][{{@$prop.''}}] = array_values({{$prop->getPHPVariable('$current')}});
                         } else {
-                            foreach (${{$current}}[{{@$propname}}] as $index => $value) {
-                                if (!array_key_exists($index, $old[{{@$propname}}])) {
-                                    @if ($prop->has('ReferenceMany'))
-                                        $change['$addToSet'][{{@$docname}}]['$each'][] = $value;
+                            foreach ({{$prop->getPHPVariable('$current')}} as $index => $value) {
+                                if (!array_key_exists($index, $old[{{@$prop.''}}])) {
+                                    @if ($prop->getAnnotation()->has('ReferenceMany'))
+                                        $change['$addToSet'][{{@$prop.''}}]['$each'][] = $value;
                                     @else
-                                        $change['$push'][{{@$docname}}] = $value;
+                                        $change['$push'][{{@$prop.''}}] = $value;
                                     @end
                                     continue;
                                 }
 
-                                if (!empty($old[{{@$propname}}][$index]['__instance']) && is_array($value)) {
+                                if (!empty($old[{{@$prop.''}}][$index]['__instance']) && is_array($value)) {
                                     // __instance is an internal variable that helps
                                     // activemongo2 to remove sub objects from arrays easily.
                                     // Its value is private to the library and it shouldn't change
                                     // unless the value of the object changes
                                     $diff = $this->array_diff(
                                         $value,
-                                        $old[{{@$propname}}][$index]
+                                        $old[{{@$prop.''}}][$index]
                                     );
                                     if (count($diff) == 1 && !empty($diff['__instance'])) {
-                                        $value['__instance'] = $old[{{@$propname}}][$index]['__instance'];
-                                        ${{$current}}[{{@$propname}}][$index] = $value;
+                                        $value['__instance'] = $old[{{@$prop.''}}][$index]['__instance'];
+                                        {{$prop->getPHPVariable('$current')}}[$index] = $value;
                                     }
                                 }
 
-                                if ($old[{{@$propname}}][$index] != $value) {
-                                    $change['$set'][{{@$docname . '.'}} . $index] = $value;
+                                if ($old[{{@$prop.''}}][$index] != $value) {
+                                    $change['$set'][{{@$prop . '.'}} . $index] = $value;
                                 }
                             }
 
                             foreach ($toRemove as $value) {
                                 if (!empty($value['__instance'])) {
-                                    $change['$pull'][{{@$docname}}]['__instance']['$in'][] = $value['__instance'];
+                                    $change['$pull'][{{@$prop.''}}]['__instance']['$in'][] = $value['__instance'];
                                 } else {
-                                    $change['$pull'][{{@$docname}}] = $value;
+                                    $change['$pull'][{{@$prop.''}}] = $value;
                                 }
                             }
                         }
-
                     @else
-                        $change['$set'][{{@$docname}}] = ${{$current}}[{{@$propname}}];
+                        $change['$set'][{{@$prop.''}}] = {{$prop->getPHPVariable('$current')}};
                     @end
                 }
             }
@@ -494,64 +475,45 @@ class Mapper
             }
         @end
 
-        $zData = $data;
+        $doc = $data;
 
-        @foreach ($doc['annotation']->getProperties() as $prop)
-            @set($docname,  $prop['property'])
-            @set($propname, $prop['property'])
-            @set($data, '$data')
-
-            @if ($prop->has('Id'))
-                @set($docname, '_id')
-            @elif ($doc['is_gridfs'])
-                @set($data, '$data["metadata"]')
-            @end
-
-                
-            @if ($prop->has('ReferenceMany'))
-                if (!empty($zData[{{@$docname}}])) {
-                    foreach($zData[{{@$docname}}] as $id => $sub) {
+        @foreach ($collection->getProperties() as $prop)
+            @if ($prop->getAnnotation()->has('ReferenceMany'))
+                if (!empty({{$prop->getPHPVariable()}})) {
+                    foreach({{$prop->getPHPVariable()}} as $id => $sub) {
                         if (empty($sub['__instance']) || !strpos($sub['__instance'], $sub['$ref'])) {
                             $sub['__instance'] = $sub['$ref'] . ':' . serialize($sub['$id']) ;
                         }
-                        $zData[{{@$docname}}][$id] = $sub;
-                        $data[{{@$docname}}][$id]  = $sub;
+                        {{$prop->getPHPVariable()}}[$id] = $sub;
                     }
                 }
-            @elif ($prop->has('Stream'))
-                @if (in_array('public', $prop['visibility']))
-                    $object->{{$prop['property']}} = $data_file->getResource();
+            @elif ($prop->getAnnotation()->has('Stream'))
+                @if ($prop->isPublic())
+                    $object->{{$prop->getPHPName()}} = $data_file->getResource();
                 @else
-                    $property = new \ReflectionProperty($object, {{@$prop['property']}});
+                    $property = new \ReflectionProperty($object, {{@$prop->getPHPName()}});
                     $property->setAccessible(true);
                     $property->setValue($object, $data_file->getResource());
                 @end
                 @continue
             @end
-            if (array_key_exists("{{$docname}}", {{$data}})) {
-                @foreach($hydratations as $zname => $callback)
-                    @if ($prop->has($zname))
-                        if (empty($this->loaded[{{@$files[$zname]}}])) {
-                            require_once __DIR__ .  {{@$files[$zname]}};
-                            $this->loaded[{{@$files[$zname]}}] = true;
-                        }
-                        
-                        {{$callback}}({{$data}}[{{@$docname}}], {{var_export($prop[0]['args'] ?: [],  true)}}, $this->connection, $this);
-                    @end
+
+            if (array_key_exists({{@$prop.''}}, {{$prop->getPHPBaseVariable()}})) {
+                @foreach ($prop->getHydratations() as $h)
+                    {{ $h->toCode($prop, $prop->getPHPVariable()) }}
                 @end
 
-                @if (in_array('public', $prop['visibility']))
-                    $object->{{$prop['property']}} = {{$data}}[{{@$docname}}];
+                @if ($prop->isPublic())
+                    $object->{{$prop->getPHPName()}} = {{$prop->getPHPVariable()}};
                 @else
-                    $property = new \ReflectionProperty($object, {{@$prop['property']}});
+                    $property = new \ReflectionProperty($object, {{@$prop->getPHPName()}});
                     $property->setAccessible(true);
-                    $property->setValue($object, {{$data}}[{{@$docname}}]);
+                    $property->setValue($object, {{$prop->getPHPVariable()}});
                 @end
                 
             }
         @end
-
-        $object->{{$instance}}_setOriginal($zData);
+        $object->{{$instance}}_setOriginal($data);
 
 
     }
@@ -650,22 +612,20 @@ class Mapper
             $doc = $this->get_array_{{sha1($collection->getClass())}}($object);
         @end
 
-        @set($docz, '$doc')
-        @if ($collection->isGridFS())
-            @set($docz, '$doc["metadata"]')
-        @end
-        @foreach ($doc['annotation']->getProperties() as $prop)
-            @set($propname, $prop['property'])
-            @if ($prop->has('Id'))
-                @set($propname, '_id')
-            @end
-            @if ($prop->has('Required'))
-            if (empty({{$docz}}[{{@$propname}}])) {
-                throw new \RuntimeException("{{$prop['property']}} cannot be empty");
+        @foreach ($collection->getProperties() as $prop)
+            @if ($prop->getAnnotation()->has('Required'))
+            if (empty({{$prop->getPHPVariable()}})) {
+                throw new \RuntimeException("{{$prop.''}} cannot be empty");
             }
             @end
-
-            @include('validate', compact('propname', 'validators', 'files', 'prop', 'collection'));
+            @foreach ($prop->getValidators() as $val)
+                if (!empty({{$prop->getPHPVariable()}})) {
+                    {{$val->toCode($prop, $prop->getPHPVariable())}}
+                    if ($return === FALSE) {
+                        throw new \RuntimeException("Validation failed for {{$prop.''}}");
+                    }
+                }
+            @end
         @end
 
         return $doc;
@@ -676,17 +636,16 @@ class Mapper
         @if ($collection->getParent())
             $this->update_property_{{sha1($collection->getParent())}}($document, $property, $value);
         @end
-        @foreach ($doc['annotation']->getProperties() as $prop)
-            @set($propname, $prop['property'])
-            if ($property ==  {{@$propname}}
-            @foreach($prop->getAll() as $annotation) 
-                 || $property == '@{{$annotation['method']}}'
+        @foreach ($collection->getProperties() as $prop)
+            if ($property ==  {{@$prop.''}}
+            @foreach($prop->getAnnotation()->getAll() as $annotation) 
+                 || $property == {{@'@'.$annotation['method']}}
             @end
             ) {
-                @if (in_array('public', $prop['visibility']))
-                    $document->{{$prop['property']}} = $value;
+                @if ($prop->isPublic())
+                    $document->{{$prop->getPHPName()}} = $value;
                 @else
-                    $property = new \ReflectionProperty($object, "{{ $prop['property'] }}");
+                    $property = new \ReflectionProperty($object, {{@$prop->getPHPNAme() }});
                     $property->setAccessible(true);
                     $property->setValue($document, $value);
                 @end
