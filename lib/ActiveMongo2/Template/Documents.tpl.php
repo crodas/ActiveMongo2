@@ -75,7 +75,7 @@ class Mapper
         switch ($table) {
         @foreach($collections as $collection)
         case {{@$collection->getClass()}}:
-            @if ($collection->isSingleCollection() && !$collection->GetParent()) {
+            @if ($collection->isSingleCollection() && $collection->getParent()) {
                 $query[{{@$collection->getDiscriminator()}}] = {{@$collection->getClass()}};
             @end
             break;

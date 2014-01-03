@@ -299,7 +299,7 @@ namespace {
                 echo "        case ";
                 var_export($collection->getClass());
                 echo ":\n";
-                if ($collection->isSingleCollection() && !$collection->GetParent()) {
+                if ($collection->isSingleCollection() && $collection->getParent()) {
                     echo "                \$query[";
                     var_export($collection->getDiscriminator());
                     echo "] = ";

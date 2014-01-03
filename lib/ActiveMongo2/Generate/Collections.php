@@ -87,8 +87,9 @@ class Collections extends ArrayObject
         foreach ($this as $key => $value) {
             $name = $value->GetName();
             if ($name) {
-                if (empty($cols[$name]) || empty($cols[$name]['parent'])) {
-                    $cols[$name] = $value->getArray();
+                $array = $value->getArray();
+                if (empty($cols[$name]) || empty($array['parent'])) {
+                    $cols[$name] = $array;
                 }
             }
         } 
