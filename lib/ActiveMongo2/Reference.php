@@ -132,7 +132,7 @@ class Reference implements DocumentProxy, \JsonSerializable
                 $doc = $this->ref[$expected];
                 if (is_array($doc)) {
                     $tmp = $doc;
-                    f\_hydratate_reference_one($tmp, [], $this->conn, $this->mapper);
+                    f\_hydratate_reference_one($tmp, [], $this->conn, [], $this->mapper);
                     return $tmp;
                 }
                 return $doc;
