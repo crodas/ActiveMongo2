@@ -299,10 +299,12 @@ namespace {
                 echo "        case ";
                 var_export($collection->getClass());
                 echo ":\n";
-                if ($collection->isSingleCollection()) {
+                if ($collection->isSingleCollection() && !$collection->GetParent()) {
                     echo "                \$query[";
                     var_export($collection->getDiscriminator());
-                    echo "] = \$table;\n";
+                    echo "] = ";
+                    var_export($collection->getClass());
+                    echo ";\n";
                 }
                 echo "            break;\n";
             }
