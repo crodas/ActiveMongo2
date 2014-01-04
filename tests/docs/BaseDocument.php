@@ -5,7 +5,7 @@ namespace ActiveMongo2\Tests\Document;
 /** 
  *  @Persist(collection="post")
  *  @SingleCollection
- *  @Sluggable("title", "uri")
+ *  @Sluggable("titulo", "uri")
  *  @Autoincrement
  */
 abstract class BaseDocument
@@ -13,7 +13,7 @@ abstract class BaseDocument
     /** @Id */
     public $id;
 
-    /** @Required @String */
+    /** @Required @String @Field("titulo") */
     public $title;
 
     /** @String @Unique */

@@ -132,7 +132,12 @@ class Property extends Base
             return '_id';
         }
 
-        $property = $this->getPHPName();
+        $field = $this->annotation->getOne('Field');
+        if (!empty($field)) {
+            $property = current($field);
+        } else {
+            $property = $this->getPHPName();
+        }
 
         if ($prefix && $this->collection->isGridFs()) {
             // It is an special case
