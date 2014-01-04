@@ -10,7 +10,7 @@ class Mapper
 {
     protected $mapper = {{ var_export($collections->byName(), true) }};
     protected $class_mapper = {{ var_export($collections->byClass(), true) }};
-    protected $loaded = array();
+    protected static $loaded = array();
     protected $connection;
 
     public function __construct(Connection $conn)
@@ -46,7 +46,7 @@ class Mapper
     {
         $class = strtolower($class);
         if (!empty($this->class_mapper[$class])) {
-            $this->loaded[$this->class_mapper[$class]['file']] = true;
+            self::$loaded[$this->class_mapper[$class]['file']] = true;
             require __DIR__ . $this->class_mapper[$class]['file'];
 
             return true;
@@ -62,9 +62,11 @@ class Mapper
 
         $data = $this->mapper[$col];
 
-        if (empty($this->loaded[$data['file']])) {
-            require_once __DIR__ .  $data['file'];
-            $this->loaded[$data['file']] = true;
+        if (empty(self::$loaded[$data['file']])) {
+            if (!class_exists($data['class'], false)) {
+                require __DIR__ .  $data['file'];
+            }
+            self::$loaded[$data['file']] = true;
         }
 
         return $data;
@@ -74,11 +76,11 @@ class Mapper
     {
         switch ($table) {
         @foreach($collections as $collection)
-        case {{@$collection->getClass()}}:
             @if ($collection->isSingleCollection() && $collection->getParent()) {
+            case {{@$collection->getClass()}}:
                 $query[{{@$collection->getDiscriminator()}}] = {{@$collection->getClass()}};
-            @end
             break;
+            @end
         @end
         }
     }
@@ -103,9 +105,11 @@ class Mapper
 
         $data = $this->class_mapper[$class];
 
-        if (empty($this->loaded[$data['file']])) {
-            require_once __DIR__ . $data['file'];
-            $this->loaded[$data['file']] = true;
+        if (empty(self::$loaded[$data['file']])) {
+            if (class_exists($data['class'], false)) {
+                require __DIR__ . $data['file'];
+            }
+            self::$loaded[$data['file']] = true;
         }
 
         return $data;

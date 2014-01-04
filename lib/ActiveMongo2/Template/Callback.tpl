@@ -1,6 +1,8 @@
-if (empty($this->loaded[{{@$self->getPath()}}])) {
-    require_once __DIR__ . {{@$self->getPath()}};
-    $this->loaded[{{@$self->getPath()}}] = true;
+if (empty(self::$loaded[{{@$self->getPath()}}])) {
+    if (!class_exists({{@$self->getClass()}}, false)) {
+        require __DIR__ . {{@$self->getPath()}};
+    }
+    self::$loaded[{{@$self->getPath()}}] = true;
 }
 
 $args = empty($args) ? [] : $args;
