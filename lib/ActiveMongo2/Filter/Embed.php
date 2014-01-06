@@ -61,6 +61,7 @@ function _populate_embed_many(&$value, $args, $conn, $mapper)
 
 /**
  *  @Validate(EmbedMany)
+ *  @DataType Array
  */
 function _do_embed_many(&$value, $zargs, $conn, $args, $mapper)
 {
@@ -80,6 +81,7 @@ function _do_embed_many(&$value, $zargs, $conn, $args, $mapper)
 /**
  *  @Validate(EmbedOne)
  *  @Validate(Embed)
+ *  @DataType Hash
  */
 function _do_embed_one(&$value, $zargs, $conn, $args, $mapper)
 {

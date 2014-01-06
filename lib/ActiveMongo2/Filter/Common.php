@@ -38,6 +38,9 @@ namespace ActiveMongo2\Filter;
 
 use ActiveMongo2\Reference;
 
+/**
+ *  @DataType hash
+ */
 function is_hash($obj)
 {
     if (is_array($obj)) {
@@ -47,7 +50,10 @@ function is_hash($obj)
     return false;
 }
 
-/** @Validate(String) */
+/** 
+ * @Validate(String) 
+ * @DataType String
+ */
 function _validate_string(&$value)
 {
     if (!is_scalar($value)) {
@@ -60,6 +66,7 @@ function _validate_string(&$value)
 /** 
  * @Validate(Integer) 
  * @Validate(Int) 
+ * @DataType Int
  */
 function _validate_integer(&$value)
 {
@@ -70,9 +77,36 @@ function _validate_integer(&$value)
     return true;
 }
 
+/** 
+ * @Validate(Numeric)
+ * @DataType Numeric
+ */
+function _validate_numeric(&$value)
+{
+    if (!is_numeric($value)) {
+        return false;
+    }
+    $value = $value+0;
+    return true;
+}
+
+/** 
+ * @Validate(Float)
+ * @DataType Float
+ */
+function _validate_float(&$value)
+{
+    if (!is_numeric($value)) {
+        return false;
+    }
+    $value = (float)$value;
+    return true;
+}
+
 
 /**
  *  @Validate(Password)
+ *  @DataType String
  */
 function _validate_password(&$value, $args)
 {
@@ -97,6 +131,7 @@ function _hydrate_array(&$value)
 
 /** 
  * @Validate(Array) 
+ * @DataType Array
  */
 function _validate_array(&$value)
 {

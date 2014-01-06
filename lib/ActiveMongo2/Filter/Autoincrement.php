@@ -40,7 +40,10 @@ namespace ActiveMongo2\Plugin;
 use ActiveMongo2\Plugin\Autoincrement;
 use ActiveMongo2\DocumentProxy;
 
-/** @DefaultValue(AutoincrementBy) */
+/** 
+ * @DefaultValue(AutoincrementBy) 
+ * @DataType Int
+ */
 function __autoincrement_field(Array $docs, Array $rargs, $conn, Array $args)
 {
     if (empty($args)) {

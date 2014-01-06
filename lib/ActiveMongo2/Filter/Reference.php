@@ -53,6 +53,7 @@ function _hydratate_reference_many(&$value, Array $args, $conn, $unused, $mapper
 
 /**
  *  @Validate(ReferenceMany)
+ *  @DataType Array
  */
 function _validate_reference_many(&$value, Array $zargs, $conn, $args, $mapper)
 {
@@ -73,6 +74,7 @@ function _validate_reference_many(&$value, Array $zargs, $conn, $args, $mapper)
 /**
  *  @Hydratate(Reference)
  *  @Hydratate(ReferenceOne)
+ *  @DataType Hash
  */
 function _hydratate_reference_one(&$value, Array $args, $conn, $unused, $mapper)
 {

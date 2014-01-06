@@ -39,6 +39,7 @@ namespace ActiveMongo2\Plugin;
 
 /**
  *  @Validate(Email)
+ *  @DataType String
  */
 function _do_validate_email($string)
 {

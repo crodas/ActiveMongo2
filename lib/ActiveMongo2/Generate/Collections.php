@@ -259,15 +259,6 @@ class Collections extends ArrayObject
         return $types;
     }
 
-    public function getTypes()
-    {
-        static $types = array();
-        if (empty($types)) {
-            $types = $this->getAnnotationByName('Validate');
-        }
-        return $types;
-    }
-
     protected function addDirs(Array $dirs)
     {
         foreach ($dirs as $dir) {

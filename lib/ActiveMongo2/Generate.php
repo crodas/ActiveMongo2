@@ -58,7 +58,6 @@ class Generate
         };
         $collections->map($fixPath);
         array_map($fixPath, $collections->getDefaults());
-        array_map($fixPath, $collections->getTypes());
         array_map($fixPath, $collections->getPlugins());
         array_map($fixPath, $collections->getHydratators());
         array_map($fixPath, $collections->getValidators());

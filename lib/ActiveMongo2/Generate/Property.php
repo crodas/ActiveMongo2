@@ -42,11 +42,22 @@ use ActiveMongo2\Generate;
 class Property extends Base
 {
     protected $collection;
+    protected $type = null;
 
     public function __construct(Collection $col, Annotation $prop)
     {
         $this->collection = $col;
         $this->annotation = $prop;
+
+        foreach ($this->getValidators() as $val) {
+            foreach ($val->annotation->getOne('DataType') as $type) {
+                if ($this->type === null) {
+                    $this->type = $type;
+                } else {
+                    throw new \Exception("{$this->getPHPName()} has two data tyeps {$type} and {$this->type}");
+                }
+            }
+        }
     }
 
     public function isId()
@@ -79,11 +90,6 @@ class Property extends Base
     public function getProperty()
     {
         return $this->annotation['property'];
-    }
-
-    public function getType()
-    {
-        return $this->getCallback('getTypes');
     }
 
     protected function getCallback($filter)
@@ -124,6 +130,11 @@ class Property extends Base
     {
         $prefix = $this->getPHPBaseVariable($prefix);
         return $prefix . "[" . var_export($this->getName(), true) . "]";
+    }
+
+    public function getType()
+    {
+        return $this->type;
     }
 
     public function getName($prefix = false)
