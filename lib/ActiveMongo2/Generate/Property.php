@@ -49,7 +49,7 @@ class Property extends Base
         $this->collection = $col;
         $this->annotation = $prop;
 
-        foreach ($this->getValidators() as $val) {
+        foreach ($this->getCallback('Validate') as $val) {
             foreach ($val->annotation->getOne('DataType') as $type) {
                 if ($this->type === null) {
                     $this->type = $type;
@@ -75,42 +75,21 @@ class Property extends Base
         return in_array('public', $this->annotation['visibility']);
     }
 
-    public function getDefault() 
-    {
-        $defaults = array();
-        foreach ($this->collection->getDefaults() as $name => $type) {
-            if ($this->annotation->has($name)) {
-                $defaults[] = $type;
-                $type->name = $name;
-            }
-        }
-        return $defaults;
-    }
-
     public function getProperty()
     {
         return $this->annotation['property'];
     }
 
-    protected function getCallback($filter)
+    public function getCallback($filter)
     {
         $types = array();
-        foreach ($this->collection->$filter() as $name => $type) {
+        foreach ($this->collection->getAnnotationByName($filter) as $name => $type) {
             if ($this->annotation->has($name)) {
                 $types[] = $type;
+                $type->name = $name;
             }
         }
         return $types;
-    }
-
-    public function getValidators()
-    {
-        return $this->getCallback('getValidators');
-    }
-
-    public function getHydratations()
-    {
-        return $this->getCallback('getHydratators');
     }
 
     public function __toString()

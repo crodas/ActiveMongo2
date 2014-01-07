@@ -503,7 +503,7 @@ class Mapper
             @end
 
             if (array_key_exists({{@$prop.''}}, {{$prop->getPHPBaseVariable()}})) {
-                @foreach ($prop->getHydratations() as $h)
+                @foreach ($prop->getCallback('Hydratate') as $h)
                     {{ $h->toCode($prop, $prop->getPHPVariable()) }}
                 @end
 
@@ -586,7 +586,7 @@ class Mapper
         @end
 
         @foreach ($collection->getProperties() as $prop)
-            @foreach($prop->getDefault() as $default)
+            @foreach($prop->getCallback('DefaultValue') as $default)
                 if (empty({{$prop->getPHPVariable()}})) {
                     {{$default->toCode($prop)}}
                     {{$prop->getPHPVariable()}} = $return;
@@ -622,7 +622,7 @@ class Mapper
                 throw new \RuntimeException("{{$prop.''}} cannot be empty");
             }
             @end
-            @foreach ($prop->getValidators() as $val)
+            @foreach ($prop->getCallback('Validate') as $val)
                 if (!empty({{$prop->getPHPVariable()}})) {
                     {{$val->toCode($prop, $prop->getPHPVariable())}}
                     if ($return === FALSE) {

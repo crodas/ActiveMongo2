@@ -514,7 +514,7 @@ namespace {
                     echo "\n            if (array_key_exists(";
                     var_export($prop.'');
                     echo ", " . ($prop->getPHPBaseVariable()) . ")) {\n";
-                    foreach($prop->getHydratations() as $h) {
+                    foreach($prop->getCallback('Hydratate') as $h) {
                         echo "                    " . ($h->toCode($prop, $prop->getPHPVariable())) . "\n";
                     }
                     echo "\n";
@@ -560,7 +560,7 @@ namespace {
                 }
                 echo "\n";
                 foreach($collection->getProperties() as $prop) {
-                    foreach($prop->getDefault() as $default) {
+                    foreach($prop->getCallback('DefaultValue') as $default) {
                         echo "                if (empty(" . ($prop->getPHPVariable()) . ")) {\n                    " . ($default->toCode($prop)) . "\n                    " . ($prop->getPHPVariable()) . " = \$return;\n                }\n";
                     }
                 }
@@ -582,7 +582,7 @@ namespace {
                     if ($prop->getAnnotation()->has('Required')) {
                         echo "            if (empty(" . ($prop->getPHPVariable()) . ")) {\n                throw new \\RuntimeException(\"" . ($prop.'') . " cannot be empty\");\n            }\n";
                     }
-                    foreach($prop->getValidators() as $val) {
+                    foreach($prop->getCallback('Validate') as $val) {
                         echo "                if (!empty(" . ($prop->getPHPVariable()) . ")) {\n                    " . ($val->toCode($prop, $prop->getPHPVariable())) . "\n                    if (\$return === FALSE) {\n                        throw new \\RuntimeException(\"Validation failed for " . ($prop.'') . "\");\n                    }\n                }\n";
                     }
                 }

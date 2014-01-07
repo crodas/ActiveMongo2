@@ -54,10 +54,10 @@ class Generate
             $value->setPath($self->getRelativePath($value->getPath()));
         };
         $collections->map($fixPath);
-        array_map($fixPath, $collections->getDefaults());
-        array_map($fixPath, $collections->getPlugins());
-        array_map($fixPath, $collections->getHydratators());
-        array_map($fixPath, $collections->getValidators());
+        array_map($fixPath, $collections->getAnnotationByName('DefaultValue'));
+        array_map($fixPath, $collections->getAnnotationByName('Plugin'));
+        array_map($fixPath, $collections->getAnnotationByName('Hydratate'));
+        array_map($fixPath, $collections->getAnnotationByName('Validate'));
     }
 
     protected function writeFileWatch(Watch $watcher, Generate\Collections $collections)

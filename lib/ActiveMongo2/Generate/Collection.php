@@ -47,7 +47,7 @@ class Collection extends Base
     public function getPlugins($type)
     {
         $plugins = array();
-        foreach ($this->collections->getPlugins() as $name => $p) {
+        foreach ($this->collections->getAnnotationByName('Plugin') as $name => $p) {
             if ($this->annotation->has($name)) {
                 foreach ($p->getMethodsByAnnotation($type) as $method) {
                     $method->name = $name;
@@ -70,12 +70,6 @@ class Collection extends Base
             $parent = $parent->getParent();
         }
     }
-
-    public function getDefaults()
-    {
-        return $this->collections->getDefaults();
-    }
-
 
     public function getTypes()
     {
@@ -221,14 +215,9 @@ class Collection extends Base
         return $name;
     }
 
-    public function getValidators()
+    public function getAnnotationByName($name)
     {
-        return $this->collections->getValidators();
-    }
-
-    public function getHydratators()
-    {
-        return $this->collections->getHydratators();
+        return $this->collections->getAnnotationByName($name);
     }
 
     public function getAnnotation()

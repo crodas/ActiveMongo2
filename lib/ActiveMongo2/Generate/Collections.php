@@ -212,8 +212,12 @@ class Collections extends ArrayObject
         return $refCache;
     }
 
-    protected function getAnnotationByName($name)
+    public function getAnnotationByName($name)
     {
+        static $cache = array();
+        if (!empty($cache[$name])) {
+            return $cache[$name];
+        }
         $anns = array();
         foreach ($this->annotations->get($name) as $ann) {
             $type = new Type($ann, $name);
@@ -224,7 +228,7 @@ class Collections extends ArrayObject
                 }
             }
         }
-        return $anns;
+        return $cache[$name] = $anns;
     }
 
     public function getHydratators()
@@ -234,34 +238,6 @@ class Collections extends ArrayObject
             $h = $this->getAnnotationByName('Hydratate');
         }
         return $h;
-    }
-
-    public function getValidators()
-    {
-        static $h = array();
-        if (empty($h)) {
-            $h = $this->getAnnotationByName('Validate');
-        }
-        return $h;
-    }
-
-
-    public function getPlugins()
-    {
-        static $plugins = array();
-        if (empty($plugins)) {
-            $plugins = $this->getAnnotationByName('Plugin');
-        }
-        return $plugins;
-    }
-
-    public function getDefaults()
-    {
-        static $types = array();
-        if (empty($types)) {
-            $types = $this->getAnnotationByName('DefaultValue');
-        }
-        return $types;
     }
 
     protected function addDirs(Array $dirs)
