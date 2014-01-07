@@ -61,15 +61,18 @@ class Type extends Base
         return $this->getFunction();
     }
 
-    protected function getEmbeddableCode()
+    protected function getFunctionBodyStart(&$name)
     {
         $parts = explode("\\", $this->annotation['function']);
         $name  = end($parts); 
         $lines = file($this->annotation['file']);
-        $code  = implode('', array_slice($lines, $this->annotation['line'] -1));
-        $start = stripos($code, $name) + strlen($name);
+        return implode('', array_slice($lines, $this->annotation['line'] -1));
+    }
 
-        $start = strpos($code, '{')+1; 
+    protected function getEmbeddableCode()
+    {
+        $code  = $this->getFunctionBodyStart($name);
+        $start = strpos($code, '{', stripos($code, $name))+1; 
         $end   = $start;
         $max   = strlen($code);
         $i     = 1;
