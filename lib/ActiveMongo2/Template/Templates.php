@@ -78,7 +78,7 @@ namespace {
             echo ";\n    }\n    self::\$loaded[";
             var_export($self->getPath());
             echo "] = true;\n}\n\n\$args = empty(\$args) ? [] : \$args;\n\n";
-            if ($self->getAnnotation()->has('Embed')) {
+            if ($self->isEmbeddable()) {
                 echo "    " . ($self->toEmbedCode($var)) . "\n";
             }
             else if ($self->isMethod()) {

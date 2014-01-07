@@ -69,7 +69,7 @@ class Type extends Base
         return implode('', array_slice($lines, $this->annotation['line'] -1));
     }
 
-    protected function getEmbeddableCode()
+    protected function getEmbeddableCode(&$code)
     {
         $code  = $this->getFunctionBodyStart($name);
         $start = strpos($code, '{', stripos($code, $name))+1; 
@@ -88,21 +88,17 @@ class Type extends Base
             }
         }
 
-        if ($end == $max) {
-            throw new \RuntimeException("Missing function end");
-        }
+        $code = substr($code, $start, $end - $start);
 
-        return substr($code, $start, $end - $start);
+        return $end < $max;
     }
 
     public function toEmbedCode($prop)
     {
-
+        $this->getEmbeddableCode($code);
         $exit = "exit_" . uniqid(true);
-        $code = $this->getEmbeddableCode()  . "\n$exit:\n"; 
-
+        $code = "$code\n$exit:\n"; 
         $code = str_replace('$value', $prop, $code);
-
         $code = preg_replace_callback('/return([^;]+);/smU', function($args) use ($exit) {
             return "\$return = $args[1];
             goto $exit;";
@@ -116,6 +112,10 @@ class Type extends Base
         return $code;
     }
 
+    public function isEmbeddable()
+    {
+        return $this->annotation->has('Embed') && $this->getEmbeddableCode($code);
+    }
 
     public function toCode($prop, $var = '$doc')
     {
