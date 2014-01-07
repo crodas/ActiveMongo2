@@ -231,15 +231,6 @@ class Collections extends ArrayObject
         return $cache[$name] = $anns;
     }
 
-    public function getHydratators()
-    {
-        static $h = array();
-        if (empty($h)) {
-            $h = $this->getAnnotationByName('Hydratate');
-        }
-        return $h;
-    }
-
     protected function addDirs(Array $dirs)
     {
         foreach ($dirs as $dir) {
