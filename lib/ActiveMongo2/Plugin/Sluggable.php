@@ -42,7 +42,7 @@ namespace ActiveMongo2\Plugin;
  */
 class Sluggable
 {
-    public static function sluggify($text)
+    protected static function cleanText($text)
     {
         // replace non letter or digits by -
         $text = preg_replace('~[^\\pL\d]+~u', '-', $text);
@@ -59,8 +59,11 @@ class Sluggable
         $text = strtolower($text);
 
         // remove unwanted characters
-        $text = preg_replace('~[^-\w]+~', '', $text);
-
+        return preg_replace('~[^-\w]+~', '', $text);
+    }
+    public static function sluggify($text)
+    {
+        $text = self::cleanText($text);
         if (empty($text)) {
             return 'n-a';
         }
