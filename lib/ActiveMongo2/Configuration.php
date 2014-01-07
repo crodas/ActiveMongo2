@@ -105,7 +105,7 @@ class Configuration
         if ($this->devel || !is_file($this->loader)) {
             Notoj::enableCache($this->loader . ".tmp");
             $watcher = new Watch($this->loader . ".lock");
-            if (!$watcher->isWatching() || $watcher->hasChanged()) {
+            if ($watcher->hasChanged()) {
                 new Generate($this, $watcher);
             }
         }
