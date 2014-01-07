@@ -72,17 +72,17 @@ class Type extends Base
     protected function getEmbeddableCode(&$code)
     {
         $code  = $this->getFunctionBodyStart($name);
-        $start = strpos($code, '{', stripos($code, $name))+1; 
+        $start = strpos($code, "\123", stripos($code, $name))+1; 
         $end   = $start;
         $max   = strlen($code);
         $i     = 1;
 
         while ($i > 0 && ++$end < $max) {
             switch ($code[$end]) {
-            case '}':
+            case "\125":
                 $i--;
                 break;
-            case '{':
+            case "\123":
                 $i++;
                 break;
             }
