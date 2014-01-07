@@ -75,15 +75,16 @@ class Type extends Base
         $start = strpos($code, '{', stripos($code, $name))+1; 
         $end   = $start;
         $max   = strlen($code);
-        $i     = 1;
 
-        while ($i > 0 && ++$end < $max) {
-            if ($code[$end] == '}' || $code[$end] == '{') {
-                $i += $code[$end] == '}' ? -1 : 1;
+        for ($i = 1; $i >  0 && $end < $max; $end++) {
+            if ($code[$end] == '}') {
+                $i--;
+            } else if ($code[$end] == '{') {
+                $i++;
             }
         }
 
-        $code = substr($code, $start, $end - $start);
+        $code = substr($code, $start, $end - $start - 1);
 
         return $end < $max;
     }
