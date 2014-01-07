@@ -51,10 +51,11 @@ class Generate
     {
         $this->files  = array();
         $this->config = $config;
+        $self = $this;
 
         $collections = new Generate\Collections((array)$config->getModelPath(), $this);
-        $fixPath = function($value) {
-            $value->setPath($this->getRelativePath($value->getPath()));
+        $fixPath = function($value) use ($self) {
+            $value->setPath($self->getRelativePath($value->getPath()));
         };
         $collections->map($fixPath);
         array_map($fixPath, $collections->getDefaults());
