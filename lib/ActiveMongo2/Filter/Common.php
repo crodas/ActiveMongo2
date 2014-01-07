@@ -40,6 +40,7 @@ use ActiveMongo2\Reference;
 
 /**
  *  @DataType hash
+ *  @Embed
  */
 function is_hash($obj)
 {
@@ -53,6 +54,7 @@ function is_hash($obj)
 /** 
  * @Validate(String) 
  * @DataType String
+ * @Embed
  */
 function _validate_string(&$value)
 {
@@ -67,6 +69,7 @@ function _validate_string(&$value)
  * @Validate(Integer) 
  * @Validate(Int) 
  * @DataType Int
+ * @Embed
  */
 function _validate_integer(&$value)
 {
@@ -80,6 +83,7 @@ function _validate_integer(&$value)
 /** 
  * @Validate(Numeric)
  * @DataType Numeric
+ * @Embed
  */
 function _validate_numeric(&$value)
 {
@@ -93,6 +97,7 @@ function _validate_numeric(&$value)
 /** 
  * @Validate(Float)
  * @DataType Float
+ * @Embed
  */
 function _validate_float(&$value)
 {
@@ -107,6 +112,7 @@ function _validate_float(&$value)
 /**
  *  @Validate(Password)
  *  @DataType String
+ *  @Embed
  */
 function _validate_password(&$value, $args)
 {

@@ -68,6 +68,18 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertTrue($userCol->count() == 0);
     }
 
+    /**
+     *  @expectedException \RuntimeException
+     */
+    public function testInvalidEmbedValidator()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "crodas-" . rand(0, 0xfffff);
+        $user->email = "fooobar";
+        $conn->save($user);
+    }
+
     /** @dependsOn testCreateUpdateDelete */
     public function testSimpleFind()
     {

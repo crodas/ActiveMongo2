@@ -78,7 +78,10 @@ namespace {
             echo ";\n    }\n    self::\$loaded[";
             var_export($self->getPath());
             echo "] = true;\n}\n\n\$args = empty(\$args) ? [] : \$args;\n\n";
-            if ($self->isMethod()) {
+            if ($self->getAnnotation()->has('Embed')) {
+                echo "    " . ($self->toEmbedCode($var)) . "\n";
+            }
+            else if ($self->isMethod()) {
                 if ($self->isPublic()) {
                     if ($self->isStatic()) {
                         echo "            \$return = \\" . ($self->getClass()) . "::" . ($self->getMethod()) . "(\n";
@@ -109,6 +112,7 @@ namespace {
                 var_export($args);
                 echo ", // annotation arguments\n        \$this // mapper instance\n    );\n";
             }
+
 
             if ($return) {
                 return ob_get_clean();

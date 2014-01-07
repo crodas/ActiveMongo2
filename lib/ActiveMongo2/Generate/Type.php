@@ -61,6 +61,50 @@ class Type extends Base
         return $this->getFunction();
     }
 
+    public function toEmbedCode($prop)
+    {
+        $parts = explode("\\", $this->annotation['function']);
+        $name  = end($parts); 
+        $lines = file($this->annotation['file']);
+        $code  = implode('', array_slice($lines, $this->annotation['line'] -1));
+        $start = stripos($code, $name) + strlen($name);
+
+        while($code[$start++] != '{');
+
+        $end = $start;
+        $max = strlen($code);
+        $i   = 1;
+
+        while ($i > 0) {
+            $end++;
+            if ($end > $max) {
+                throw new \RuntimeException("Missing function end");
+            }
+            switch ($code[$end]) {
+            case '}':
+                $i--;
+                break;
+            case '{':
+                $i++;
+                break;
+            }
+        }
+
+        $exit = "exit_" . uniqid(true);
+        $code = substr($code, $start, $end - $start)  . "\n$exit:\n";
+
+        $code = str_replace('$value', $prop, $code);
+
+        $code = preg_replace_callback('/return([^;]+);/smU', function($args) use ($exit) {
+            return "\$return = $args[1];
+            goto $exit;";
+        }, $code);
+
+
+        return $code;
+    }
+
+
     public function toCode($prop, $var = '$doc')
     {
         $self = $this;

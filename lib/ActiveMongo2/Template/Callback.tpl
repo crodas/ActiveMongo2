@@ -7,7 +7,9 @@ if (empty(self::$loaded[{{@$self->getPath()}}])) {
 
 $args = empty($args) ? [] : $args;
 
-@if ($self->isMethod())
+@if ($self->getAnnotation()->has('Embed'))
+    {{ $self->toEmbedCode($var) }}
+@elif ($self->isMethod())
     @if ($self->isPublic())
         @if ($self->isStatic())
             $return = \{{$self->getClass()}}::{{$self->getMethod()}}(

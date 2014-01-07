@@ -7,16 +7,16 @@
     "packages": [
         {
             "name": "crodas/class-info",
-            "version": "v0.1.7",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/ClassInfo.git",
-                "reference": "2cc4cfa379667ec9f26b420c2f315c8d876b2ad3"
+                "reference": "c7aba60aa2f91cb8b552d4be6ed72b49f8988427"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/ClassInfo/zipball/2cc4cfa379667ec9f26b420c2f315c8d876b2ad3",
-                "reference": "2cc4cfa379667ec9f26b420c2f315c8d876b2ad3",
+                "url": "https://api.github.com/repos/crodas/ClassInfo/zipball/c7aba60aa2f91cb8b552d4be6ed72b49f8988427",
+                "reference": "c7aba60aa2f91cb8b552d4be6ed72b49f8988427",
                 "shasum": ""
             },
             "type": "library",
@@ -36,20 +36,20 @@
                 }
             ],
             "description": "Get classes and functions defined in a given file",
-            "time": "2013-12-27 00:37:05"
+            "time": "2014-01-06 23:40:59"
         },
         {
             "name": "crodas/cli",
-            "version": "v0.1.0",
+            "version": "v0.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/cli.git",
-                "reference": "e1b426e280b94c82664cc5d1e97491b8ba2be926"
+                "reference": "c0a85ec0a15e7dc6445d98dfdbb40fb22cde35db"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/cli/zipball/e1b426e280b94c82664cc5d1e97491b8ba2be926",
-                "reference": "e1b426e280b94c82664cc5d1e97491b8ba2be926",
+                "url": "https://api.github.com/repos/crodas/cli/zipball/c0a85ec0a15e7dc6445d98dfdbb40fb22cde35db",
+                "reference": "c0a85ec0a15e7dc6445d98dfdbb40fb22cde35db",
                 "shasum": ""
             },
             "require": {
@@ -73,7 +73,7 @@
                 }
             ],
             "description": "Simple and silly abstraction on top of symfony/console",
-            "time": "2013-11-16 03:53:28"
+            "time": "2013-12-30 05:06:25"
         },
         {
             "name": "crodas/notoj",
@@ -81,16 +81,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/Notoj.git",
-                "reference": "363ff5964ab3919c195bde0c726975afa97f5340"
+                "reference": "b09db88c5fbb1edd52650a829061dc75d1fd0fdc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/Notoj/zipball/363ff5964ab3919c195bde0c726975afa97f5340",
-                "reference": "363ff5964ab3919c195bde0c726975afa97f5340",
+                "url": "https://api.github.com/repos/crodas/Notoj/zipball/b09db88c5fbb1edd52650a829061dc75d1fd0fdc",
+                "reference": "b09db88c5fbb1edd52650a829061dc75d1fd0fdc",
                 "shasum": ""
             },
             "require": {
-                "crodas/class-info": "~0.1",
+                "crodas/class-info": ">=0.1.8",
                 "php": ">=5.3.0"
             },
             "type": "library",
@@ -110,7 +110,7 @@
                 }
             ],
             "description": "Annotation parser. Uses reflection and provides cache out of the box.",
-            "time": "2013-12-29 06:21:02"
+            "time": "2014-01-06 23:09:56"
         },
         {
             "name": "crodas/path",
@@ -226,12 +226,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console.git",
-                "reference": "1a4a528bf808418a720a5c4b9db7c855ec0e4e00"
+                "reference": "90cd91baaf803314b5fcbeb4079138b71cf1ef78"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Console/zipball/1a4a528bf808418a720a5c4b9db7c855ec0e4e00",
-                "reference": "1a4a528bf808418a720a5c4b9db7c855ec0e4e00",
+                "url": "https://api.github.com/repos/symfony/Console/zipball/90cd91baaf803314b5fcbeb4079138b71cf1ef78",
+                "reference": "90cd91baaf803314b5fcbeb4079138b71cf1ef78",
                 "shasum": ""
             },
             "require": {
@@ -270,7 +270,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "http://symfony.com",
-            "time": "2013-12-28 21:40:48"
+            "time": "2014-01-02 14:42:17"
         },
         {
             "name": "symfony/finder",
@@ -279,12 +279,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Finder.git",
-                "reference": "da13e76b337421acdb739f5bb5af06c120212971"
+                "reference": "c333dde9dc912037301bfcaa5aa4faf54646f8db"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Finder/zipball/da13e76b337421acdb739f5bb5af06c120212971",
-                "reference": "da13e76b337421acdb739f5bb5af06c120212971",
+                "url": "https://api.github.com/repos/symfony/Finder/zipball/c333dde9dc912037301bfcaa5aa4faf54646f8db",
+                "reference": "c333dde9dc912037301bfcaa5aa4faf54646f8db",
                 "shasum": ""
             },
             "require": {
@@ -317,7 +317,7 @@
             ],
             "description": "Symfony Finder Component",
             "homepage": "http://symfony.com",
-            "time": "2013-12-28 08:12:58"
+            "time": "2014-01-01 15:45:37"
         }
     ],
     "packages-dev": [
