@@ -44,10 +44,44 @@ class Configuration
     protected $loader;
     protected $path;
     protected $devel = false;
+    protected $cache;
+    protected $default = array('w' => 1);
+    protected $failOnMissRef = true;
 
     public function __construct($loader)
     {
         $this->loader = $loader;
+        $this->cache  = new Cache\Cache;
+    }
+
+    public function failOnMissingReference($fail = null)
+    {
+        if ($fail === null) {
+            return $this->failOnMissRef;
+        }
+        $this->failOnMissRef = (bool)$fail;
+        return $this;
+    }
+
+    public function setWriteConcern($w)
+    {
+        $this->default['w'] = $w;
+        return $this;
+    }
+
+    public function getWriteConcern()
+    {
+        return $this->default['w'];
+    }
+
+    public function setCacheStorage(Cache\Storage $storage)
+    {
+        $this->cache->setStorage($storage);
+    }
+
+    public function getCache()
+    {
+        return $this->cache;
     }
 
     public function getModelPath()

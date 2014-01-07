@@ -34,55 +34,50 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2\Plugin;
+namespace ActiveMongo2\Cache;
 
-use Notoj\Annotation;
-use ActiveMongo2\Runtime\Utils;
-
-/** @Persist(collection="universal") */
-class UniversalDocument
+class Cache
 {
-    /** @Id */
-    public $id;
+    protected $storage;
 
-    /** @Reference */
-    public $object;
-
-}
-
-/**
- *  @Plugin(Universal)
- */
-class Universal
-{
-    /**
-     *  @preCreate
-     */
-    public static function createId($doc, Array &$args, $conn, $annotation_args, $mapper)
+    public function __construct(Storage $storage = null)
     {
-        if (!empty($annotation_args['set_id']) && !empty($annotation_args['auto_increment'])) {
-            $args[0]['_id'] = Autoincrement::getId($conn, __NAMESPACE__ . "\\UniversalDocument");
+        if ($storage) {
+            $this->storage = $storage;
+        } else {
+            $this->storage = new Storage\None;
         }
-        return true;
     }
 
-    /**
-     *  @postCreate
-     */
-    public static function postCreateId($doc, Array $args, $conn, $annotation_args, $mapper)
+    public function setStorage(Storage $storage)
     {
-        $uuid = new UniversalDocument;
-        $uuid->object = $doc;
+        $this->storage = $storage;
+    }
 
-        if (!empty($annotation_args['set_id'])) {
-            $uuid->id = $args[0]['_id'];
-        } else if (!empty($annotation_args['auto_increment'])) {
-            $uuid->id = Autoincrement::getId($conn, get_class($uuid));
+    protected function id($id)
+    {
+        if (is_scalar($id)) {
+            return $id;
+        }
+        $parts = [];
+        foreach ($id as $key => $value) {
+            if ($value instanceof \MongoCollection) {
+                $parts[] = (string)$value;
+            } else {
+                $parts[] = serialize($value);
+            }
         }
 
-        $conn->save($uuid);
+        return implode("::", $parts);
+    }
 
-        $mapper->updateProperty($doc, '@Universal', $uuid->id);
-        $conn->save($doc);
+    public function get($index)
+    {
+        return $this->storage->get(self::id($index));
+    }
+
+    public function set($index, Array $value)
+    {
+        $this->storage->set(self::id($index), $value);
     }
 }

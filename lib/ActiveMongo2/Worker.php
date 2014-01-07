@@ -34,55 +34,66 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2\Plugin;
+namespace ActiveMongo2;
 
-use Notoj\Annotation;
-use ActiveMongo2\Runtime\Utils;
-
-/** @Persist(collection="universal") */
-class UniversalDocument
+class Worker
 {
-    /** @Id */
-    public $id;
+    protected $conn;
+    protected $refs;
+    protected $queue;
+    protected $db;
 
-    /** @Reference */
-    public $object;
-
-}
-
-/**
- *  @Plugin(Universal)
- */
-class Universal
-{
-    /**
-     *  @preCreate
-     */
-    public static function createId($doc, Array &$args, $conn, $annotation_args, $mapper)
+    public function __construct(Connection $conn)
     {
-        if (!empty($annotation_args['set_id']) && !empty($annotation_args['auto_increment'])) {
-            $args[0]['_id'] = Autoincrement::getId($conn, __NAMESPACE__ . "\\UniversalDocument");
-        }
-        return true;
+        $this->conn  = $conn;
+        $this->db    = $conn->getDatabase();
+        $this->queue = $this->db->deferred_queue;
+        $this->refs  = $this->db->references_queue;
     }
 
-    /**
-     *  @postCreate
-     */
-    public static function postCreateId($doc, Array $args, $conn, $annotation_args, $mapper)
+    protected function getTasks()
     {
-        $uuid = new UniversalDocument;
-        $uuid->object = $doc;
+        return $this->queue->findAndModify(
+            ['processed' => false], 
+            ['$set' => ['processed' => true, 'started' => new \MongoDate]], 
+            null, 
+            ['sort' => ['$natural' => -1]]
+        );
+    }
 
-        if (!empty($annotation_args['set_id'])) {
-            $uuid->id = $args[0]['_id'];
-        } else if (!empty($annotation_args['auto_increment'])) {
-            $uuid->id = Autoincrement::getId($conn, get_class($uuid));
+    protected function doTask($task, $all)
+    {
+        $done = 0;
+        foreach ($all as $row) {
+            $update = $task['update'];
+            foreach ($update as $op => $fields) {
+                foreach ($fields as $field => $value) {
+                    unset($update[$op][$field]);
+                    $update[$op][$row['property'] . '.' . $field] = $value;
+                }
+            }
+            $col = $this->db->{$row['collection']};
+            $col->update(
+                ['_id' => $row['id']],
+                $update
+            );
+            $done++;
         }
+        $this->queue->remove(['_id' => $task['_id']]);
+        return $done;
+    }
 
-        $conn->save($uuid);
+    public function main()
+    {
+        $done = 0;
+        do {
+            $work = $this->getTasks();
+            if (empty($work)) {
+                break;
+            }
+            $done += $this->doTask($work, $this->refs->find(['source_id' => $work['source_id']]));
 
-        $mapper->updateProperty($doc, '@Universal', $uuid->id);
-        $conn->save($doc);
+        } while(true);
+        return $done;
     }
 }

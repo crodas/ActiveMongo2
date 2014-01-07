@@ -37,16 +37,21 @@
 namespace ActiveMongo2;
 
 use MongoGridFS;
+use MongoGridFSFile;
 
-class StoreFile 
+class StoreFile extends Connection
 {
     protected $gridfs;
     protected $metadata;
+    protected $object;
+    protected $conn;
 
-    public function __construct(MongoGridFS $col, Array $document)
+    public function __construct(MongoGridFS $col, Array $document, $conn, $object)
     {
         $this->gridfs   = $col;
         $this->metadata = $document;
+        $this->conn     = $conn;
+        $this->object   = $object;
     }
 
     public function storeFile($name)
@@ -54,12 +59,16 @@ class StoreFile
         if (!is_file($name)) {
             throw new \RuntimeException("Cannot find file {$name}");
         }
-        $doc = $this->gridfs->storeFile($name, $this->metadata);
+        $this->gridfs->storeFile($name, $this->metadata);
+        $doc = $this->gridfs->findOne($this->metadata);
+        $this->conn->setObjectDocument($this->object, $doc);
     }
 
     public function storeBytes($bytes)
     {
-        $doc = $this->gridfs->storeBytes($bytes, $this->metadata);
+        $this->gridfs->storeBytes($bytes, $this->metadata);
+        $doc = $this->gridfs->findOne($this->metadata);
+        $this->conn->setObjectDocument($this->object, $doc);
     }
 
     public function storeUpload($name)
@@ -67,6 +76,8 @@ class StoreFile
         if (empty($_FILES[$name])) {
             throw new \RuntimeException("Cannot find \$_FILE[{$name}]");
         }
-        $doc = $this->gridfs->storeUpload($name, $this->metadata);
+        $this->gridfs->storeUpload($name, $this->metadata);
+        $doc = $this->gridfs->findOne($this->metadata);
+        $this->conn->setObjectDocument($this->object, $doc);
     }
 }

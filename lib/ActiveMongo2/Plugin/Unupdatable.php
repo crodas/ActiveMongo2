@@ -44,19 +44,12 @@ use Notoj\Annotation;
  */
 class Unupdatable
 {
-    protected $args;
-
-    public function __construct($args)
-    {
-        $this->args = $args;
-    }
-
     /**
      *  @preUpdate
      */
-    public function check($object, Array $args, $conn)
+    public static function check($object, Array $args, $conn, $rargs)
     {
-        foreach ($this->args as $prop) {
+        foreach ($rargs as $prop) {
             foreach ($args[0] as $key => $props) {
                 if ($key == $prop) {
                     throw new \RuntimeException("{$prop} cannot be updated");

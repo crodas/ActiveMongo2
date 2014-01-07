@@ -39,8 +39,10 @@ namespace ActiveMongo2\Plugin;
 
 /**
  *  @Validate(Email)
+ *  @DataType String
+ *  @Embed
  */
-function _do_validate_email($string)
+function _do_validate_email($value)
 {
-        return empty($string) || filter_var($string, FILTER_VALIDATE_EMAIL);
+    return filter_var($value, FILTER_VALIDATE_EMAIL);
 }

@@ -34,42 +34,19 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2;
+namespace ActiveMongo2\Cache\Storage;
 
-use MongoCollection;
-use MongoCursor;
+use ActiveMongo2\Cache\Storage;
 
-class Cursor extends MongoCursor
+class None implements Storage
 {
-    protected $mapper;
-    protected $conn;
-    protected $col;
-
-    public function __construct(Array $query, Array $fields, Connection $conn, MongoCollection $col, $mapper)
+    public function get($index)
     {
-        $this->conn   = $conn;
-        $this->col    = $col;
-        $this->mapper = $mapper;
-        parent::__construct($conn->getConnection(), (string)$col, $query, $fields);
     }
 
-    public function first()
+    public function set($index, $value)
     {
-        return $this->current();
     }
 
-    public function current()
-    {
-        $current = parent::current();
-        $class   = $this->mapper->getObjectClass($this->col, $current);
-        if ($this->col instanceof \MongoGridFs) {
-            $current = new \MongoGridFsFile($this->col, $current);
-        }
-        return $this->conn->registerDocument($class, $current);
-    }
-
-    public function toArray()
-    {
-        return iterator_to_array($this);
-    }
 }
+

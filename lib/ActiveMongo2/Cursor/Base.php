@@ -34,55 +34,48 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2\Plugin;
+namespace ActiveMongo2\Cursor;
 
-use Notoj\Annotation;
-use ActiveMongo2\Runtime\Utils;
+use MongoCollection;
+use MongoCursor;
 
-/** @Persist(collection="universal") */
-class UniversalDocument
+trait Base
 {
-    /** @Id */
-    public $id;
-
-    /** @Reference */
-    public $object;
-
-}
-
-/**
- *  @Plugin(Universal)
- */
-class Universal
-{
-    /**
-     *  @preCreate
-     */
-    public static function createId($doc, Array &$args, $conn, $annotation_args, $mapper)
+    public function getResultCache()
     {
-        if (!empty($annotation_args['set_id']) && !empty($annotation_args['auto_increment'])) {
-            $args[0]['_id'] = Autoincrement::getId($conn, __NAMESPACE__ . "\\UniversalDocument");
+        $cache = array();
+        $this->rewind();
+        while ($this->valid()) {
+            $cache[$this->key()] = parent::current();
+            $this->next();
         }
-        return true;
+        reset($this);
+        return $cache;
     }
 
-    /**
-     *  @postCreate
-     */
-    public static function postCreateId($doc, Array $args, $conn, $annotation_args, $mapper)
+    public function first()
     {
-        $uuid = new UniversalDocument;
-        $uuid->object = $doc;
+        return $this->current();
+    }
 
-        if (!empty($annotation_args['set_id'])) {
-            $uuid->id = $args[0]['_id'];
-        } else if (!empty($annotation_args['auto_increment'])) {
-            $uuid->id = Autoincrement::getId($conn, get_class($uuid));
+    public function getNext()
+    {
+        parent::getNext();
+        return $this->current();
+    }
+
+    public function current()
+    {
+        $current = parent::current();
+        $class   = $this->mapper->getObjectClass($this->col, $current);
+        if ($this->col instanceof \MongoGridFs) {
+            $current = new \MongoGridFsFile($this->col, $current);
         }
+        return $this->conn->registerDocument($class, $current);
+    }
 
-        $conn->save($uuid);
-
-        $mapper->updateProperty($doc, '@Universal', $uuid->id);
-        $conn->save($doc);
+    public function toArray()
+    {
+        return iterator_to_array($this);
     }
 }

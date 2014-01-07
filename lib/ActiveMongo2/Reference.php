@@ -37,6 +37,8 @@
 
 namespace ActiveMongo2;
 
+use ActiveMongo2\Filter as f;
+
 class Reference implements DocumentProxy, \JsonSerializable
 {
     protected $class;
@@ -44,13 +46,17 @@ class Reference implements DocumentProxy, \JsonSerializable
     protected $doc;
     protected $ref;
     protected $map;
+    protected $conn;
+    protected $mapper;
 
-    public function __construct(Array $info, $class, $conn, Array $map)
+    public function __construct(Array $info, $class, $conn, Array $map, $mapper)
     {
         $this->ref    = $info;
         $this->map    = $map;
         $this->_class = $class;
         $this->class  = $conn->getCollection($class);
+        $this->conn   = $conn;
+        $this->mapper = $mapper;
     }
 
     public function getObject()
@@ -66,18 +72,31 @@ class Reference implements DocumentProxy, \JsonSerializable
 
     public function getReference()
     {
+        return $this->ref;
+    }
+
+    public function getObjectOrReference()
+    {
         return $this->doc ?: $this->ref;
     }
 
     public function jsonSerialize() 
     {
-        return $this->getReference();
+        return $this->getObject();
     }
 
     private function _loadDocument()
     {
         if (!$this->doc) {
-            $this->doc = $this->class->getById($this->ref['$id']);
+            try {
+                $this->doc = $this->class->getById($this->ref['$id']);
+            } catch (\Exception $e) {
+                if ($this->conn->GetConfiguration()->failOnMissingReference()) {
+                    // throw exception
+                    throw $e;
+                }
+                // do nothing
+            }
         }
     }
 
@@ -100,20 +119,38 @@ class Reference implements DocumentProxy, \JsonSerializable
     {
         $this->_loadDocument();
         $this->doc->{$name} = $value;
+        if (array_key_exists($name, $this->ref)) {
+            $this->ref[$name] = $value;
+        }
     }
 
-    public function __get($name)
+    protected function __getCachedValue($name)
     {
         if (array_key_exists($name, $this->map)) {
             $expected = $this->map[$name];
             if (array_key_exists($expected, $this->ref)) {
-                return $this->ref[$expected];
+                $doc = $this->ref[$expected];
+                if (is_array($doc)) {
+                    $tmp = $doc;
+                    f\_hydratate_reference_one($tmp, [], $this->conn, [], $this->mapper);
+                    return $tmp;
+                }
+                return $doc;
             }
 
             if ($expected == '_id') {
                 // avoid one query!
                 return $this->ref['$id'];
             }
+        }
+        return FALSE;
+    }
+
+    public function __get($name)
+    {
+        $cached = $this->__getCachedValue($name);
+        if ($cached !== FALSE) {
+            return $cached;
         }
 
         $this->_loadDocument();

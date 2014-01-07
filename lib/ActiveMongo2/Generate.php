@@ -47,245 +47,33 @@ class Generate
     protected $files = array();
     protected $config;
 
-    public function getParentClasses($annotations)
-    {
-        $parents = [];
-        foreach ($annotations->get('Persist') as $object) {
-            if (!$object->isClass()) continue;
-            $class = strtolower($object['class']);
-            $parents[$class]  = $object;
-        }
-        return $parents;
-    }
-
-    public function getReferenceCache($annotations)
-    {
-        $refCache = [];
-        foreach ($annotations->get('Persist') as $object) {
-            if (!$object->isClass()) continue;
-            $class = strtolower($object['class']);
-            $refCache[$class] = [];
-            if ($object->has('RefCache')) {
-                foreach ($object->get('RefCache') as $args) {
-                    $args = $args['args'];
-                    if (empty($args)) {
-                        throw new \Exception("@RefCache expects at least one argument");
-                    }
-                    foreach ($args as $p) {
-                        $refCache[$class][] = $p;
-                    }
-                }
-            }
-        }
-        return $refCache;
-    }
-
     public function __construct(Configuration $config, Watch $watcher)
     {
-        $annotations  = new Notoj\Annotations;
         $this->files  = array();
         $this->config = $config;
 
-        foreach ($config->getModelPath() as $path) {
-            $dir = new Notoj\Dir($path);
-            $dir->getAnnotations($annotations);
-            $this->files = array_merge($this->files, $dir->getFiles());
-        }
+        $collections = new Generate\Collections((array)$config->getModelPath(), $this);
+        $fixPath = function($value) {
+            $value->setPath($this->getRelativePath($value->getPath()));
+        };
+        $collections->map($fixPath);
+        array_map($fixPath, $collections->getDefaults());
+        array_map($fixPath, $collections->getPlugins());
+        array_map($fixPath, $collections->getHydratators());
+        array_map($fixPath, $collections->getValidators());
 
-        foreach (array('Filter', 'Plugin') as $d) {
-            $dir = new Notoj\Dir(__DIR__ . "/$d");
-            $dir->getAnnotations($annotations);
-        }
-
-        $parents  = $this->getParentClasses($annotations); 
-        $refCache = $this->getReferenceCache($annotations); 
-
-        foreach (array('Persist', 'Embeddable') as $type) {
-            foreach ($annotations->get($type) as $object) {
-                if (!$object->isClass()) continue;
-                $parent = $object->getParent();
-
-                $data = array(
-                    'class' => strtolower($object['class']), 
-                    'file'  => $this->getRelativePath($object['file']),
-                    'annotation' => $object,
-                    'is_gridfs'  => $object->has('GridFs'),
-                    'parent'     => $parent ? strtolower($parent['class']) : NULL,
-                );
-
-                if (!$data['is_gridfs']) {
-                    foreach ($object->getProperties() as $prop) {
-                        if ($prop->has('Stream')) {
-                            throw new \RuntimeException('@Stream only works with @GridFS');
-                        }
-                    }
-                }
-
-                if ($object->has('SingleCollection')) {
-                    $data['disc'] = $object->getOne('SingleCollection') ?: ['__type'];
-                    $data['disc'] = current($data['disc']);
-                }
-
-                foreach ($object->get($type) as $ann) {
-                    $data['name'] = $ann['args'] ? current($ann['args']) : null;
-                    while ($parent) {
-                        $class = strtolower($parent['class']);
-                        if (empty($parents[$class])) break;
-                        if ($parents[$class]->has('SingleCollection') || empty($data['name'])) {
-                            $data['name'] = current($parents[$class]->getOne('Persist'));
-                            $data['disc'] = $parents[$class]->getOne('SingleCollection') ?: ['__type'];
-                            $data['disc'] = current($data['disc']);
-                        }
-                        $parent = $parent->GetParent();
-                    } 
-
-                    if (empty($data['name'])) {
-                        if ($data['is_gridfs']) {
-                            $data['name'] = 'fs';
-                        } else {
-                            $data['name'] = explode("\\", $data['class']);
-                            $data['name'] = strtolower(end($data['name']));
-                        }
-                    }
-
-                    if (!empty($data['disc'])) {
-                        // give them some weird name
-                        $docs[$data['class']] = $data;
-                    } else {
-                        $docs[$data['name']] = $data;
-                    }
-                }
-            }
-        }
-
-        $files = array();
-        $read  = [
-            'Validate' => 'validators', 'Hydratate' => 'hydratations',
-            'DefaultValue' => 'defaults',
-        ];
-
-        foreach ($read as $operation => $var) {
-            $$var = array();
-            foreach ($annotations->get($operation) as $validator) {
-                foreach ($validator->get($operation) as $val) {
-                    $type = current($val['args']);
-                    if (empty($type)) continue;
-                    if ($validator->isMethod()) {
-                        ${$var}[$type] = "\\" . $validator['class'] . "::" . $validator['function'];
-                    } else if ($validator->isFunction()) {
-                        ${$var}[$type] = "\\" . $validator['function'];
-                    }
-                    $files[$type] = $this->getRelativePath($validator['file']);
-                }
-            }
-        }
-
-        $namespace    = sha1($config->getLoader());
-        $mapper       = $this->getDocumentMapper($docs);
-        $class_mapper = $this->getClassMapper($docs);
-        $events       = array(
-            'preSave', 'postSave', 'preCreate', 'postCreate', 'onHydratation', 
-            'preUpdate', 'postUpdate', 'preDelete', 'postDelete'
-        );
-        $indexes      = array();
-        $plugins      = array();
-
-        foreach ($annotations->get('Plugin') as $prop) {
-            if (!$prop->isClass()) continue;
-            foreach ($prop->get('Plugin') as $anno) {
-                $name = current($anno['args']);
-                if (empty($name)) continue;
-                $plugins[$name] = $prop;
-            }
-        }
-
-        foreach ($annotations->get('Unique') as $prop) {
-            if (!$prop->isProperty()) continue;
-            if (empty($class_mapper[strtolower($prop['class'])])) {
-                continue;
-            }
-            $collection = $class_mapper[strtolower($prop['class'])]['name'];
-            foreach ($prop->get('Unique') as $anno) {
-                $indexes[] = array($collection,  array($prop['property'] => 1), array('unique' => 1));
-            }
-        }
-
-        $references = [];
-        $vars = [
-            'Reference' => false,
-            'ReferenceOne' => false,
-            'ReferenceMany' => true,
-        ];
-
-        foreach ($vars as $type => $multi) {
-            foreach ($annotations->get($type) as $prop) {
-                if (!$prop->isProperty()) continue;
-                foreach ($prop as $id => $ann) {
-                    if (Empty($ann['args'])) continue;
-                    $pzClass = strtolower($prop['class']);
-                    $pzArgs  = !empty($ann['args'][1]) ? $ann['args'][1] :[];
-                    if (empty($docs[$ann['args'][0]])) {
-                        // Document is not found, probably there
-                        // are inheritance
-                        foreach ($docs as $doc) {
-                            if ($doc['name'] != $ann['args'][0]) {
-                                continue;
-                            }
-                            $pxClass = $doc['class'];
-                            $pxArgs  = $pzArgs;
-                            if (!empty($refCache[$pxClass])) {
-                                $pxArgs = array_unique(array_merge($refCache[$pxClass], $pzArgs));
-                            }
-
-                            if (empty($pxArgs)) continue;
-
-                            $references[$pxClass][] = array(
-                                'class'         => $pzClass,
-                                'property'      => $prop['property'],
-                                'target'        => $class_mapper[$pxClass]['name'],
-                                'collection'    => $class_mapper[strtolower($prop['class'])]['name'],
-                                'update'        => $pxArgs,
-                                'multi'         => $multi,
-                                'deferred'      => $prop->has('Deferred'),
-                            );
-                        }
-                        continue;
-                    }
-
-                    $pxClass = $docs[$ann['args'][0]]['class'];
-
-                    if (!empty($refCache[$pxClass])) {
-                        $pzArgs = array_unique(array_merge($refCache[$pxClass], $pzArgs));
-                    }
-
-                    if (empty($pzArgs)) continue;
-
-                    $references[$pxClass][] = array(
-                        'class'         => $pzClass,
-                        'property'      => $prop['property'],
-                        'target'        => $class_mapper[$pxClass]['name'],
-                        'collection'    => $class_mapper[strtolower($prop['class'])]['name'],
-                        'update'        => $pzArgs,
-                        'multi'         => $multi,
-                        'deferred'      => $prop->has('Deferred'),
-                    );
-                }
-            }
-        }   
+        $target       = $config->getLoader();
+        $namespace    = sha1($target);
 
         $self = $this;
-        $code = Templates::get('documents')
+        $code = Template\Templates::get('documents')
             ->render(compact(
-                'docs', 'namespace', 'class_mapper', 'events',
-                'validators', 'mapper', 'files', 'indexes',
-                'plugins', 'hydratations', 'self', 'references',
-                'defaults', 'refCache'
+                'docs', 'namespace',
+                'mapper', 'indexes', 'self',
+                'collections'
             ), true);
 
-        $code = FixCode::fix($code);
-
-        File::write($config->getLoader(), $code);
-
+        File::write($target, FixCode::fix($code));
         $this->files = array_unique($this->files);
 
         foreach ($this->files as $file) {
@@ -293,6 +81,7 @@ class Generate
             $watcher->watchFile($file);
         }
 
+        $watcher->watchFile($target);
         $watcher->watch();
     }
     
@@ -302,28 +91,11 @@ class Generate
             $dir2 = $this->config->getLoader();
         }
 
+        if (substr($dir1, 0, 4) == "/../") {
+            // already relative path
+            return $dir1;
+        }
+
         return Path::getRelative($dir1, $dir2);
-    }
-
-    public function getDocumentMapper(Array $map)
-    {
-        $docs = array();
-        foreach ($map as $key => $doc) {
-            unset($doc['annotation']);
-            $docs[$key] = $doc;
-        }
-
-        return $docs;
-    }
-
-    public function getClassMapper(Array $map)
-    {
-        $docs = array();
-        foreach ($map as $doc) {
-            unset($doc['annotation']);
-            $docs[$doc['class']] = $doc;
-        }
-
-        return $docs;
     }
 }

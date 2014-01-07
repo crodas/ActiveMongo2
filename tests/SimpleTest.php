@@ -68,6 +68,18 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertTrue($userCol->count() == 0);
     }
 
+    /**
+     *  @expectedException \RuntimeException
+     */
+    public function testInvalidEmbedValidator()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "crodas-" . rand(0, 0xfffff);
+        $user->email = "fooobar";
+        $conn->save($user);
+    }
+
     /** @dependsOn testCreateUpdateDelete */
     public function testSimpleFind()
     {
@@ -253,13 +265,13 @@ class SimpleTest extends \phpunit_framework_testcase
         $post->author = $user;
         $post->title  = "foobar";
 
-        $post->tags = array('foobar', 'xx', 'xx');
+        $post->tags = array(['x' => 'foobar'], ['x' => 'xx'], ['x' => 'xxyy']);
         $post->author_id = $user->userid;
         $conn->save($post);
         $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
         $this->assertEquals($zpost->tags, $post->tags);
 
-        $post->tags[0] = 'yyy';
+        $post->tags[0] = ['x' => 'yyyxx'];
         $conn->save($post);
         $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
         $this->assertEquals($zpost->tags, $post->tags);
@@ -305,7 +317,20 @@ class SimpleTest extends \phpunit_framework_testcase
         $doc1 = $conn->getCollection('post')
             ->getById($post->id);
 
-        $this->assertEquals($doc->foobar, $doc1->foobar);
-        $this->assertEquals($doc, $doc1);
+        $this->assertTrue(empty($doc1->foobar));
+        $this->assertNotEquals($doc, $doc1);
+    }
+
+    public function testCollectionIterator()
+    {
+        $conn = getConnection();
+        $one = $conn->post->find();
+
+        $i = 0;
+        foreach ($conn->post as $p) {
+            $this->assertTrue($p instanceof ActiveMongo2\Tests\Document\PostDocument);
+            $i++;
+        }
+        $this->assertEquals($one->count(), $i);
     }
 }

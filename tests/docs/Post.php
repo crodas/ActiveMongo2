@@ -2,11 +2,21 @@
 
 namespace ActiveMongo2\Tests\Document;
 
+class Middle extends BaseDocument
+{
+    /**
+     *  @preSave
+     */
+    public function foobar()
+    {
+    }
+}
+
 /** 
  *  @Persist
  *  @RefCache('title', 'tags', 'author')
  */
-class PostDocument extends BaseDocument
+class PostDocument extends Middle
 {
     /** @Universal */
     public $global_id;
@@ -58,4 +68,5 @@ class PostDocument extends BaseDocument
             $this->tmp++;
         }
     }
+
 }

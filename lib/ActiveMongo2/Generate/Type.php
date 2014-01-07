@@ -34,55 +34,90 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2\Plugin;
+namespace ActiveMongo2\Generate;
 
 use Notoj\Annotation;
-use ActiveMongo2\Runtime\Utils;
+use ActiveMongo2\Template\Templates;
 
-/** @Persist(collection="universal") */
-class UniversalDocument
+class Type extends Base
 {
-    /** @Id */
-    public $id;
+    protected $file;
+    protected $type;
 
-    /** @Reference */
-    public $object;
-
-}
-
-/**
- *  @Plugin(Universal)
- */
-class Universal
-{
-    /**
-     *  @preCreate
-     */
-    public static function createId($doc, Array &$args, $conn, $annotation_args, $mapper)
+    public function __construct(Annotation $ann, $type)
     {
-        if (!empty($annotation_args['set_id']) && !empty($annotation_args['auto_increment'])) {
-            $args[0]['_id'] = Autoincrement::getId($conn, __NAMESPACE__ . "\\UniversalDocument");
-        }
-        return true;
+        $this->annotation = $ann;
+        $this->type       = $type;
+        $this->name       = $type;
     }
 
-    /**
-     *  @postCreate
-     */
-    public static function postCreateId($doc, Array $args, $conn, $annotation_args, $mapper)
+    public function getFunction()
     {
-        $uuid = new UniversalDocument;
-        $uuid->object = $doc;
+        return $this->annotation['function'];
+    }
 
-        if (!empty($annotation_args['set_id'])) {
-            $uuid->id = $args[0]['_id'];
-        } else if (!empty($annotation_args['auto_increment'])) {
-            $uuid->id = Autoincrement::getId($conn, get_class($uuid));
+    public function getMethod()
+    {
+        return $this->getFunction();
+    }
+
+    protected function getFunctionBodyStart(&$name)
+    {
+        $parts = explode("\\", $this->annotation['function']);
+        $name  = end($parts); 
+        $lines = file($this->annotation['file']);
+        return implode('', array_slice($lines, $this->annotation['line'] -1));
+    }
+
+    protected function getEmbeddableCode(&$code)
+    {
+        $code  = $this->getFunctionBodyStart($name);
+        $start = strpos($code, '{', stripos($code, $name))+1; 
+        $end   = $start;
+        $max   = strlen($code);
+
+        for ($i = 1; $i >  0 && $end < $max; $end++) {
+            if ($code[$end] == '}') {
+                $i--;
+            } else if ($code[$end] == '{') {
+                $i++;
+            }
         }
 
-        $conn->save($uuid);
+        $code = substr($code, $start, $end - $start - 1);
 
-        $mapper->updateProperty($doc, '@Universal', $uuid->id);
-        $conn->save($doc);
+        return $end < $max;
+    }
+
+    public function toEmbedCode($prop)
+    {
+        $this->getEmbeddableCode($code);
+        $exit = "exit_" . uniqid(true);
+        $code = "$code\n$exit:\n"; 
+        $code = str_replace('$value', $prop, $code);
+        $code = preg_replace_callback('/return([^;]+);/smU', function($args) use ($exit) {
+            return "\$return = $args[1];
+            goto $exit;";
+        }, $code);
+
+        $code = preg_replace("/goto $exit;\s+$exit:/smU", "", $code, -1, $done);
+        if ($done && strpos($code, $exit)) {
+            $code .= "$exit:";
+        }
+
+        return $code;
+    }
+
+    public function isEmbeddable()
+    {
+        return $this->annotation->has('Embed') && $this->getEmbeddableCode($code);
+    }
+
+    public function toCode($prop, $var = '$doc')
+    {
+        $self = $this;
+        $args = (array)$prop->annotation->getOne($this->name);
+        return Templates::get('callback')
+            ->render(compact('args', 'prop', 'self', 'var'), true);
     }
 }

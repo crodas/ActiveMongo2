@@ -37,25 +37,35 @@
 namespace ActiveMongo2;
 
 use MongoCollection;
+use IteratorAggregate;
 
-class Collection 
+class Collection implements IteratorAggregate
 {
     protected $zconn;
     protected $mapper;
     protected $zcol;
-    protected static $list = array();
+    protected $cache;
+    protected $zclass;
 
     protected static $defaultOpts = array(
-        'w' => 1,
         'multiple' => true,
     );
 
-    public function __construct(Connection $conn, $mapper, MongoCollection $col)
+    public function __construct(Connection $conn, $mapper, MongoCollection $col, $cache, $config, $name)
     {
+        $this->config = $config;
+        $this->cache  = $cache;
         $this->zconn  = $conn;
         $this->zcol   = $col;
         $this->mapper = $mapper;
+        $this->zclass = $name;
     }
+
+    public function getIterator()
+    {
+        return $this->find([]);
+    }
+
 
     public function rawCollection()
     {
@@ -73,13 +83,46 @@ class Collection
 
     public function update($filter, $update, $opts = array())
     {
+        $this->mapper->onQuery($this->zclass, $filter);
         $this->analizeUpdate($update);
+        if (empty($opts['w'])) {
+            $opts['w'] = $this->config->getWriteConcern();
+        }
         $opts = array_merge(self::$defaultOpts, $opts);
         return $this->zcol->update($filter, $update, $opts);
     }
 
+    public function remove($filter, $opts = array())
+    {
+        if (empty($opts['w'])) {
+            $opts['w'] = $this->config->getWriteConcern();
+        }
+        $opts = array_merge(self::$defaultOpts, $opts);
+        $this->mapper->onQuery($this->zclass, $filter);
+        return $this->zcol->remove($filter, $opts);
+    }
+
+    public function sum($key, $filter = array())
+    {
+        $this->mapper->onQuery($this->zclass, $filter);
+        $object = $this->zcol->aggregate([
+            ['$match' => $filter],
+            ['$group' => [
+                '_id' => null,
+                'sum' => ['$sum' => '$' . $key],
+            ]],
+        ]);
+        
+        if (empty($object['result'][0])) {
+            return 0;
+        }
+        
+        return $object['result'][0]['sum'];
+    }
+
     public function count($filter = array(), $skip = 0, $limit = 0)
     {
+        $this->mapper->onQuery($this->zclass, $filter);
         return $this->zcol->count($filter, $skip, $limit);
     }
 
@@ -103,32 +146,52 @@ class Collection
         return $results;
     }
 
-    public function findAndModify($query, $update, $options)
+    public function findAndModify($query, $update, $options = [])
     {
+        $this->mapper->onQuery($this->zclass, $query);
         $response = $this->zcol->findAndModify($query, $update, null, $options);
+
+        if (empty($response)) {
+            return NULL;
+        }
 
         return $this->zconn->registerDocument($this->mapper->getObjectClass($this->zcol, $response), $response);
     }
 
     public function find($query = array(), $fields = array())
     {
-        return new Cursor($query, $fields, $this->zconn, $this->zcol, $this->mapper);
+        $this->mapper->onQuery($this->zclass, $query);
+        return new Cursor\Cursor($query, $fields, $this->zconn, $this->zcol, $this->mapper);
     }
 
     public function getById($id)
     {
-        $zid = $this->zcol . ':' . serialize($id);
-        if (empty(self::$list[$zid])) {
-            self::$list[$zid] = $this->findOne(['_id' => $id]);
-            if (empty(self::$list[$zid])) {
-                throw new \RuntimeException("Cannot find object with _id $id");
-            }
+        $cache = $this->cache->get([$this->zcol, $id]);
+        if (is_array($cache)) {
+            return $this->zconn->registerDocument(
+                $this->mapper->getObjectClass($this->zcol, $cache), 
+                $cache
+            );
         }
-        return self::$list[$zid];
+        $document = $this->findOne(['_id' => $id]);
+
+        if (!$document) {
+            throw new \RuntimeException("Cannot find object with _id $id");
+        }
+
+        $this->cache->set([$this->zcol, $id], $this->mapper->getRawDocument($document, false));
+
+        return $document;
+    }
+
+    public function resultCache(Array $object)
+    {
+        return new Cursor\Cache($object, $this->zconn, $this->zcol, $this->mapper);
     }
 
     public function findOne($query = array(), $fields = array())
     {
+        $this->mapper->onQuery($this->zclass, $query);
         $doc =  $this->zcol->findOne($query, $fields);
         if (empty($doc)) {
             return $doc;

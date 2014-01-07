@@ -38,7 +38,24 @@ namespace ActiveMongo2\Filter;
 
 use ActiveMongo2\Reference;
 
-/** @Validate(String) */
+/**
+ *  @DataType hash
+ *  @Embed
+ */
+function is_hash($obj)
+{
+    if (is_array($obj)) {
+        $diff = array_diff(array_keys($obj), range(0, count($obj)-1));
+        return !empty($diff);
+    }
+    return false;
+}
+
+/** 
+ * @Validate(String) 
+ * @DataType String
+ * @Embed
+ */
 function _validate_string(&$value)
 {
     if (!is_scalar($value)) {
@@ -51,6 +68,8 @@ function _validate_string(&$value)
 /** 
  * @Validate(Integer) 
  * @Validate(Int) 
+ * @DataType Int
+ * @Embed
  */
 function _validate_integer(&$value)
 {
@@ -61,18 +80,64 @@ function _validate_integer(&$value)
     return true;
 }
 
-
-/**
- *  @Validate(Password)
+/** 
+ * @Validate(Numeric)
+ * @DataType Numeric
+ * @Embed
  */
-function _validate_password(&$value, $args)
+function _validate_numeric(&$value)
 {
-    $value = password_hash($value, PASSWORD_BCRYPT, ["cost" => 7, "salt" => sha1(implode(",", $args))]);
+    if (!is_numeric($value)) {
+        return false;
+    }
+    $value = $value+0;
     return true;
 }
 
 /** 
+ * @Validate(Float)
+ * @DataType Float
+ * @Embed
+ */
+function _validate_float(&$value)
+{
+    if (!is_numeric($value)) {
+        return false;
+    }
+    $value = (float)$value;
+    return true;
+}
+
+
+/**
+ *  @Validate(Password)
+ *  @DataType String
+ *  @Embed
+ */
+function _validate_password(&$value, $args)
+{
+    if (!password_get_info($value)['algo']) {
+        $value = password_hash($value, PASSWORD_BCRYPT, ["cost" => 7, "salt" => sha1(implode(",", $args))]);
+    }
+    return true;
+}
+
+/** 
+ * @Hydratate(Array) 
+ */
+function _hydrate_array(&$value)
+{
+    foreach ($value as &$val) {
+        if (!empty($val['__instance'])) {
+            unset($val['__instance']);
+        }
+    }
+    return $value;
+}
+
+/** 
  * @Validate(Array) 
+ * @DataType Array
  */
 function _validate_array(&$value)
 {
@@ -80,7 +145,7 @@ function _validate_array(&$value)
         return false;
     }
     foreach ($value as &$v) {
-        if (is_array($v) && empty($v['__instance'])) {
+        if (is_hash($v) && empty($v['__instance'])) {
             $v['__instance'] = uniqid(true);
         }
     }

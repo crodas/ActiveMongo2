@@ -34,55 +34,127 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2\Plugin;
+namespace ActiveMongo2\Generate;
 
 use Notoj\Annotation;
-use ActiveMongo2\Runtime\Utils;
+use ActiveMongo2\Generate;
 
-/** @Persist(collection="universal") */
-class UniversalDocument
+class Property extends Base
 {
-    /** @Id */
-    public $id;
+    protected $collection;
+    protected $type = null;
 
-    /** @Reference */
-    public $object;
-
-}
-
-/**
- *  @Plugin(Universal)
- */
-class Universal
-{
-    /**
-     *  @preCreate
-     */
-    public static function createId($doc, Array &$args, $conn, $annotation_args, $mapper)
+    public function __construct(Collection $col, Annotation $prop)
     {
-        if (!empty($annotation_args['set_id']) && !empty($annotation_args['auto_increment'])) {
-            $args[0]['_id'] = Autoincrement::getId($conn, __NAMESPACE__ . "\\UniversalDocument");
+        $this->collection = $col;
+        $this->annotation = $prop;
+
+        foreach ($this->getValidators() as $val) {
+            foreach ($val->annotation->getOne('DataType') as $type) {
+                if ($this->type === null) {
+                    $this->type = $type;
+                } else {
+                    throw new \Exception("{$this->getPHPName()} has two data tyeps {$type} and {$this->type}");
+                }
+            }
         }
-        return true;
     }
 
-    /**
-     *  @postCreate
-     */
-    public static function postCreateId($doc, Array $args, $conn, $annotation_args, $mapper)
+    public function isId()
     {
-        $uuid = new UniversalDocument;
-        $uuid->object = $doc;
+        return $this->annotation->has('Id');
+    }
 
-        if (!empty($annotation_args['set_id'])) {
-            $uuid->id = $args[0]['_id'];
-        } else if (!empty($annotation_args['auto_increment'])) {
-            $uuid->id = Autoincrement::getId($conn, get_class($uuid));
+    public function getPHPName()
+    {
+        return $this->annotation['property'];
+    }
+
+    public function isPublic()
+    {
+        return in_array('public', $this->annotation['visibility']);
+    }
+
+    public function getDefault() 
+    {
+        $defaults = array();
+        foreach ($this->collection->getDefaults() as $name => $type) {
+            if ($this->annotation->has($name)) {
+                $defaults[] = $type;
+                $type->name = $name;
+            }
+        }
+        return $defaults;
+    }
+
+    public function getProperty()
+    {
+        return $this->annotation['property'];
+    }
+
+    protected function getCallback($filter)
+    {
+        $types = array();
+        foreach ($this->collection->$filter() as $name => $type) {
+            if ($this->annotation->has($name)) {
+                $types[] = $type;
+            }
+        }
+        return $types;
+    }
+
+    public function getValidators()
+    {
+        return $this->getCallback('getValidators');
+    }
+
+    public function getHydratations()
+    {
+        return $this->getCallback('getHydratators');
+    }
+
+    public function __toString()
+    {
+        return $this->getName();
+    }
+
+    public function getPHPBaseVariable($prefix = '$doc')
+    {
+        if (!$this->isId() && $this->collection->isGridFS()) {
+            $prefix = $prefix . '["metadata"]';
+        }
+        return $prefix;
+    }
+
+    public function getPHPVariable($prefix = '$doc')
+    {
+        $prefix = $this->getPHPBaseVariable($prefix);
+        return $prefix . "[" . var_export($this->getName(), true) . "]";
+    }
+
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    public function getName($prefix = false)
+    {
+        if ($this->isId()) {
+            return '_id';
         }
 
-        $conn->save($uuid);
+        $field = $this->annotation->getOne('Field');
+        if (!empty($field)) {
+            $property = current($field);
+        } else {
+            $property = $this->getPHPName();
+        }
 
-        $mapper->updateProperty($doc, '@Universal', $uuid->id);
-        $conn->save($doc);
+        if ($prefix && $this->collection->isGridFs()) {
+            // It is an special case
+            $property = "metadata.$property";
+        }
+        return $property;
     }
+
 }

@@ -39,55 +39,59 @@ namespace ActiveMongo2\Filter;
 
 use ActiveMongo2\Reference;
 
+require_once __DIR__ . "/Common.php";
+
 /**
  *  @Hydratate(ReferenceMany)
  */
-function _hydratate_reference_many(&$value, Array $args, $conn, $mapper)
+function _hydratate_reference_many(&$value, Array $args, $conn, $unused, $mapper)
 {
     foreach ((array)$value as $id => $val) {
-        _hydratate_reference_one($value[$id], $args, $conn, $mapper);
+        _hydratate_reference_one($value[$id], $args, $conn, $unused, $mapper);
     }
 }
 
 /**
  *  @Validate(ReferenceMany)
+ *  @DataType Array
  */
-function _validate_reference_many(&$value, Array $args, $conn, $mapper)
+function _validate_reference_many(&$value, Array $zargs, $conn, $args, $mapper)
 {
     if (!is_array($value)) {
         return false;
     }
 
     foreach ($value as $id => $val) {
-        if (!_validate_reference_one($value[$id], $args, $conn, $mapper)) {
+        if (!_validate_reference_one($value[$id], $zargs, $conn, $args, $mapper)) {
             return false;
         }
     }
 
-    return _validate_array($value, $args, $conn, $mapper);
+    return _validate_array($value, $zargs, $conn, $args, $mapper);
 }
 
 
 /**
  *  @Hydratate(Reference)
  *  @Hydratate(ReferenceOne)
+ *  @DataType Hash
  */
-function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
+function _hydratate_reference_one(&$value, Array $args, $conn, $unused, $mapper)
 {
     $expected = current($args);
-    if ($expected && $expected != $value['$ref']) {
-        throw new \RuntimeException("Expecting document {$expected} but got {$value['ref']}");
+    if ($expected && $expected != $value['$ref'] && !empty($value['__class']) && $expected != $value['__class']) {
+        throw new \RuntimeException("Expecting document {$expected} but got {$value['$ref']}");
     }
 
     try {
         $class = $mapper->mapCollection($value['$ref'])['class'];
     } catch (\Exception $e) {
         if (empty($value['__class'])) {
-            throw $e;
+            throw new \RuntimeException("reference of {$value['$ref']} needs __class interal type");
         }
         $class = $value['__class'];
     }
-    $value = new Reference($value, $class, $conn, $mapper->getMapping($class));
+    $value = new Reference($value, $class, $conn, $mapper->getMapping($class), $mapper);
     $mapper->trigger('onHydratation', $value);
 }
 
@@ -95,10 +99,10 @@ function _hydratate_reference_one(&$value, Array $args, $conn, $mapper)
  *  @Validate(Reference)
  *  @Validate(ReferenceOne)
  */
-function _validate_reference_one(&$value, Array $args, $conn, $mapper)
+function _validate_reference_one(&$value, Array $rargs, $conn, $args, $mapper)
 {
     if ($value instanceof Reference) {
-        $value = $value->getReference();
+        $value = $value->getObjectOrReference();
         if (is_array($value)) {
             if (!empty($args[1])) {
                 foreach ((array)$args[1] as $prop) {
@@ -112,9 +116,13 @@ function _validate_reference_one(&$value, Array $args, $conn, $mapper)
     }
 
     $document = $value;
-    $conn->save($document);
+    $info     = $mapper->mapClass($document);
+    if (!$info['is_gridfs']) {
+        $conn->save($document);
+    }
 
-    if (!empty($args) && !$conn->is(current($args), $document)) {
+    $check = !empty($args) ? current($args) : null;
+    if ($check && !$document instanceof $check && !$conn->is(current($args), $document)) {
         throw new \RuntimeException("Invalid value");
     }
     

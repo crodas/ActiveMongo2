@@ -34,55 +34,33 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2\Plugin;
 
-use Notoj\Annotation;
-use ActiveMongo2\Runtime\Utils;
+namespace ActiveMongo2\Cursor;
 
-/** @Persist(collection="universal") */
-class UniversalDocument
+use ArrayIterator;
+use MongoCollection;
+use ActiveMongo2\Connection;
+
+class Cache extends ArrayIterator
 {
-    /** @Id */
-    public $id;
+    use Base;
 
-    /** @Reference */
-    public $object;
+    protected $mapper;
+    protected $conn;
+    protected $col;
 
-}
 
-/**
- *  @Plugin(Universal)
- */
-class Universal
-{
-    /**
-     *  @preCreate
-     */
-    public static function createId($doc, Array &$args, $conn, $annotation_args, $mapper)
+    public function __construct(Array $resultset, Connection $conn, MongoCollection $col, $mapper)
     {
-        if (!empty($annotation_args['set_id']) && !empty($annotation_args['auto_increment'])) {
-            $args[0]['_id'] = Autoincrement::getId($conn, __NAMESPACE__ . "\\UniversalDocument");
-        }
-        return true;
+        $this->conn   = $conn;
+        $this->col    = $col;
+        $this->mapper = $mapper;
+        parent::__construct($resultset);
     }
 
-    /**
-     *  @postCreate
-     */
-    public static function postCreateId($doc, Array $args, $conn, $annotation_args, $mapper)
+    public function getResultCache()
     {
-        $uuid = new UniversalDocument;
-        $uuid->object = $doc;
-
-        if (!empty($annotation_args['set_id'])) {
-            $uuid->id = $args[0]['_id'];
-        } else if (!empty($annotation_args['auto_increment'])) {
-            $uuid->id = Autoincrement::getId($conn, get_class($uuid));
-        }
-
-        $conn->save($uuid);
-
-        $mapper->updateProperty($doc, '@Universal', $uuid->id);
-        $conn->save($doc);
+        return (array)$this;
     }
+
 }

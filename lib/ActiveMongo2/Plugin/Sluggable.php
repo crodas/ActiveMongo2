@@ -42,15 +42,6 @@ namespace ActiveMongo2\Plugin;
  */
 class Sluggable
 {
-    protected $args;
-    public function __construct(Array $args)
-    {
-        $this->args = $args;
-        if (count($args) != 2) {
-            throw new \RuntimeException("@Sluggable expects two arguments");
-        }
-    }
-
     public static function sluggify($text)
     {
         // replace non letter or digits by -
@@ -74,15 +65,47 @@ class Sluggable
             return 'n-a';
         }
 
-        return $text;
+        return substr($text, 0, 50);
+    }
+
+    protected static function check($args)
+    {
+        if (count($args) != 2) {
+            throw new \RuntimeException("@Sluggable expects two arguments");
+        }
+    }
+
+    /**
+     *  @preUpdate
+     */
+    public static function updateSlugUrl($obj, Array $event_args, $conn, $args)
+    {
+        self::check($args);
+        $source = $args[0];
+        $target = $args[1];
+
+        $document = &$event_args[0];
+        if (empty($obj->$target)) {
+            // Rarely use case
+            // @Sluggable has been added and old documents are being update
+            $slug = self::sluggify($obj->$source ?: 'n-a');
+            $col  = $conn->getCollection(get_class($obj));
+
+            while ( $col->count(array($target => $slug)) != 0) {
+                $slug .= '-' . uniqid(true);
+            }
+
+            $document['$set'][$target] = $slug;
+        }
     }
 
     /**
      *  @preCreate
      */
-    public function setSlugUrl($obj, Array $event_args, $conn)
+    public static function setSlugUrl($obj, Array $event_args, $conn, $args)
     {
-        $args = $this->args;
+        self::check($args);
+
         $document = &$event_args[0];
         if (!empty($document[$args[1]])) {
             /* If the slug already exists, and it is different than

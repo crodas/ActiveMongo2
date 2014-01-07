@@ -34,55 +34,89 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2\Plugin;
 
-use Notoj\Annotation;
-use ActiveMongo2\Runtime\Utils;
+namespace ActiveMongo2\Generate;
 
-/** @Persist(collection="universal") */
-class UniversalDocument
+use Notoj\Annotation\AnnClass;
+
+abstract class Base
 {
-    /** @Id */
-    public $id;
+    protected $annotation;
+    protected $file;
+    protected $parent;
 
-    /** @Reference */
-    public $object;
-
-}
-
-/**
- *  @Plugin(Universal)
- */
-class Universal
-{
-    /**
-     *  @preCreate
-     */
-    public static function createId($doc, Array &$args, $conn, $annotation_args, $mapper)
+    public function isMethod()
     {
-        if (!empty($annotation_args['set_id']) && !empty($annotation_args['auto_increment'])) {
-            $args[0]['_id'] = Autoincrement::getId($conn, __NAMESPACE__ . "\\UniversalDocument");
-        }
-        return true;
+        return !empty($this->annotation['class']) && !empty($this->annotation['function']);
     }
 
-    /**
-     *  @postCreate
-     */
-    public static function postCreateId($doc, Array $args, $conn, $annotation_args, $mapper)
+    public function setParent(Base $p)
     {
-        $uuid = new UniversalDocument;
-        $uuid->object = $doc;
+        $this->parent = $p;
+        return $this;
+    }
 
-        if (!empty($annotation_args['set_id'])) {
-            $uuid->id = $args[0]['_id'];
-        } else if (!empty($annotation_args['auto_increment'])) {
-            $uuid->id = Autoincrement::getId($conn, get_class($uuid));
+    public function getParent()
+    {
+        return $this->parent;
+    }
+
+    public function getAnnotation()
+    {
+        return $this->annotation;
+    }
+
+    public function getClass()
+    {
+        return strtolower($this->annotation['class']);
+    }
+
+    public function isPublic()
+    {
+        return in_array('public', $this->annotation['visibility']);
+    }
+
+    public function isStatic()
+    {
+        return in_array('static', $this->annotation['visibility']);
+    }
+
+    public function isAbstract()
+    {
+        return in_array('abstract', $this->annotation['visibility']);
+    }
+
+    public function getMethodsByAnnotation($ann)
+    {
+        if (!$this->isClass()) {
+            throw new \RuntimeException("Invalid call, it is not a class");
         }
 
-        $conn->save($uuid);
+        $methods = array();
+        foreach ($this->annotation->getMethods() as $method) {
+            if ($method->has($ann)) {
+                $method = new Type($method, $ann);
+                $method->setPath($this->getPath());
+                $methods[] = $method;
+            }
+        }
+        return $methods;
+    }
 
-        $mapper->updateProperty($doc, '@Universal', $uuid->id);
-        $conn->save($doc);
+    public function isClass()
+    {
+        return $this->annotation instanceof AnnClass;
+    }
+
+
+    public function setPath($file)
+    {
+        $this->file = $file;
+        return $this;
+    }
+
+    public function getPath()
+    {
+        return $this->file ?: $this->annotation['file'];
     }
 }

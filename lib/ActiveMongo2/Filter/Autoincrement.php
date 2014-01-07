@@ -40,8 +40,11 @@ namespace ActiveMongo2\Plugin;
 use ActiveMongo2\Plugin\Autoincrement;
 use ActiveMongo2\DocumentProxy;
 
-/** @DefaultValue(AutoincrementBy) */
-function __autoincrement_field(Array $docs, Array $args, $conn)
+/** 
+ * @DefaultValue(AutoincrementBy) 
+ * @DataType Int
+ */
+function __autoincrement_field(Array $docs, Array $rargs, $conn, Array $args)
 {
     if (empty($args)) {
         throw new \Exception("@DefaultType expects at least one argument");

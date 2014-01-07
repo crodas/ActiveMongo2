@@ -18,6 +18,10 @@ class EmbedReferenceTest extends \phpunit_framework_testcase
         $this->assertNotEquals("foobar", $user->pass);
         $old_pass = $user->pass;
         $conn->save($user);
+        $this->assertEquals($old_pass, $user->pass);
+
+        $user->pass = "xxx";
+        $conn->save($user);
         $this->assertNotEquals($old_pass, $user->pass);
 
         $post = new PostDocument;
@@ -42,6 +46,7 @@ class EmbedReferenceTest extends \phpunit_framework_testcase
 
         $post->readers_1[] = $user;
         $post->readers_1[] = $user;
+        $post->readers_1[] = $user;
         $conn->save($post);
 
         $zpost = $this->getPost();
@@ -64,12 +69,48 @@ class EmbedReferenceTest extends \phpunit_framework_testcase
         $this->assertNotEquals($zuser[0]->visits, $zuser[1]->visits);
 
                  
-        $this->assertEquals(count($this->getPost()->readers_1), 2);
-        unset($post->readers_1[0]);
-        $conn->save($post);
+        $this->assertEquals(count($this->getPost()->readers_1), 3);
+        $xpost = $this->getPost();
+        unset($xpost->readers_1[0]);
+        unset($xpost->readers_1[1]);
+        $conn->save($xpost);
 
         $this->assertEquals(count($this->getPost()->readers_1), 1);
         $this->assertEquals(array_keys($this->getPost()->readers_1), array(0));
+
+        $conn->delete($post);
+        $conn->delete($user);
+    }
+
+    public function testJSON()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "crodas:" . uniqid();
+        $user->pass     = "foobar";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author = $user;
+        $post->author_id = $user->userid;
+        $post->title = "some weird title";
+        $conn->save($post);
+
+        foreach ($conn->getCollection('post')->find() as $zpost) {
+            $a1 = json_encode($user);
+            $a2 = json_encode($zpost->author);
+            $this->AssertEquals(substr($a1, 0, 200), substr($a2, 0, 200));
+            $ob1 = json_decode($a1, true);
+            $ob2 = json_decode($a2, true);
+
+            array_pop($ob1);
+            array_pop($ob1);
+            array_pop($ob2);
+            array_pop($ob2);
+
+            $this->AssertEquals($ob1, $ob2);
+            
+        }
 
         $conn->delete($post);
         $conn->delete($user);
@@ -106,8 +147,8 @@ class EmbedReferenceTest extends \phpunit_framework_testcase
         $conn->save($post);
 
         // read from db
-        $this->assertEquals(count($this->getPost()->readers), count($post->readers));
-        $this->assertEquals(count($this->getPost()->readers), 2);
+        $this->assertEquals(count($this->getPost()->readers), 1);
+        $this->assertEquals(count($this->getPost()->readers), 1);
 
         // update things in the reference, it should update
         // the object which is referenced too
@@ -119,10 +160,10 @@ class EmbedReferenceTest extends \phpunit_framework_testcase
         // remove one
         unset($post->readers[0]);
         $conn->save($post);
-        $this->assertEquals(count($this->getPost()->readers), count($post->readers));
-        $this->assertEquals(count($this->getPost()->readers), 1);
-        $this->assertTrue(!empty($this->getPost()->readers[0]));
-        $this->assertEquals(array_keys($this->getPost()->readers), array(0));
+        $this->assertEquals(count($this->getPost()->readers), 0);
+        $this->assertEquals(count($this->getPost()->readers), 0);
+        $this->assertTrue(empty($this->getPost()->readers[0]));
+        $this->assertEquals(array_keys($this->getPost()->readers), array());
 
         //delete things
         $conn->delete($post);
