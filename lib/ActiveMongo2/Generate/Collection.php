@@ -140,14 +140,6 @@ class Collection extends Base
         return NULL;
     }
 
-    protected function getAnnotationArgs()
-    {
-        if (!$this->annotation->has('Persist') && !$this->annotation->has('Embeddable')) {
-            return false;
-        }
-        return $this->annotation->getOne('Persist') ?: $this->annotation->getOne('Embeddable');
-    }
-
     protected function getNameFromAnnotation($args, $ann)
     {
         foreach ($ann as $name) {
@@ -209,11 +201,6 @@ class Collection extends Base
         return $this->collections->getAnnotationByName($name);
     }
 
-    public function getAnnotation()
-    {
-        return $this->annotation;
-    }
-    
     public function getParent()
     {
         $parent = $this->annotation->getParent();

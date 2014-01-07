@@ -63,6 +63,15 @@ abstract class Base
         return $this;
     }
 
+    public function getAnnotationArgs()
+    {
+        if (!$this->annotation->has('Persist') && !$this->annotation->has('Embeddable')) {
+            return false;
+        }
+        return $this->annotation->getOne('Persist') ?: $this->annotation->getOne('Embeddable');
+    }
+
+
     public function getParent()
     {
         return $this->parent;
