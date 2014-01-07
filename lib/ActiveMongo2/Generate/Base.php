@@ -45,6 +45,13 @@ abstract class Base
     protected $file;
     protected $parent;
 
+    public function is($name, $recursive = true)
+    {
+        return $this->annotation->has($name) ||
+            ($recursive && $this->getParent() && $this->getParent()->is($name));
+    }
+
+
     public function isMethod()
     {
         return !empty($this->annotation['class']) && !empty($this->annotation['function']);

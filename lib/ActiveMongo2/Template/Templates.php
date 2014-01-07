@@ -302,7 +302,7 @@ namespace {
             $instance = '_' . uniqid(true);
             echo "\nclass Mapper\n{\n    protected \$mapper = " . (var_export($collections->byName(), true)) . ";\n    protected \$class_mapper = " . (var_export($collections->byClass(), true)) . ";\n    protected static \$loaded = array();\n    protected \$connection;\n\n    public function __construct(Connection \$conn)\n    {\n        \$this->connection = \$conn;\n        spl_autoload_register(array(\$this, '__autoloader'));\n    }\n\n    public function getClass(\$name)\n    {\n        \$class = __NAMESPACE__ . \"\\\\\$name\";\n        if (!class_exists(\$class, false)) {\n            \$define = __NAMESPACE__ . \"\\\\define_class_\" . sha1(\$name);\n            \$define();\n        }\n\n        return \$class;\n    }\n\n    protected function array_diff(Array \$arr1, Array \$arr2)\n    {\n        \$diff = array();\n        foreach (\$arr1 as \$key => \$value) {\n            if (empty(\$arr2[\$key]) || \$arr2[\$key] !== \$arr1[\$key]) {\n                \$diff[\$key] = \$value;\n            }\n        }\n        return \$diff;\n    }\n\n\n    public function __autoloader(\$class)\n    {\n        \$class = strtolower(\$class);\n        if (!empty(\$this->class_mapper[\$class])) {\n            self::\$loaded[\$this->class_mapper[\$class]['file']] = true;\n            require __DIR__ . \$this->class_mapper[\$class]['file'];\n\n            return true;\n        }\n        return false;\n    }\n\n    public function mapCollection(\$col)\n    {\n        if (empty(\$this->mapper[\$col])) {\n            throw new \\RuntimeException(\"Cannot map {\$col} collection to its class\");\n        }\n\n        \$data = \$this->mapper[\$col];\n\n        if (empty(self::\$loaded[\$data['file']])) {\n            if (!class_exists(\$data['class'], false)) {\n                require __DIR__ .  \$data['file'];\n            }\n            self::\$loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    public function onQuery(\$table, Array &\$query)\n    {\n        switch (\$table) {\n";
             foreach($collections as $collection) {
-                if ($collection->isSingleCollection() && $collection->getParent()) {
+                if ($collection->is('SingleCollection') && $collection->getParent()) {
                     echo "            case ";
                     var_export($collection->getClass());
                     echo ":\n                \$query[";
@@ -314,7 +314,7 @@ namespace {
             }
             echo "        }\n    }\n\n    public function mapClass(\$class)\n    {\n        if (is_object(\$class)) {\n            \$class = \$this->get_class(\$class);\n        }\n\n        \$class = strtolower(\$class);\n        if (empty(\$this->class_mapper[\$class])) {\n";
             foreach($collections as $collection) {
-                if ($collection->isSingleCollection()) {
+                if ($collection->is('SingleCollection')) {
                     echo "                if (\$class == ";
                     var_export($collection->getClass());
                     echo " ||  \$class == ";
@@ -326,7 +326,7 @@ namespace {
             }
             echo "            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        \$data = \$this->class_mapper[\$class];\n\n        if (empty(self::\$loaded[\$data['file']])) {\n            if (class_exists(\$data['class'], false)) {\n                require __DIR__ . \$data['file'];\n            }\n            self::\$loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    protected function array_unique(\$array, \$toRemove)\n    {\n        \$return = array();\n        \$count  = array();\n        foreach (\$array as \$key => \$value) {\n            \$val = serialize(\$value);\n            if (empty(\$count[\$val])) {\n                \$count[\$val] = 0;\n            }\n            \$count[\$val]++; \n        }\n        foreach (\$toRemove as \$value) {\n            \$val = serialize(\$value);\n            if (!empty(\$count[\$val]) && \$count[\$val] != 1) {\n                return true;\n            }\n        }\n        return false;\n    }\n\n    public function mapObject(\$object)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->class_mapper[\$class];\n    }\n\n    public function getReference(\$object, Array \$extra = array())\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"get_reference_\" . sha1(\$class)}(\$object, \$extra);\n    }\n\n    public function getDocument(\$object)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"get_array_\" . sha1(\$class)}(\$object);\n    }\n\n    public function validate(\$object)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"validate_\" . sha1(\$class)}(\$object);\n    }\n\n    public function update(\$object, Array &\$doc, Array \$old)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"update_\" . sha1(\$class)}(\$doc, \$old);\n    }\n\n    public function getRawDocument(\$object)\n    {\n        if (\$object instanceof ActiveMongo2Mapped){\n            return \$object->" . ($instance) . "_getOriginal();\n        }\n\n        return array();\n    }\n\n    public function populate(&\$object, \$data)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"populate_\" . sha1(\$class)}(\$object, \$data);\n    }\n\n    public function trigger(\$event, \$object, Array \$args = array())\n    {\n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = strtolower(\$object->getClass());\n        } else {\n            \$class = strtolower(\$this->get_class(\$object));\n        }\n        \$method = \"event_{\$event}_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$object, \$args);\n    }\n\n    public function getMapping(\$class)\n    {\n        if (is_object(\$class)) {\n            \$class = \$this->get_class(\$class);\n        }\n        \$func  = \"get_mapping_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$func))) {\n            throw new \\Exception(\"Cannot map \$class\");\n        }\n        return \$this->\$func();\n    }\n\n    public function getObjectClass(\$col, \$doc)\n    {\n        if (\$doc instanceof \\MongoGridFsFile) {\n            \$doc = \$doc->file;\n        }\n        if (\$col instanceof \\MongoCollection) {\n            \$col = \$col->getName();\n        }\n        \$class = NULL;\n        switch (\$col) {\n";
             foreach($collections as $collection) {
-                if ($collection->isGridFS()) {
+                if ($collection->is('GridFs')) {
                     echo "            case ";
                     var_export($collection->getName() . '.files');
                     echo ":\n            case ";
@@ -338,7 +338,7 @@ namespace {
                     var_export($collection->getName());
                     echo ":\n";
                 }
-                if (!$collection->isSingleCollection()) {
+                if (!$collection->is('SingleCollection')) {
                     echo "                    \$class = ";
                     var_export($collection->getClass());
                     echo ";\n";
@@ -488,7 +488,7 @@ namespace {
                     echo "            \$this->populate_" . (sha1($p->getClass())) . "(\$object, \$data);\n";
                 }
                 echo "\n";
-                if ($collection->isGridFs()) {
+                if ($collection->is('GridFs')) {
                     echo "            if (!\$data instanceof \\MongoGridFsFile) {\n                throw new \\RuntimeException(\"Internal error, trying to populate a GridFSFile with an array\");\n            }\n            \$data_file = \$data;\n            \$data      = \$data->file;\n            if (empty(\$data['metadata'])) {\n                \$data['metadata'] = [];\n            }\n";
                 }
                 else {
@@ -565,7 +565,7 @@ namespace {
                     }
                 }
                 echo "\n";
-                if ($collection->isSingleCollection()) {
+                if ($collection->is('SingleCollection')) {
                     echo "            // SINGLE COLLECTION\n            " . ($collection->getDiscriminator(true)->getPHPVariable()) . " = ";
                     var_export($collection->getClass());
                     echo ";\n";

@@ -76,7 +76,7 @@ class Mapper
     {
         switch ($table) {
         @foreach($collections as $collection)
-            @if ($collection->isSingleCollection() && $collection->getParent()) {
+            @if ($collection->is('SingleCollection') && $collection->getParent()) {
             case {{@$collection->getClass()}}:
                 $query[{{@$collection->getDiscriminator()}}] = {{@$collection->getClass()}};
             break;
@@ -94,7 +94,7 @@ class Mapper
         $class = strtolower($class);
         if (empty($this->class_mapper[$class])) {
             @foreach($collections as $collection)
-                @if ($collection->isSingleCollection())
+                @if ($collection->is('SingleCollection'))
                 if ($class == {{@$collection->getClass()}} ||  $class == {{@$collection->getName()}}){
                     return {{@['name' => $collection->getName(), 'dynamic' => true, 'prop' => $collection->getDiscriminator(), 'class' => NULL]}};
                 }
@@ -243,13 +243,13 @@ class Mapper
         $class = NULL;
         switch ($col) {
         @foreach ($collections as $collection)
-            @if ($collection->isGridFS())
+            @if ($collection->is('GridFs'))
             case {{@$collection->getName() . '.files'}}:
             case {{@$collection->getName() . '.chunks'}}:
             @else
             case {{@$collection->getName()}}:
             @end
-                @if (!$collection->isSingleCollection())
+                @if (!$collection->is('SingleCollection'))
                     $class = {{@$collection->getClass()}};
                 @else
                     if (!empty({{$collection->getDiscriminator(true)->getPHPVariable()}})) {
@@ -463,7 +463,7 @@ class Mapper
             $this->populate_{{sha1($p->getClass())}}($object, $data);
         @end
 
-        @if ($collection->isGridFs())
+        @if ($collection->is('GridFs'))
             if (!$data instanceof \MongoGridFsFile) {
                 throw new \RuntimeException("Internal error, trying to populate a GridFSFile with an array");
             }
@@ -594,7 +594,7 @@ class Mapper
             @end
         @end
 
-        @if ($collection->isSingleCollection())
+        @if ($collection->is('SingleCollection'))
             // SINGLE COLLECTION
             {{$collection->getDiscriminator(true)->getPHPVariable()}} = {{@$collection->getClass()}};
         @end 

@@ -99,7 +99,7 @@ class Property extends Base
 
     public function getPHPBaseVariable($prefix = '$doc')
     {
-        if (!$this->isId() && $this->collection->isGridFS()) {
+        if (!$this->isId() && $this->collection->is('GridFs')) {
             $prefix = $prefix . '["metadata"]';
         }
         return $prefix;
@@ -129,7 +129,7 @@ class Property extends Base
             $property = $this->getPHPName();
         }
 
-        if ($prefix && $this->collection->isGridFs()) {
+        if ($prefix && $this->collection->is('GridFs')) {
             // It is an special case
             $property = "metadata.$property";
         }

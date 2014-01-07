@@ -85,11 +85,6 @@ class Collection extends Base
         return $properties;
     }
 
-    public function isGridFs()
-    {
-        return $this->annotation->has('GridFs');
-    }
-
     public function __toString()
     {
         return $this->getClass();
@@ -101,9 +96,9 @@ class Collection extends Base
             'class' => $this->getClass(),
             'file'  => $this->getPath(),
             'name'  => $this->getName(),
-            'is_gridfs' => $this->isGridFs(),
+            'is_gridfs' => $this->is('GridFs'),
             'parent' => $this->getParent() ? $this->GetParent()->getClass() : NULL,
-            'disc'   => $this->isSingleCollection() ? $this->getDiscriminator() : NULL,
+            'disc'   => $this->is('SingleCollection') ? $this->getDiscriminator() : NULL,
         ];
     }
 
@@ -123,12 +118,6 @@ class Collection extends Base
         return $prop;
     }
 
-    public function isSingleCollection($recursive = true)
-    {
-        return $this->annotation->has('SingleCollection') ||
-            ($recursive && $this->getParent() && $this->getParent()->isSingleCollection());
-    }
-
     public function getClass()
     {
         return strtolower($this->annotation['class']);
@@ -143,7 +132,7 @@ class Collection extends Base
     {
         $parent = $this->getParent();
         while ($parent) {
-            if ($parent->isSingleCollection(false)) {
+            if ($parent->is('SingleCollection', false)) {
                 return $parent->getName();
             }
             $parent = $parent->getParent();
@@ -205,7 +194,7 @@ class Collection extends Base
         } else if (($pname = $this->getNameFromParent())
             || ($pname = $this->getNameFromAnnotation($args, [0, 'collection']))) {
             $name = $pname;
-        } else if ($this->isGridFs()) {
+        } else if ($this->is('GridFs')) {
             $name = "fs";
         } else {
             $parts = explode("\\", $this->getClass());
