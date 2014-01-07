@@ -51,10 +51,7 @@ class Unupdatable
     {
         foreach ($rargs as $prop) {
             foreach ($args[0] as $key => $props) {
-                if ($key == $prop) {
-                    throw new \RuntimeException("{$prop} cannot be updated");
-                }
-                if (is_array($props) && array_key_exists($prop, $props)) {
+                if ($key == $prop || is_array($props) && array_key_exists($prop, $props)) {
                     throw new \RuntimeException("{$prop} cannot be updated");
                 }
             }
