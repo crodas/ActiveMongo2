@@ -60,7 +60,7 @@ function __autoincrement_field(Array $docs, Array $rargs, $conn, Array $args)
         }
         if (is_object($ns[$value])) {
             // remove silly 
-            $ns[$value] = $conn->cloneDocument($ns[$value]);
+            $ns[$value] = clone $ns[$value];
         }
     }
 

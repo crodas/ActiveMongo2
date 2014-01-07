@@ -54,6 +54,32 @@ class Mapper
         return false;
     }
 
+    public function getCollectionObject($col, $db)
+    {
+        if (empty($this->mapper[$col])) {
+            $data = $this->mapClass($col);     
+        } else {
+            $data = $this->mapper[$col];
+        }
+
+        if (empty(self::$loaded[$data['file']])) {
+            if (!class_exists($data['class'], false)) {
+                require __DIR__ .  $data['file'];
+            }
+            self::$loaded[$data['file']] = true;
+        }
+
+        if (!empty($data['is_gridfs'])) {
+            $col = $db->getGridFs($data['name']);
+        } else {
+            $col = $db->selectCollection($data['name']);
+        }
+
+        return [$col, $data['class']];
+        var_dump($col, $data);exit;
+
+    }
+
     public function mapCollection($col)
     {
         if (empty($this->mapper[$col])) {

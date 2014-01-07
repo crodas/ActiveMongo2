@@ -76,19 +76,6 @@ class Connection
         return $this;
     }
 
-    /**
-     *  Clone a document 
-     *  
-     *  Clones a document and removed internals variables
-     *
-     *  @return object
-     */
-    public function cloneDocument($doc)
-    {
-        $tmp = clone $doc;
-        return $tmp;
-    }
-    
     public function command($command, $args = array())
     {
         return $this->db->command($command, $args);
@@ -103,7 +90,6 @@ class Connection
     {
         return $this->config;
     }
-
 
     public function getConnection()
     {
@@ -122,27 +108,20 @@ class Connection
 
     public function getCollection($collection)
     {
-        try {
-            $data = $this->mapper->mapCollection($collection);
-        } catch (\RuntimeException $e) {
-            $data = $this->mapper->mapClass($collection);
-        }
+        list($col, $class) = $this->mapper->getCollectionObject($collection, $this->db);
 
-        if (!empty($this->collections[$data['class']])) {
-            return $this->collections[$data['class']];
+        if (!empty($this->collections[$class])) {
+            return $this->collections[$class];
         }
 
         $cache = $this->cache;
-        if (!empty($data['is_gridfs'])) {
-            $mongoCol = $this->db->getGridFs($data['name']);
-            $cache    = new Cache\Storage\None;
-        } else {
-            $mongoCol = $this->db->selectCollection($data['name']);
+        if ($col instanceof \MongoGridFS) {
+            $cache = new Cache\Storage\None;
         }
 
-        $this->collections[$data['class']] = new Collection($this, $this->mapper, $mongoCol, $cache, $this->config, $data['class']);
+        $this->collections[$class] = new Collection($this, $this->mapper, $col, $cache, $this->config, $class);
 
-        return $this->collections[$data['class']];
+        return $this->collections[$class];
     }
 
     public function registerDocument($class, $document)
