@@ -76,8 +76,6 @@ class Mapper
         }
 
         return [$col, $data['class']];
-        var_dump($col, $data);exit;
-
     }
 
     public function mapCollection($col)
