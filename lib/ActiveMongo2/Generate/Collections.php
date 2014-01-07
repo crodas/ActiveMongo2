@@ -49,6 +49,11 @@ class Collections extends ArrayObject
         'preUpdate', 'postUpdate', 'preDelete', 'postDelete'
     );
 
+    public function getFiles()
+    {
+        return $this->files;
+    }
+
     public function getEvents()
     {
         return self::$events;
