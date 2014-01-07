@@ -100,6 +100,10 @@ class Type extends Base
             goto $exit;";
         }, $code);
 
+        $code = preg_replace("/goto $exit;\s+$exit:/smU", "", $code);
+        if (strpos($code, $exit)) {
+            $code .= "$exit:";
+        }
 
         return $code;
     }
