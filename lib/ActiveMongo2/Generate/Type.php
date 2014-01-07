@@ -61,7 +61,7 @@ class Type extends Base
         return $this->getFunction();
     }
 
-    public function toEmbedCode($prop)
+    protected function getEmbeddableCode()
     {
         $parts = explode("\\", $this->annotation['function']);
         $name  = end($parts); 
@@ -69,11 +69,10 @@ class Type extends Base
         $code  = implode('', array_slice($lines, $this->annotation['line'] -1));
         $start = stripos($code, $name) + strlen($name);
 
-        while($code[$start++] != '{');
-
-        $end = $start;
-        $max = strlen($code);
-        $i   = 1;
+        $start = strpos($code, '{')+1; 
+        $end   = $start;
+        $max   = strlen($code);
+        $i     = 1;
 
         while ($i > 0) {
             $end++;
@@ -89,9 +88,14 @@ class Type extends Base
                 break;
             }
         }
+        return substr($code, $start, $end - $start);
+    }
+
+    public function toEmbedCode($prop)
+    {
 
         $exit = "exit_" . uniqid(true);
-        $code = substr($code, $start, $end - $start)  . "\n$exit:\n";
+        $code = $this->getEmbeddableCode()  . "\n$exit:\n"; 
 
         $code = str_replace('$value', $prop, $code);
 
