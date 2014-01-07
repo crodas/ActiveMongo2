@@ -74,11 +74,7 @@ class Type extends Base
         $max   = strlen($code);
         $i     = 1;
 
-        while ($i > 0) {
-            $end++;
-            if ($end > $max) {
-                throw new \RuntimeException("Missing function end");
-            }
+        while ($i > 0 && ++$end < $max) {
             switch ($code[$end]) {
             case '}':
                 $i--;
@@ -88,6 +84,11 @@ class Type extends Base
                 break;
             }
         }
+
+        if ($end == $max) {
+            throw new \RuntimeException("Missing function end");
+        }
+
         return substr($code, $start, $end - $start);
     }
 
@@ -104,8 +105,8 @@ class Type extends Base
             goto $exit;";
         }, $code);
 
-        $code = preg_replace("/goto $exit;\s+$exit:/smU", "", $code);
-        if (strpos($code, $exit)) {
+        $code = preg_replace("/goto $exit;\s+$exit:/smU", "", $code, -1, $done);
+        if ($done && strpos($code, $exit)) {
             $code .= "$exit:";
         }
 
