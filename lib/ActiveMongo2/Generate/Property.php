@@ -116,20 +116,23 @@ class Property extends Base
         return $this->type;
     }
 
-    public function getName($prefix = false)
+    public function getRawName() 
     {
+        $field = $this->annotation->getOne('Field');
         if ($this->isId()) {
             return '_id';
+        } else if (!empty($field)) {
+            return current($field);
         }
 
-        $field = $this->annotation->getOne('Field');
-        if (!empty($field)) {
-            $property = current($field);
-        } else {
-            $property = $this->getPHPName();
-        }
+        return $this->getPHPName();
+    }
 
-        if ($prefix && $this->collection->is('GridFs')) {
+    public function getName($prefix = false)
+    {
+        $property = $this->GetRawName();
+
+        if ($prefix && !$this->isId() && $this->collection->is('GridFs')) {
             // It is an special case
             $property = "metadata.$property";
         }
