@@ -69,13 +69,9 @@ class Type extends Base
         return implode('', array_slice($lines, $this->annotation['line'] -1));
     }
 
-    protected function getEmbeddableCode(&$code)
+    protected function getFunctionBodyEnd($code, $end)
     {
-        $code  = $this->getFunctionBodyStart($name);
-        $start = strpos($code, '{', stripos($code, $name))+1; 
-        $end   = $start;
-        $max   = strlen($code);
-
+        $max = strlen($code);
         for ($i = 1; $i >  0 && $end < $max; $end++) {
             if ($code[$end] == '}') {
                 $i--;
@@ -84,9 +80,18 @@ class Type extends Base
             }
         }
 
+        return $end;
+    }
+
+    protected function getEmbeddableCode(&$code)
+    {
+        $code  = $this->getFunctionBodyStart($name);
+        $start = strpos($code, '{', stripos($code, $name))+1; 
+        $end   = $this->getFunctionBodyEnd($code, $start);
+
         $code = substr($code, $start, $end - $start - 1);
 
-        return $end < $max;
+        return $end < strlen($code);
     }
 
     public function toEmbedCode($prop)
