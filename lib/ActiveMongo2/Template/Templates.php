@@ -69,15 +69,27 @@ namespace {
             if ($return) {
                 ob_start();
             }
-            echo "if (empty(self::\$loaded[";
-            var_export($self->getPath());
-            echo "])) {\n    if (!class_exists(";
-            var_export($self->getClass());
-            echo ", false)) {\n        require __DIR__ . ";
-            var_export($self->getPath());
-            echo ";\n    }\n    self::\$loaded[";
-            var_export($self->getPath());
-            echo "] = true;\n}\n\n\$args = empty(\$args) ? [] : \$args;\n\n";
+            if (!$self->isEmbeddable()) {
+                echo "    if (empty(self::\$loaded[";
+                var_export($self->getPath());
+                echo "])) {\n";
+                if ($self->isClass() || $self->isMethod()) {
+                    echo "            if (!class_exists(";
+                    var_export($self->getClass());
+                    echo ", false)) {\n";
+                }
+                else {
+                    echo "            if (!function_exists(";
+                    var_export($self->getFunction());
+                    echo ")) {\n";
+                }
+                echo "            require __DIR__ . ";
+                var_export($self->getPath());
+                echo ";\n        }\n        self::\$loaded[";
+                var_export($self->getPath());
+                echo "] = true;\n    }\n";
+            }
+            echo "\n\$args = empty(\$args) ? [] : \$args;\n\n";
             if ($self->isEmbeddable()) {
                 echo "    " . ($self->toEmbedCode($var)) . "\n";
             }

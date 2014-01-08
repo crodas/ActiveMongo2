@@ -1,9 +1,15 @@
-if (empty(self::$loaded[{{@$self->getPath()}}])) {
-    if (!class_exists({{@$self->getClass()}}, false)) {
-        require __DIR__ . {{@$self->getPath()}};
+@if (!$self->isEmbeddable())
+    if (empty(self::$loaded[{{@$self->getPath()}}])) {
+        @if ($self->isClass() || $self->isMethod())
+            if (!class_exists({{@$self->getClass()}}, false)) {
+        @else
+            if (!function_exists({{@$self->getFunction()}})) {
+        @end
+            require __DIR__ . {{@$self->getPath()}};
+        }
+        self::$loaded[{{@$self->getPath()}}] = true;
     }
-    self::$loaded[{{@$self->getPath()}}] = true;
-}
+@end
 
 $args = empty($args) ? [] : $args;
 
