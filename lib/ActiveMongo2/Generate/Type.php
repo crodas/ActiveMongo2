@@ -72,12 +72,14 @@ class Type extends Base
     protected function getFunctionBodyEnd($code, $end)
     {
         $max = strlen($code);
-        for ($i = 1; $i >  0 && $end < $max; $end++) {
+        $i   = 1;
+        while ($i >  0 && $end < $max) {
             if ($code[$end] == '}') {
                 $i--;
             } else if ($code[$end] == '{') {
                 $i++;
             }
+            $end++;
         }
 
         return $end;
