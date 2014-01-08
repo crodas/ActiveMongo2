@@ -130,7 +130,7 @@ class Mapper
         $data = $this->class_mapper[$class];
 
         if (empty(self::$loaded[$data['file']])) {
-            if (class_exists($data['class'], false)) {
+            if (!class_exists($data['class'], false)) {
                 require __DIR__ . $data['file'];
             }
             self::$loaded[$data['file']] = true;

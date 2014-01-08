@@ -53,10 +53,6 @@ class Connection
      */
     protected $collections;
 
-    /**
-     *  Classes to Collections mapping
-     */
-    protected $classes;
     protected $mapper;
     protected $cache;
     protected $config;
@@ -205,17 +201,9 @@ class Connection
     protected function getMongoCollection($obj)
     {
         $class = $this->mapper->get_class($obj);
-        if (empty($this->classes[$class])) {
-            $data = $this->mapper->mapClass($class);;
-            $collection = $data['name'];
-            if ($data['is_gridfs']) {
-                $this->classes[$class] = $this->db->getGridFs($collection);
-            } else {
-                $this->classes[$class] = $this->db->selectCollection($collection);
-            }
-        }
+        list($col, $class) = $this->mapper->getCollectionObject($class, $this->db);
 
-        return $this->classes[$class];
+        return $col;
     }
 
     protected function create(&$obj, $document, $col, $trigger_events)
