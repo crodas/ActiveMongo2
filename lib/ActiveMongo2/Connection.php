@@ -177,7 +177,7 @@ class Connection
         return $object instanceof $class;
     }
 
-    public function file($obj)
+    public function file(&$obj)
     {
         $col = $this->getMongoCollection($obj);
         if ($obj instanceof DocumentProxy) {

@@ -46,12 +46,12 @@ class StoreFile extends Connection
     protected $object;
     protected $conn;
 
-    public function __construct(MongoGridFS $col, Array $document, $conn, $object)
+    public function __construct(MongoGridFS $col, Array $document, $conn, &$object)
     {
         $this->gridfs   = $col;
         $this->metadata = $document;
         $this->conn     = $conn;
-        $this->object   = $object;
+        $this->object   = &$object;
     }
 
     public function storeFile($name)
