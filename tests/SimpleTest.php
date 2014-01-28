@@ -34,7 +34,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $tmp = $user;
         $conn->save($user);
         $this->assertNotEquals($tmp, $user);
-        $this->assertTrue($user->runEvent);
+        $this->assertTrue($tmp->runEvent);
 
         $vars = get_object_vars($tmp);
         $this->assertEquals(end($vars), $user);
@@ -43,6 +43,12 @@ class SimpleTest extends \phpunit_framework_testcase
             ->find(array('_id' => $user->userid));
 
         $this->assertEquals(1, $find->count());
+
+
+        /* */
+        $count = $conn->user->count();
+        $conn->save($tmp); 
+        $this->assertEquals($count, $conn->user->count());
 
         foreach ($find as $u) {
             $this->assertTrue($u instanceof $user);

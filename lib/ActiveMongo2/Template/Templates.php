@@ -360,7 +360,7 @@ namespace {
                 }
                 echo "                break;\n";
             }
-            echo "        }\n\n        if (empty(\$class)) {\n            throw new \\RuntimeException(\"Cannot get class for collection {\$col}\");\n        }\n\n\n        return \$this->getClass(\$this->class_mapper[\$class]['name'] . '_' . sha1(\$class));\n\n        return \$class;\n    }\n\n    public function get_class(\$object)\n    {\n        if (\$object instanceof ActiveMongo2Mapped) {\n            \$class = \$object->" . ($instance) . "_getClass();\n        } else if (!empty(\$object->" . ($instance) . ") && \$object->" . ($instance) . " instanceof ActiveMongo2Mapped) {\n            \$class = \$object->" . ($instance) . "->" . ($instance) . "_getOriginal();\n        } else if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = \$object->getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n\n        return \$class;\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(\$this->get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$db)\n    {\n";
+            echo "        }\n\n        if (empty(\$class)) {\n            throw new \\RuntimeException(\"Cannot get class for collection {\$col}\");\n        }\n\n\n        return \$this->getClass(\$this->class_mapper[\$class]['name'] . '_' . sha1(\$class));\n\n        return \$class;\n    }\n\n    public function get_class(\$object)\n    {\n        if (\$object instanceof ActiveMongo2Mapped) {\n            \$class = \$object->" . ($instance) . "_getClass();\n        } else if (!empty(\$object->" . ($instance) . ") && \$object->" . ($instance) . " instanceof ActiveMongo2Mapped) {\n            \$class = \$object->" . ($instance) . "->" . ($instance) . "_getClass();\n        } else if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = \$object->getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n\n        return \$class;\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(\$this->get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$db)\n    {\n";
             foreach($collections->getIndexes() as $index) {
                 echo "            \$db->" . ($index['prop']->getParent()->getName()) . "->ensureIndex(\n                ";
                 var_export($index['field']);
@@ -493,9 +493,7 @@ namespace {
                     var_export($prop->getProperty());
                     echo ",\n";
                 }
-                echo "        );\n    }\n\n    /**\n     *  Populate objects " . ($collection->getClass()) . " \n     */\n    protected function populate_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " &\$object, \$data)\n    {\n        if (!\$object instanceof ActiveMongo2Mapped) {\n            \$class    = \$this->getClass(";
-                var_export($collection->getName() . '_');
-                echo " .  sha1(strtolower(get_class(\$object))));\n            \$populate = get_object_vars(\$object);\n            \$zobject = new \$class;\n            foreach (\$populate as \$key => \$value) {\n                \$zobject->\$key = \$value;\n            }\n            \$object->" . ($instance) . " = \$zobject;\n            \$object = \$zobject;\n        }\n\n";
+                echo "        );\n    }\n\n    /**\n     *  Populate objects " . ($collection->getClass()) . " \n     */\n    protected function populate_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " &\$object, \$data)\n    {\n";
                 if ($p = $collection->getParent()) {
                     echo "            \$this->populate_" . (sha1($p->getClass())) . "(\$object, \$data);\n";
                 }
@@ -540,7 +538,20 @@ namespace {
                     }
                     echo "                \n            }\n";
                 }
-                echo "        \$object->" . ($instance) . "_setOriginal(\$data);\n\n\n    }\n\n    /**\n     *  Get reference of  " . ($collection->getClass()) . " object\n     */\n    protected function get_reference_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " \$object, \$include = Array())\n    {\n        \$document = \$this->get_array_" . (sha1($collection->getClass())) . "(\$object);\n        \$extra    = array();\n        if (\$include) {\n            \$extra  = array_intersect_key(\$document, \$include);\n        }\n\n";
+                echo "\n        if (!\$object instanceof ActiveMongo2Mapped) {\n            \$class    = \$this->getClass(";
+                var_export($collection->getName() . '_');
+                echo " .  sha1(strtolower(get_class(\$object))));\n            \$zobject  = new \$class;\n";
+                foreach($collection->getProperties() as $prop) {
+                    if ($prop->isPublic()) {
+                        echo "                    \$zobject->" . ($prop->getPHPName()) . " = \$object->" . ($prop->getPHPName()) . ";\n";
+                    }
+                    else {
+                        echo "                    \$property = new \\ReflectionProperty(\$zobject, ";
+                        var_export($prop->getPHPName());
+                        echo ");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$zobject, " . ($prop->getPHPVariable()) . ");\n";
+                    }
+                }
+                echo "            \$object->" . ($instance) . " = \$zobject;\n            \$object = \$zobject;\n        }\n\n        \$object->" . ($instance) . "_setOriginal(\$data);\n\n\n    }\n\n    /**\n     *  Get reference of  " . ($collection->getClass()) . " object\n     */\n    protected function get_reference_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " \$object, \$include = Array())\n    {\n        \$document = \$this->get_array_" . (sha1($collection->getClass())) . "(\$object);\n        \$extra    = array();\n        if (\$include) {\n            \$extra  = array_intersect_key(\$document, \$include);\n        }\n\n";
                 if ($cache = $collection->getRefCache()) {
                     echo "            \$extra = array_merge(\$extra,  array_intersect_key(\n                \$document, \n                ";
                     var_export($cache);

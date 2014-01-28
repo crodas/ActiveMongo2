@@ -302,7 +302,7 @@ class Mapper
         if ($object instanceof ActiveMongo2Mapped) {
             $class = $object->{{$instance}}_getClass();
         } else if (!empty($object->{{$instance}}) && $object->{{$instance}} instanceof ActiveMongo2Mapped) {
-            $class = $object->{{$instance}}->{{$instance}}_getOriginal();
+            $class = $object->{{$instance}}->{{$instance}}_getClass();
         } else if ($object instanceof \ActiveMongo2\Reference) {
             $class = $object->getClass();
         } else {
@@ -479,17 +479,6 @@ class Mapper
      */
     protected function populate_{{sha1($collection->getClass())}}(\{{$collection->getClass()}} &$object, $data)
     {
-        if (!$object instanceof ActiveMongo2Mapped) {
-            $class    = $this->getClass({{@$collection->getName() . '_' }} .  sha1(strtolower(get_class($object))));
-            $populate = get_object_vars($object);
-            $zobject = new $class;
-            foreach ($populate as $key => $value) {
-                $zobject->$key = $value;
-            }
-            $object->{{$instance}} = $zobject;
-            $object = $zobject;
-        }
-
         @if ($p = $collection->getParent())
             $this->populate_{{sha1($p->getClass())}}($object, $data);
         @end
@@ -548,6 +537,23 @@ class Mapper
                 
             }
         @end
+
+        if (!$object instanceof ActiveMongo2Mapped) {
+            $class    = $this->getClass({{@$collection->getName() . '_' }} .  sha1(strtolower(get_class($object))));
+            $zobject  = new $class;
+            @foreach ($collection->getProperties() as $prop)
+                @if ($prop->isPublic())
+                    $zobject->{{$prop->getPHPName()}} = $object->{{$prop->getPHPName()}};
+                @else
+                    $property = new \ReflectionProperty($zobject, {{@$prop->getPHPName()}});
+                    $property->setAccessible(true);
+                    $property->setValue($zobject, {{$prop->getPHPVariable()}});
+                @end
+            @end
+            $object->{{$instance}} = $zobject;
+            $object = $zobject;
+        }
+
         $object->{{$instance}}_setOriginal($data);
 
 
