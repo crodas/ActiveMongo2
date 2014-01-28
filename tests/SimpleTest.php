@@ -31,8 +31,13 @@ class SimpleTest extends \phpunit_framework_testcase
         $user->username = "crodas-" . rand(0, 0xfffff);
         $user->pass     = "foobar";
         $this->assertFalse($user->runEvent);
+        $tmp = $user;
         $conn->save($user);
+        $this->assertNotEquals($tmp, $user);
         $this->assertTrue($user->runEvent);
+
+        $vars = get_object_vars($tmp);
+        $this->assertEquals(end($vars), $user);
 
         $find = $conn->getCollection('user')
             ->find(array('_id' => $user->userid));

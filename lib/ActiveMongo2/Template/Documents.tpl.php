@@ -214,6 +214,9 @@ class Mapper
         if ($object instanceof ActiveMongo2Mapped){
             return $object->{{$instance}}_getOriginal();
         }
+        if (!empty($object->{{$instance}}) && $object->{{$instance}} instanceof ActiveMongo2Mapped) {
+            return $object->{{$instance}}->{{$instance}}_getOriginal();
+        }
 
         return array();
     }
@@ -298,6 +301,8 @@ class Mapper
     {
         if ($object instanceof ActiveMongo2Mapped) {
             $class = $object->{{$instance}}_getClass();
+        } else if (!empty($object->{{$instance}}) && $object->{{$instance}} instanceof ActiveMongo2Mapped) {
+            $class = $object->{{$instance}}->{{$instance}}_getOriginal();
         } else if ($object instanceof \ActiveMongo2\Reference) {
             $class = $object->getClass();
         } else {
@@ -477,10 +482,12 @@ class Mapper
         if (!$object instanceof ActiveMongo2Mapped) {
             $class    = $this->getClass({{@$collection->getName() . '_' }} .  sha1(strtolower(get_class($object))));
             $populate = get_object_vars($object);
-            $object = new $class;
+            $zobject = new $class;
             foreach ($populate as $key => $value) {
-                $object->$key = $value;
+                $zobject->$key = $value;
             }
+            $object->{{$instance}} = $zobject;
+            $object = $zobject;
         }
 
         @if ($p = $collection->getParent())
