@@ -56,7 +56,7 @@ class Mapper
 
     public function getCollectionObject($col, $db)
     {
-        if (empty($this->mapper[$col])) {
+        if (!is_scalar($col) || empty($this->mapper[$col])) {
             $data = $this->mapClass($col);     
         } else {
             $data = $this->mapper[$col];
