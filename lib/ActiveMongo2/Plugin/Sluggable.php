@@ -92,7 +92,7 @@ class Sluggable
             // Rarely use case
             // @Sluggable has been added and old documents are being update
             $slug = self::sluggify($obj->$source ?: 'n-a');
-            $col  = $conn->getCollection(get_class($obj));
+            $col  = $conn->getCollection($obj);
 
             while ( $col->count(array($target => $slug)) != 0) {
                 $slug .= '-' . uniqid(true);
@@ -117,7 +117,7 @@ class Sluggable
         }
 
         $slug = self::sluggify(empty($document[$args[0]]) ? 'n-a' : $document[$args[0]]);
-        $col  = $conn->getCollection(get_class($obj));
+        $col  = $conn->getCollection($obj);
 
         while ( $col->count(array($args[1] => $slug)) != 0) {
             $slug .= '-' . uniqid(true);
