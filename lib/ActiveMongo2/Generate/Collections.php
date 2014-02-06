@@ -120,8 +120,12 @@ class Collections extends ArrayObject
         }
 
         foreach ($this->getAllPropertiesWithAnnotation('Index') as $prop) {
+            $order = strtolower(current((array)$prop[0]['args'])) == 'desc' ? -1 : 1;
+            if ($prop[1]->getAnnotation()->has('Geo')) {
+                $order = '2dsphere';
+            }
             $index['prop']  = $prop[1];
-            $index['field'] = array($prop[1]->getName() => 1);
+            $index['field'] = array($prop[1]->getName() =>  $order);
             $index['extra']  = array();
             $indexes[] = $index;
         }

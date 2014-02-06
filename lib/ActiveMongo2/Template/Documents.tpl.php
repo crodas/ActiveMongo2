@@ -325,7 +325,8 @@ class Mapper
 
     public function ensureIndex($db)
     {
-        @foreach($collections->getIndexes() as $index)
+        @foreach($collections->getIndexes() as $id => $index)
+            // {{$id}}
             $db->{{$index['prop']->getParent()->getName()}}->ensureIndex(
                 {{@$index['field']}},
                 {{@$index['extra']}}

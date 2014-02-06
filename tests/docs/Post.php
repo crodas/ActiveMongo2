@@ -18,11 +18,14 @@ class Middle extends BaseDocument
  */
 class PostDocument extends Middle
 {
-    /** @Universal */
+    /** @Universal @Index(desc) */
     public $global_id;
 
     /** @Reference("user") @Deferred */
     public $author_ref;
+
+    /** @Geo @Index */
+    public $geo;
 
     /** @ReferenceMany("user") @Deferred */
     public $author_refs;

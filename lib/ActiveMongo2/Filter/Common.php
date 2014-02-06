@@ -66,6 +66,20 @@ function _validate_string(&$value)
 }
 
 /** 
+ * @Validate(Geo) 
+ * @Validate(Location)
+ */
+function _validate_geo(&$value) {
+    if (!is_array($value)) {
+        return false;
+    }
+    $value = array_values($values);
+    if (count($values) != 2) {
+        return false;
+    }
+}
+
+/** 
  * @Validate(Integer) 
  * @Validate(Int) 
  * @DataType Int
