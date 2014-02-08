@@ -139,6 +139,16 @@ class Mapper
         return $data;
     }
 
+    protected function is_array($array)
+    {
+        if (is_array($array)) {
+            $keys = array_keys($array);
+            $expected = range(0, count($array)-1);
+            return count(array_diff($keys, $expected)) == 0;
+        }
+        return false;
+    }
+
     protected function array_unique($array, $toRemove)
     {
         $return = array();
@@ -415,7 +425,7 @@ class Mapper
                         // add things to the array
                         $toRemove = array_diff_key($old[{{@$prop.''}}], {{$prop->getPHPVariable('$current')}});
 
-                        if (count($toRemove) > 0 && $this->array_unique($old[{{@$prop.''}}], $toRemove)) {
+                        if ((count($toRemove) > 0 && $this->array_unique($old[{{@$prop.''}}], $toRemove)) || !$this->is_array($old[{{@$prop.''}}])) {
                             $change['$set'][{{@$prop.''}}] = array_values({{$prop->getPHPVariable('$current')}});
                         } else {
                             foreach ({{$prop->getPHPVariable('$current')}} as $index => $value) {
