@@ -276,15 +276,19 @@ class Connection
         $document = $this->mapper->validate($obj);
         $oldDoc   = $this->mapper->getRawDocument($obj, false);
         if ($oldDoc) {
-            $id = get_class($obj) . '::'. $oldDoc['_id'];
+            $id = $this->mapper->get_class($obj) . '::'. $oldDoc['_id'];
             if (!empty($this->queue[$id])) return;
             $this->queue[$id] = true;
             $return = $this->update($obj, $document, $col, $oldDoc, $trigger_events, $w);
             $this->queue[$id] = false;
-            return $return;
+        } else {
+            $id = $this->mapper->get_class($obj) . '::' . spl_object_hash($obj); 
+            if (!empty($this->queue[$id])) return;
+            $this->queue[$id] = true;
+            $return = $this->create($obj, $document, $col, $trigger_events);
+            $this->queue[$id] = false;
         }
-
-        return $this->create($obj, $document, $col, $trigger_events);
+        return $return;
     }
 
     public function ensureIndex()
