@@ -273,21 +273,20 @@ class Connection
             throw new \RuntimeException("@GridFS must be saved with file");
         }
 
+        $oldDoc = $this->mapper->getRawDocument($obj, false);
+        $objId  = $this->mapper->get_class($obj) . '::' . ($oldDoc ? $oldDoc['_id'] : spl_object_hash($obj));
+        if (!empty($this->queue[$objId])) return;
+
+        $this->queue[$objId] = true;
         $document = $this->mapper->validate($obj);
-        $oldDoc   = $this->mapper->getRawDocument($obj, false);
+
         if ($oldDoc) {
-            $id = $this->mapper->get_class($obj) . '::'. $oldDoc['_id'];
-            if (!empty($this->queue[$id])) return;
-            $this->queue[$id] = true;
             $return = $this->update($obj, $document, $col, $oldDoc, $trigger_events, $w);
-            $this->queue[$id] = false;
         } else {
-            $id = $this->mapper->get_class($obj) . '::' . spl_object_hash($obj); 
-            if (!empty($this->queue[$id])) return;
-            $this->queue[$id] = true;
             $return = $this->create($obj, $document, $col, $trigger_events);
-            $this->queue[$id] = false;
         }
+
+        unset($this->queue[$objId]);
         return $return;
     }
 
