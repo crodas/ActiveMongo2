@@ -56,6 +56,7 @@ class Connection
     protected $mapper;
     protected $cache;
     protected $config;
+    protected $queue = array();
 
     public function __construct(Configuration $config, MongoClient $conn, $db)
     {
@@ -275,7 +276,12 @@ class Connection
         $document = $this->mapper->validate($obj);
         $oldDoc   = $this->mapper->getRawDocument($obj, false);
         if ($oldDoc) {
-            return $this->update($obj, $document, $col, $oldDoc, $trigger_events, $w);
+            $id = get_class($obj) . '::'. $oldDoc['_id'];
+            if (!empty($this->queue[$id])) return;
+            $this->queue[$id] = true;
+            $return = $this->update($obj, $document, $col, $oldDoc, $trigger_events, $w);
+            $this->queue[$id] = false;
+            return $return;
         }
 
         return $this->create($obj, $document, $col, $trigger_events);
