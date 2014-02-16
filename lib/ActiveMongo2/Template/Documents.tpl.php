@@ -400,7 +400,7 @@ class Mapper
                         } else {
                             foreach ({{$prop->getPHPVariable('$current')}} as $index => $value) {
                                 if (!array_key_exists($index, $old[{{@$prop.''}}])) {
-                                    $change['$push'][{{@$prop.''}}] = $value;
+                                    $change['$push'][{{@$prop.''}}]['$each'][] = $value;
                                     continue;
                                 }
                                 if ($value['__embed_class'] != $old[{{@$prop.''}}][$index]['__embed_class']) {

@@ -425,7 +425,7 @@ namespace {
                         var_export($prop.'');
                         echo "])) {\n                                    \$change['\$push'][";
                         var_export($prop.'');
-                        echo "] = \$value;\n                                    continue;\n                                }\n                                if (\$value['__embed_class'] != \$old[";
+                        echo "]['\$each'][] = \$value;\n                                    continue;\n                                }\n                                if (\$value['__embed_class'] != \$old[";
                         var_export($prop.'');
                         echo "][\$index]['__embed_class']) {\n                                    \$change['\$set'][";
                         var_export($prop.'.');
