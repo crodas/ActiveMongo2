@@ -459,7 +459,7 @@ namespace {
                         else {
                             echo "                                        \$change['\$push'][";
                             var_export($prop.'');
-                            echo "] = \$value;\n";
+                            echo "]['\$each'][] = \$value;\n";
                         }
                         echo "                                    continue;\n                                }\n\n                                if (!empty(\$old[";
                         var_export($prop.'');
@@ -492,11 +492,9 @@ namespace {
                         var_export($prop.'');
                         echo "])) {\n                \$change['\$push'][";
                         var_export($prop.'');
-                        echo "] = array(\n                    '\$each'  => (array)\$change['\$push'][";
-                        var_export($prop.'');
-                        echo "],\n                    '\$slice' => ";
+                        echo "]['\$slice'] = ";
                         var_export(0+current($prop->getAnnotation()->getOne('Limit')));
-                        echo ",\n                );\n            }\n";
+                        echo ";\n            }\n";
                     }
                 }
                 echo "\n        return \$change;\n    }\n\n    protected function get_mapping_" . (sha1($collection->getClass())) . "() \n    {\n        return array(\n";

@@ -436,7 +436,7 @@ class Mapper
                                     @if ($prop->getAnnotation()->has('ReferenceMany'))
                                         $change['$addToSet'][{{@$prop.''}}]['$each'][] = $value;
                                     @else
-                                        $change['$push'][{{@$prop.''}}] = $value;
+                                        $change['$push'][{{@$prop.''}}]['$each'][] = $value;
                                     @end
                                     continue;
                                 }
@@ -478,10 +478,7 @@ class Mapper
             @set($ann, $prop->getAnnotation())
             @if ($ann->has('Limit') && ($ann->has('Array') || $ann->has('ReferenceMany') || $ann->has('EmbedMany')) )
             if ($has_changed && !empty($change['$push'][{{@$prop.''}}])) {
-                $change['$push'][{{@$prop.''}}] = array(
-                    '$each'  => (array)$change['$push'][{{@$prop.''}}],
-                    '$slice' => {{@0+current($prop->getAnnotation()->getOne('Limit'))}},
-                );
+                $change['$push'][{{@$prop.''}}]['$slice'] = {{@0+current($prop->getAnnotation()->getOne('Limit'))}};
             }
             @end
         @end

@@ -139,9 +139,12 @@ class SimpleTest extends \phpunit_framework_testcase
         $post->author = $user;
         $post->collaborators[] = $user;
         $post->title  = "foobar post";
-        $post->array  = array(1,2,3,4,5,6);
+        $post->array  = [1];
         $post->readers[] = $user;
         $post->author_id = $user->userid;
+        $conn->save($post);
+
+        $post->array  = [2,3,4,5,6];
         $conn->save($post);
 
         $savedPost = $conn->getCollection('post')->findOne();
@@ -167,7 +170,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $post->array[] = 10;
         $conn->save($post);
         $savedPost = $conn->getCollection('post')->findOne();
-        $this->assertEquals($savedPost->array, [6,9, 10]);
+        $this->assertEquals($savedPost->array, [6,9,10]);
 
         $post->array[] = 19;
         $conn->save($post);
