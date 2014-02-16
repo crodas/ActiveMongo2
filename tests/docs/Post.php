@@ -24,6 +24,9 @@ class PostDocument extends Middle
     /** @Reference("user") @Deferred */
     public $author_ref;
 
+    /** @Array @Limit(-3) */
+    public $array = array();
+
     /** @Geo @Index */
     public $geo;
 

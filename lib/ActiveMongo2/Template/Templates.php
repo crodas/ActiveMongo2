@@ -379,7 +379,7 @@ namespace {
                 }
                 echo "\n";
                 foreach($collection->getProperties() as $prop) {
-                    echo "            if (array_key_exists(";
+                    echo "            \$has_changed = false;\n            if (array_key_exists(";
                     var_export($prop.'');
                     echo ", " . ($prop->getPHPBaseVariable('$current')) . ")\n                || array_key_exists(";
                     var_export($prop.'');
@@ -391,9 +391,9 @@ namespace {
                     var_export($prop.'');
                     echo ", \$old)) {\n                    \$change['\$set'][";
                     var_export($prop.'');
-                    echo "] = " . ($prop->getPHPVariable('$current')) . ";\n                } else if (" . ($prop->getPHPVariable('$current')) . " !== \$old[";
+                    echo "] = " . ($prop->getPHPVariable('$current')) . ";\n                    \$has_changed = true;\n                } else if (" . ($prop->getPHPVariable('$current')) . " !== \$old[";
                     var_export($prop.'');
-                    echo "]) {\n";
+                    echo "]) {\n                    \$has_changed = true;\n";
                     if ($prop->getAnnotation()->has('Inc')) {
                         echo "                        if (empty(\$old[";
                         var_export($prop.'');
@@ -485,7 +485,19 @@ namespace {
 
 
 
-                    echo "                }\n            }\n";
+                    echo "                }\n            }\n\n";
+                    $ann = $prop->getAnnotation();
+                    if ($ann->has('Limit') && ($ann->has('Array') || $ann->has('ReferenceMany') || $ann->has('EmbedMany')) ) {
+                        echo "            if (\$has_changed && !empty(\$change['\$push'][";
+                        var_export($prop.'');
+                        echo "])) {\n                \$change['\$push'][";
+                        var_export($prop.'');
+                        echo "] = array(\n                    '\$each'  => (array)\$change['\$push'][";
+                        var_export($prop.'');
+                        echo "],\n                    '\$slice' => ";
+                        var_export(0+current($prop->getAnnotation()->getOne('Limit')));
+                        echo ",\n                );\n            }\n";
+                    }
                 }
                 echo "\n        return \$change;\n    }\n\n    protected function get_mapping_" . (sha1($collection->getClass())) . "() \n    {\n        return array(\n";
                 foreach($collection->getProperties() as $prop) {

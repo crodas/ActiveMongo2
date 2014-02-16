@@ -362,13 +362,16 @@ class Mapper
         @end
 
         @foreach ($collection->getProperties() as $prop)
+            $has_changed = false;
             if (array_key_exists({{@$prop.''}}, {{$prop->getPHPBaseVariable('$current')}})
                 || array_key_exists({{@$prop.''}}, $old)) {
                 if (!array_key_exists({{@$prop.''}}, {{$prop->getPHPBaseVariable('$current')}})) {
                     $change['$unset'][{{@$prop.''}}] = 1;
                 } else if (!array_key_exists({{@$prop.''}}, $old)) {
                     $change['$set'][{{@$prop.''}}] = {{$prop->getPHPVariable('$current')}};
+                    $has_changed = true;
                 } else if ({{$prop->getPHPVariable('$current')}} !== $old[{{@$prop.''}}]) {
+                    $has_changed = true;
                     @if ($prop->getAnnotation()->has('Inc'))
                         if (empty($old[{{@$prop.''}}])) {
                             $prev = 0;
@@ -471,6 +474,16 @@ class Mapper
                     @end
                 }
             }
+
+            @set($ann, $prop->getAnnotation())
+            @if ($ann->has('Limit') && ($ann->has('Array') || $ann->has('ReferenceMany') || $ann->has('EmbedMany')) )
+            if ($has_changed && !empty($change['$push'][{{@$prop.''}}])) {
+                $change['$push'][{{@$prop.''}}] = array(
+                    '$each'  => (array)$change['$push'][{{@$prop.''}}],
+                    '$slice' => {{@0+current($prop->getAnnotation()->getOne('Limit'))}},
+                );
+            }
+            @end
         @end
 
         return $change;
