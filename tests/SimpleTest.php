@@ -164,14 +164,15 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($savedPost->collaborators[0]->username, $user->username);
 
         $post->array[] = 9;
+        $post->array[] = 10;
         $conn->save($post);
         $savedPost = $conn->getCollection('post')->findOne();
-        $this->assertEquals($savedPost->array, [5,6,9]);
+        $this->assertEquals($savedPost->array, [6,9, 10]);
 
         $post->array[] = 19;
         $conn->save($post);
         $savedPost = $conn->getCollection('post')->findOne();
-        $this->assertEquals($savedPost->array, [6,9,19]);
+        $this->assertEquals($savedPost->array, [9,10,19]);
 
         $post->tmp = 0;
         $conn->delete($post);
