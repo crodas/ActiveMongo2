@@ -476,10 +476,17 @@ class Mapper
             }
 
             @set($ann, $prop->getAnnotation())
-            @if ($ann->has('Limit') && ($ann->has('Array') || $ann->has('ReferenceMany') || $ann->has('EmbedMany')) )
-            if ($has_changed && !empty($change['$push'][{{@$prop.''}}])) {
-                $change['$push'][{{@$prop.''}}]['$slice'] = {{@0+current($prop->getAnnotation()->getOne('Limit'))}};
-            }
+            @if ($ann->has('Array') || $ann->has('ReferenceMany') || $ann->has('EmbedMany'))
+                @if ($ann->has('Limit'))
+                if ($has_changed && !empty($change['$push'][{{@$prop.''}}])) {
+                    $change['$push'][{{@$prop.''}}]['$slice'] = {{@0+current($prop->getAnnotation()->getOne('Limit'))}};
+                }
+                @end
+                @if ($ann->has('Sort'))
+                if ($has_changed && !empty($change['$push'][{{@$prop.''}}])) {
+                    $change['$sort'][{{@$prop.''}}]['$sort'] = {{@0+current($prop->getAnnotation()->getOne('Limit'))}};
+                }
+                @end
             @end
         @end
 

@@ -146,6 +146,7 @@ class SimpleTest extends \phpunit_framework_testcase
 
         $post->array  = [2,3,4,5,6];
         $conn->save($post);
+        $this->assertNotEquals(NULL, $post->created);
 
         $savedPost = $conn->getCollection('post')->findOne();
         $this->assertEquals($savedPost->author->userid, $user->userid);

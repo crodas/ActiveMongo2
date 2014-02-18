@@ -487,14 +487,25 @@ namespace {
 
                     echo "                }\n            }\n\n";
                     $ann = $prop->getAnnotation();
-                    if ($ann->has('Limit') && ($ann->has('Array') || $ann->has('ReferenceMany') || $ann->has('EmbedMany')) ) {
-                        echo "            if (\$has_changed && !empty(\$change['\$push'][";
-                        var_export($prop.'');
-                        echo "])) {\n                \$change['\$push'][";
-                        var_export($prop.'');
-                        echo "]['\$slice'] = ";
-                        var_export(0+current($prop->getAnnotation()->getOne('Limit')));
-                        echo ";\n            }\n";
+                    if ($ann->has('Array') || $ann->has('ReferenceMany') || $ann->has('EmbedMany')) {
+                        if ($ann->has('Limit')) {
+                            echo "                if (\$has_changed && !empty(\$change['\$push'][";
+                            var_export($prop.'');
+                            echo "])) {\n                    \$change['\$push'][";
+                            var_export($prop.'');
+                            echo "]['\$slice'] = ";
+                            var_export(0+current($prop->getAnnotation()->getOne('Limit')));
+                            echo ";\n                }\n";
+                        }
+                        if ($ann->has('Sort')) {
+                            echo "                if (\$has_changed && !empty(\$change['\$push'][";
+                            var_export($prop.'');
+                            echo "])) {\n                    \$change['\$sort'][";
+                            var_export($prop.'');
+                            echo "]['\$sort'] = ";
+                            var_export(0+current($prop->getAnnotation()->getOne('Limit')));
+                            echo ";\n                }\n";
+                        }
                     }
                 }
                 echo "\n        return \$change;\n    }\n\n    protected function get_mapping_" . (sha1($collection->getClass())) . "() \n    {\n        return array(\n";

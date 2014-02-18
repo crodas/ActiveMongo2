@@ -57,6 +57,12 @@ class PostDocument extends Middle
     /** @Array */
     public $tags;
 
+    /** @Date */
+    public $created;
+
+    /** @Date */
+    public $updated;
+
     /**
      *  @preSave
      */
