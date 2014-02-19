@@ -176,6 +176,7 @@ class Collections extends ArrayObject
             'ReferenceMany' => true,
         );
 
+        $refs = array();
         foreach ($references as $type => $multi) {
             foreach ($this->getAllPropertiesWithAnnotation($type, true) as $ann) {
                 list($ann, $prop) = $ann;
