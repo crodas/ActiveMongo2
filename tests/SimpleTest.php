@@ -295,6 +295,8 @@ class SimpleTest extends \phpunit_framework_testcase
         $post->tags = array(['x' => 'foobar'], ['x' => 'xx'], ['x' => 'xxyy']);
         $post->author_id = $user->userid;
         $conn->save($post);
+
+        $user->some_post = $post;
         $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
         $this->assertEquals($zpost->tags, $post->tags);
 
@@ -313,6 +315,9 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($zpost->tags, array_values($post->tags));
         unset($post->tags[1]);
         $conn->save($post);
+
+        // dont fail is _id not define
+        $conn->save($user);
 
         $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
         $this->assertEquals($zpost->tags, array_values($post->tags));

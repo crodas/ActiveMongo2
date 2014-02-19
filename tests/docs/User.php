@@ -13,6 +13,9 @@ class UserDocument
     /** @Id */
     public $userid;
 
+    /** @Reference(post) */
+    public $some_post;
+
     /** @String @Required */
     public $username;
 

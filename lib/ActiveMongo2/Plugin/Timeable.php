@@ -55,6 +55,5 @@ class Timeable
     public static function onUpdate($object, Array &$args, $conn, $extra, $mapper)
     {
         $args[0]['$set']['updated'] = new \MongoDate();
-        return true;
     }
 }

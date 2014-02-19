@@ -616,7 +616,7 @@ namespace {
                     var_export($collection->getClass());
                     echo ";\n";
                 }
-                echo "\n        return \$doc;\n    }\n\n    /**\n     *  Validate " . ($collection->getClass()) . " object\n     */\n    protected function validate_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " \$object)\n    {\n";
+                echo "\n        if (empty(\$doc['_id'])) {\n            \$oldDoc = \$this->getRawDocument(\$object, false);\n            if (!empty(\$oldDoc['_id'])) {\n                \$doc['_id'] = \$oldDoc['_id'];\n            }\n        }\n\n        return \$doc;\n    }\n\n    /**\n     *  Validate " . ($collection->getClass()) . " object\n     */\n    protected function validate_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " \$object)\n    {\n";
                 if ($collection->getParent()) {
                     echo "            \$doc = array_merge(\n                \$this->validate_" . (sha1($collection->getParent())) . "(\$object),\n                \$this->get_array_" . (sha1($collection->getClass())) . "(\$object, false)\n            );\n";
                 }

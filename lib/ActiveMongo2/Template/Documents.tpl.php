@@ -664,6 +664,13 @@ class Mapper
             {{$collection->getDiscriminator(true)->getPHPVariable()}} = {{@$collection->getClass()}};
         @end 
 
+        if (empty($doc['_id'])) {
+            $oldDoc = $this->getRawDocument($object, false);
+            if (!empty($oldDoc['_id'])) {
+                $doc['_id'] = $oldDoc['_id'];
+            }
+        }
+
         return $doc;
     }
 
