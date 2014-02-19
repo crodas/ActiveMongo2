@@ -199,6 +199,11 @@ class Connection
         return new StoreFile($col, $document, $this, $obj);
     }
 
+    public function getReflection($name)
+    {
+        return $this->mapper->getReflection($name);
+    }
+
     protected function getMongoCollection($obj)
     {
         $class = $this->mapper->get_class($obj);

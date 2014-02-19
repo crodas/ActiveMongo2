@@ -44,19 +44,30 @@ class Property extends Base
     protected $collection;
     protected $type = null;
 
+    protected function getTypeFromAnnotation($annotation)
+    {
+        foreach ($annotation->getOne('DataType') as $type) {
+            if ($this->type === null) {
+                $this->type = $type;
+            } else {
+                throw new \Exception("{$this->getPHPName()} has two data tyeps {$type} and {$this->type}");
+            }
+        }
+    }
+
     public function __construct(Collection $col, Annotation $prop)
     {
         $this->collection = $col;
         $this->annotation = $prop;
 
+        if ($prop->has('Id')) {
+            $this->type = '_id';
+        }
         foreach ($this->getCallback('Validate') as $val) {
-            foreach ($val->annotation->getOne('DataType') as $type) {
-                if ($this->type === null) {
-                    $this->type = $type;
-                } else {
-                    throw new \Exception("{$this->getPHPName()} has two data tyeps {$type} and {$this->type}");
-                }
-            }
+            $this->getTypeFromAnnotation($val->annotation);
+        }
+        foreach ($this->getCallback('DefaultValue') as $val) {
+            $this->getTypeFromAnnotation($val->annotation);
         }
     }
 

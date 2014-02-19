@@ -39,6 +39,28 @@ namespace ActiveMongo2\Filter;
 use ActiveMongo2\Reference;
 
 /**
+ *  @DataType date
+ *  @Validate(Date)
+ *  @Embed
+ */
+function is_date(&$date)
+{
+    /* is_date */
+    if ($date instanceof \MongoDate || $date instanceof \Datetime) {
+        return true;
+    }
+    if (is_string($date)) { 
+        $date = strtotime($date);
+    }
+    if (is_integer($date) && $date > 0) {
+        $date = new \MongoDate($date);
+        return true;
+    }
+    return false;
+}
+
+/**
+ *  @Validate(Hash)
  *  @DataType hash
  *  @Embed
  */
@@ -152,6 +174,7 @@ function _hydrate_array(&$value)
 /** 
  * @Validate(Array) 
  * @DataType Array
+ * @Embed
  */
 function _validate_array(&$value)
 {

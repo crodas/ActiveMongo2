@@ -179,6 +179,19 @@ class Mapper
         return $this->class_mapper[$class];
     }
 
+    public function getReflection($name)
+    {
+        $class = strtolower($name);
+        if (empty($this->class_mapper[$class])) {
+            if (empty($this->mapper[$name])) {
+                throw new \RuntimeException("Cannot map class {$class} to its document");
+            }
+            $class = $this->mapper[$name]['class'];
+        }
+
+        return $this->{"reflect_" . sha1($class)}();
+    }
+
     public function getReference($object, Array $extra = array())
     {
         $class = strtolower($this->get_class($object));
@@ -672,6 +685,31 @@ class Mapper
         }
 
         return $doc;
+    }
+
+    protected function reflect_{{sha1($collection->getClass())}}() 
+    {
+        $reflection = array(
+        @foreach ($collection->getProperties() as $prop) 
+            {{@$prop->getPHPName()}} => array(
+                'property' => {{@$prop.''}},
+                'type'     => {{@$prop->getType()}},
+                'annotation' => array(
+                    @foreach ($prop->getAnnotation() as $ann)
+                        {{@$ann}},
+                    @end
+                ),
+            ),
+        @end
+        );
+        @if (!$collection->getParent()) {
+            return $reflection;
+        @else
+            return array_merge(
+                $this->reflect_{{sha1($collection->GetParent())}}(), 
+                $reflection
+            );
+        @end
     }
 
     /**

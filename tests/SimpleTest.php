@@ -365,4 +365,13 @@ class SimpleTest extends \phpunit_framework_testcase
         }
         $this->assertEquals($one->count(), $i);
     }
+
+    public function testREflectionByClassOrCollection()
+    {
+        $conn = getConnection();
+        $this->assertEquals(
+            $conn->getReflection('post'),    
+            $conn->getReflection('ActiveMongo2\Tests\Document\BaseDocument')
+        );
+    }
 }
