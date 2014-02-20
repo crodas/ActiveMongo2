@@ -620,7 +620,9 @@ namespace {
                 foreach($collection->getProperties() as $prop) {
                     echo "            ";
                     var_export($prop->getPHPName());
-                    echo " => array(\n                'property' => ";
+                    echo " => array(\n                'class'    => ";
+                    var_export($collection->getClass());
+                    echo ",\n                'property' => ";
                     var_export($prop.'');
                     echo ",\n                'type'     => ";
                     var_export($prop->getType());

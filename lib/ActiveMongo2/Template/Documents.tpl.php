@@ -692,6 +692,7 @@ class Mapper
         $reflection = array(
         @foreach ($collection->getProperties() as $prop) 
             {{@$prop->getPHPName()}} => array(
+                'class'    => {{@$collection->getClass()}},
                 'property' => {{@$prop.''}},
                 'type'     => {{@$prop->getType()}},
                 'annotation' => array(
