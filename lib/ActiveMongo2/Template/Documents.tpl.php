@@ -690,9 +690,10 @@ class Mapper
     protected function reflect_{{sha1($collection->getClass())}}() 
     {
         $reflection = array(
+            'class'    => {{@$collection->getClass()}},
+            'properties'  => array(
         @foreach ($collection->getProperties() as $prop) 
             {{@$prop->getPHPName()}} => array(
-                'class'    => {{@$collection->getClass()}},
                 'property' => {{@$prop.''}},
                 'type'     => {{@$prop->getType()}},
                 'annotation' => array(
@@ -702,15 +703,15 @@ class Mapper
                 ),
             ),
         @end
-        );
-        @if (!$collection->getParent()) {
-            return $reflection;
-        @else
-            return array_merge(
-                $this->reflect_{{sha1($collection->GetParent())}}(), 
-                $reflection
+        ));
+
+        @if ($collection->getParent()) {
+            $reflection['properties'] = array_merge(
+                $this->reflect_{{sha1($collection->GetParent())}}()['properties'], 
+                $reflection['properties']
             );
         @end
+        return $reflection;
     }
 
     /**

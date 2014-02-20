@@ -616,13 +616,13 @@ namespace {
                     var_export($collection->getClass());
                     echo ";\n";
                 }
-                echo "\n        if (empty(\$doc['_id'])) {\n            \$oldDoc = \$this->getRawDocument(\$object, false);\n            if (!empty(\$oldDoc['_id'])) {\n                \$doc['_id'] = \$oldDoc['_id'];\n            }\n        }\n\n        return \$doc;\n    }\n\n    protected function reflect_" . (sha1($collection->getClass())) . "() \n    {\n        \$reflection = array(\n";
+                echo "\n        if (empty(\$doc['_id'])) {\n            \$oldDoc = \$this->getRawDocument(\$object, false);\n            if (!empty(\$oldDoc['_id'])) {\n                \$doc['_id'] = \$oldDoc['_id'];\n            }\n        }\n\n        return \$doc;\n    }\n\n    protected function reflect_" . (sha1($collection->getClass())) . "() \n    {\n        \$reflection = array(\n            'class'    => ";
+                var_export($collection->getClass());
+                echo ",\n            'properties'  => array(\n";
                 foreach($collection->getProperties() as $prop) {
                     echo "            ";
                     var_export($prop->getPHPName());
-                    echo " => array(\n                'class'    => ";
-                    var_export($collection->getClass());
-                    echo ",\n                'property' => ";
+                    echo " => array(\n                'property' => ";
                     var_export($prop.'');
                     echo ",\n                'type'     => ";
                     var_export($prop->getType());
@@ -634,14 +634,11 @@ namespace {
                     }
                     echo "                ),\n            ),\n";
                 }
-                echo "        );\n";
-                if (!$collection->getParent()) {
-                    echo "            return \$reflection;\n";
+                echo "        ));\n\n";
+                if ($collection->getParent()) {
+                    echo "            \$reflection['properties'] = array_merge(\n                \$this->reflect_" . (sha1($collection->GetParent())) . "()['properties'], \n                \$reflection['properties']\n            );\n";
                 }
-                else {
-                    echo "            return array_merge(\n                \$this->reflect_" . (sha1($collection->GetParent())) . "(), \n                \$reflection\n            );\n";
-                }
-                echo "    }\n\n    /**\n     *  Validate " . ($collection->getClass()) . " object\n     */\n    protected function validate_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " \$object)\n    {\n";
+                echo "        return \$reflection;\n    }\n\n    /**\n     *  Validate " . ($collection->getClass()) . " object\n     */\n    protected function validate_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " \$object)\n    {\n";
                 if ($collection->getParent()) {
                     echo "            \$doc = array_merge(\n                \$this->validate_" . (sha1($collection->getParent())) . "(\$object),\n                \$this->get_array_" . (sha1($collection->getClass())) . "(\$object, false)\n            );\n";
                 }
