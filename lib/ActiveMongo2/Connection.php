@@ -201,6 +201,9 @@ class Connection
 
     public function getReflection($name)
     {
+        if (!is_string($name)) {
+            $name = $this->mapper->get_class($name);
+        }
         return $this->mapper->getReflection($name);
     }
 
