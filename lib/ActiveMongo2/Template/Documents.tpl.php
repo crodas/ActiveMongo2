@@ -691,6 +691,11 @@ class Mapper
     {
         $reflection = array(
             'class'    => {{@$collection->getClass()}},
+            'annotation' => array(
+        @foreach ($collection->getAnnotation() as $ann) 
+            {{@$ann}},
+        @end
+            ),
             'properties'  => array(
         @foreach ($collection->getProperties() as $prop) 
             {{@$prop->getPHPName()}} => array(

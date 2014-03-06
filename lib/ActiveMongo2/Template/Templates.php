@@ -620,7 +620,13 @@ namespace {
                 }
                 echo "\n        if (empty(\$doc['_id'])) {\n            \$oldDoc = \$this->getRawDocument(\$object, false);\n            if (!empty(\$oldDoc['_id'])) {\n                \$doc['_id'] = \$oldDoc['_id'];\n            }\n        }\n\n        return \$doc;\n    }\n\n    protected function reflect_" . (sha1($collection->getClass())) . "() \n    {\n        \$reflection = array(\n            'class'    => ";
                 var_export($collection->getClass());
-                echo ",\n            'properties'  => array(\n";
+                echo ",\n            'annotation' => array(\n";
+                foreach($collection->getAnnotation() as $ann) {
+                    echo "            ";
+                    var_export($ann);
+                    echo ",\n";
+                }
+                echo "            ),\n            'properties'  => array(\n";
                 foreach($collection->getProperties() as $prop) {
                     echo "            ";
                     var_export($prop->getPHPName());
