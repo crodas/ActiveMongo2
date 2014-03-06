@@ -360,9 +360,11 @@ namespace {
                 }
                 echo "                break;\n";
             }
-            echo "        }\n\n        if (empty(\$class)) {\n            throw new \\RuntimeException(\"Cannot get class for collection {\$col}\");\n        }\n\n\n        return \$this->getClass(\$this->class_mapper[\$class]['name'] . '_' . sha1(\$class));\n\n        return \$class;\n    }\n\n    public function get_class(\$object)\n    {\n        if (\$object instanceof ActiveMongo2Mapped) {\n            \$class = \$object->" . ($instance) . "_getClass();\n        } else if (!empty(\$object->" . ($instance) . ") && \$object->" . ($instance) . " instanceof ActiveMongo2Mapped) {\n            \$class = \$object->" . ($instance) . "->" . ($instance) . "_getClass();\n        } else if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = \$object->getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n\n        return \$class;\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(\$this->get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$db)\n    {\n";
+            echo "        }\n\n        if (empty(\$class)) {\n            throw new \\RuntimeException(\"Cannot get class for collection {\$col}\");\n        }\n\n\n        return \$this->getClass(\$this->class_mapper[\$class]['zname'] . '_' . sha1(\$class));\n\n        return \$class;\n    }\n\n    public function get_class(\$object)\n    {\n        if (\$object instanceof ActiveMongo2Mapped) {\n            \$class = \$object->" . ($instance) . "_getClass();\n        } else if (!empty(\$object->" . ($instance) . ") && \$object->" . ($instance) . " instanceof ActiveMongo2Mapped) {\n            \$class = \$object->" . ($instance) . "->" . ($instance) . "_getClass();\n        } else if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = \$object->getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n\n        return \$class;\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(\$this->get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$db)\n    {\n";
             foreach($collections->getIndexes() as $id => $index) {
-                echo "            // " . ($id) . "\n            \$db->" . ($index['prop']->getParent()->getName()) . "->ensureIndex(\n                ";
+                echo "            // " . ($id) . "\n            \$db->selectCollection(";
+                var_export($index['prop']->getParent()->getName());
+                echo ")->ensureIndex(\n                ";
                 var_export($index['field']);
                 echo ",\n                ";
                 var_export($index['extra']);
@@ -562,7 +564,7 @@ namespace {
                     echo "                \n            }\n";
                 }
                 echo "\n        if (!\$object instanceof ActiveMongo2Mapped) {\n            \$class    = \$this->getClass(";
-                var_export($collection->getName() . '_');
+                var_export($collection->getSafeName() . '_');
                 echo " .  sha1(strtolower(get_class(\$object))));\n            \$zobject  = new \$class;\n";
                 foreach($collection->getProperties() as $prop) {
                     if ($prop->isPublic()) {

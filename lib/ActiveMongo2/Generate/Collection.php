@@ -96,6 +96,7 @@ class Collection extends Base
             'class' => $this->getClass(),
             'file'  => $this->getPath(),
             'name'  => $this->getName(),
+            'zname' => $this->getSafeName(),
             'is_gridfs' => $this->is('GridFs'),
             'parent' => $this->getParent() ? $this->GetParent()->getClass() : NULL,
             'disc'   => $this->is('SingleCollection') ? $this->getDiscriminator() : NULL,
@@ -123,9 +124,14 @@ class Collection extends Base
         return strtolower($this->annotation['class']);
     }
 
+    public function getSafeName()
+    {
+        return preg_replace('/[^a-z0-9]/i', '___', $this->getName());
+    }
+
     public function getHash()
     {
-        return $this->getName() . '_' . sha1($this->getClass());
+        return $this->getSafeName() . '_' . sha1($this->getClass());
     }
 
     protected function getNameFromParent()

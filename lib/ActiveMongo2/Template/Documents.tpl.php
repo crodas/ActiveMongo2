@@ -315,7 +315,7 @@ class Mapper
         }
 
 
-        return $this->getClass($this->class_mapper[$class]['name'] . '_' . sha1($class));
+        return $this->getClass($this->class_mapper[$class]['zname'] . '_' . sha1($class));
 
         return $class;
     }
@@ -350,7 +350,7 @@ class Mapper
     {
         @foreach($collections->getIndexes() as $id => $index)
             // {{$id}}
-            $db->{{$index['prop']->getParent()->getName()}}->ensureIndex(
+            $db->selectCollection({{@$index['prop']->getParent()->getName()}})->ensureIndex(
                 {{@$index['field']}},
                 {{@$index['extra']}}
             );
@@ -580,7 +580,7 @@ class Mapper
         @end
 
         if (!$object instanceof ActiveMongo2Mapped) {
-            $class    = $this->getClass({{@$collection->getName() . '_' }} .  sha1(strtolower(get_class($object))));
+            $class    = $this->getClass({{@$collection->getSafeName() . '_' }} .  sha1(strtolower(get_class($object))));
             $zobject  = new $class;
             @foreach ($collection->getProperties() as $prop)
                 @if ($prop->isPublic())
