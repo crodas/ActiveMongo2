@@ -374,4 +374,14 @@ class SimpleTest extends \phpunit_framework_testcase
             $conn->getReflection('ActiveMongo2\Tests\Document\BaseDocument')
         );
     }
+
+    public function testGetCollections()
+    {
+        $cols = getConnection()->getCollections();
+        $this->assertTrue(count($cols) > 5);
+        foreach ($cols as $col) {
+            $this->assertTrue($col instanceof \ActiveMongo2\Collection);
+            $this->assertTrue(is_array($col->getReflection()));
+        }
+    }
 }

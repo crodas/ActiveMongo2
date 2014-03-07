@@ -41,6 +41,16 @@ class Mapper
         return $diff;
     }
 
+    public function getCollections()
+    {
+        return array(
+        @foreach ($collections as $collection)
+            @if ($collection->getName())
+                {{@$collection->getClass()}} => {{@$collection->getName()}},
+            @end
+        @end
+        );
+    }
 
     public function __autoloader($class)
     {

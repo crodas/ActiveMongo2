@@ -98,6 +98,15 @@ class Connection
         return $this->getCollection($name);
     }
 
+    public function getCollections()
+    {
+        $cols = array();
+        foreach ($this->mapper->getCollections() as $class => $col) {
+            $cols[] = $this->getCollection($class);
+        }
+        return $cols;
+    }
+
     public function getDocumentClass($collection)
     {
         return $this->mapper->mapCollection($collection)['class'];

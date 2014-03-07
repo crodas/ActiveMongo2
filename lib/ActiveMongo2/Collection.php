@@ -66,6 +66,11 @@ class Collection implements IteratorAggregate
         return $this->find([]);
     }
 
+    public function getReflection()
+    {
+        return $this->mapper->getReflection($this->zclass);
+    }
+
 
     public function rawCollection()
     {
