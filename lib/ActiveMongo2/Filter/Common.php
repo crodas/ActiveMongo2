@@ -102,6 +102,19 @@ function _validate_geo(&$value) {
 }
 
 /** 
+ * @Validate(Bool) 
+ * @Validate(Boolean) 
+ * @DataType Boolean
+ * @Embed
+ */
+function _validate_boolean(&$value)
+{
+    $value = (bool)$value;
+    return true;
+}
+
+
+/** 
  * @Validate(Integer) 
  * @Validate(Int) 
  * @DataType Int
