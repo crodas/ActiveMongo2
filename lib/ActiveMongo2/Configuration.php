@@ -44,6 +44,7 @@ class Configuration
     protected $loader;
     protected $path;
     protected $devel = false;
+    protected $generated = false;
     protected $cache;
     protected $default = array('w' => 1);
     protected $failOnMissRef = true;
@@ -107,8 +108,14 @@ class Configuration
             $watcher = new Watch($this->loader . ".lock");
             if ($watcher->hasChanged()) {
                 new Generate($this, $watcher);
+                $this->generate = true;
             }
         }
+    }
+
+    public function hasGenerated()
+    {
+        return $this->generated;
     }
 
     public function initialize(Connection $conn)

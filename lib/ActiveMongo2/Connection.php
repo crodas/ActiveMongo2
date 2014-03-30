@@ -65,6 +65,9 @@ class Connection
         $this->mapper = $config->initialize($this);
         $this->conn   = $conn;
         $this->db     = $conn->selectDB($db);
+        if ($config->hasGenerated())  {
+            $this->ensureIndex(true);
+        }
     }
 
     public function setCacheStorage(Cache\Storage $storage)
@@ -307,9 +310,9 @@ class Connection
         return $return;
     }
 
-    public function ensureIndex()
+    public function ensureIndex($background = false)
     {
-        $this->mapper->ensureIndex($this->db);
+        $this->mapper->ensureIndex($this->db, $background);
     }
 
     public function dropDatabase()

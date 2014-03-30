@@ -356,13 +356,13 @@ class Mapper
         return $this->$method($document, $key, $value);
     }
 
-    public function ensureIndex($db)
+    public function ensureIndex($db, $background = false)
     {
         @foreach($collections->getIndexes() as $id => $index)
             // {{$id}}
             $db->selectCollection({{@$index['prop']->getParent()->getName()}})->ensureIndex(
                 {{@$index['field']}},
-                {{@$index['extra']}}
+                array_merge(compact('background'), {{@$index['extra']}})
             );
         @end
     }
