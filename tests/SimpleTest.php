@@ -384,4 +384,32 @@ class SimpleTest extends \phpunit_framework_testcase
             $this->assertTrue(is_array($col->getReflection()));
         }
     }
+
+    /**
+     *  @expectedException UnexpectedValueException
+     */
+    public function testValidator()
+    {
+        $cols = getConnection()->getCollections();
+
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "crodas";
+
+        $conn->save($user);
+
+
+        $post = new PostDocument;
+        $post->author_ref = $user;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers[] = $user;
+        $post->author_id = $user->userid;
+        $post->xxxyyy = 31;
+        $conn->save($post);
+
+        
+    }
 }

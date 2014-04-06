@@ -1,7 +1,7 @@
 <?php
 /*
   +---------------------------------------------------------------------------------+
-  | Copyright (c) 2013 ActiveMongo                                                  |
+  | Copyright (c) 2014 ActiveMongo                                                  |
   +---------------------------------------------------------------------------------+
   | Redistribution and use in source and binary forms, with or without              |
   | modification, are permitted provided that the following conditions are met:     |
@@ -43,6 +43,7 @@ use ActiveMongo2\Generate;
 class Collection extends Base
 {
     protected $collections;
+    protected $validator;
 
     public function getPlugins($type)
     {
@@ -62,13 +63,17 @@ class Collection extends Base
     {
         $this->annotation  = $annotation;
         $this->collections = $collections;
-        $parent     = $annotation->getParent();
+
+        $parent = $annotation->getParent();
         while ($parent) {
             if (empty($collections[$parent['class']])) {
                 $collections[$parent['class']] = new self($parent, $collections);
             }
             $parent = $parent->getParent();
         }
+
+
+
     }
 
     public function getTypes()

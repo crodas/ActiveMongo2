@@ -44,6 +44,7 @@ class Collections extends ArrayObject
 {
     protected $files = array();
     protected $annotations;
+    protected $validator;
     protected static $events = array(
         'preSave', 'postSave', 'preCreate', 'postCreate', 'onHydratation', 
         'preUpdate', 'postUpdate', 'preDelete', 'postDelete'
@@ -256,6 +257,16 @@ class Collections extends ArrayObject
 
     }
 
+    public function getValidatorCode()
+    {
+        return substr($this->validator->getCode(), 5);
+    }
+
+    public function getValidatorNS()
+    {
+        return $this->validator->getNamespace();
+    }
+
     public function __construct(Array $dirs)
     {
         $this->annotations = new Annotations;
@@ -266,5 +277,9 @@ class Collections extends ArrayObject
         $this->readCollections();
 
         $this->files = array_unique($this->files);
+
+        $validator = new Validate('', '');
+        $validator->setCollections($this);
+        $this->validator = $validator->generateValidators();
     }
 }

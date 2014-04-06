@@ -51,7 +51,7 @@ class PostDocument extends Middle
     /** @EmbedMany("user") */
     public $readers_1;
 
-    /** @Integer */
+    /** @Integer @Between([-20, 20], "xxxyy must be between -20 and 20 {$value} given") */
     public $xxxyyy;
 
     /** @Array */

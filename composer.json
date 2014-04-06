@@ -7,7 +7,8 @@
         "crodas/simple-view-engine": "~0.1",
         "crodas/watch-files": "~0.1",
         "crodas/path": "~0.1",
-        "crodas/cli": "~0.1"
+        "crodas/cli": "~0.1",
+        "crodas/validator": ">= 0.1.1"
     },
     "license": "BSD-4-Clause",
     "version": "v0.1.8",

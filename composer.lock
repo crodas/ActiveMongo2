@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "07c05a555cc223184bfd66d008f677ea",
+    "hash": "18a9a114fe3a24366d8e11ace2da0170",
     "packages": [
         {
             "name": "crodas/class-info",
@@ -151,12 +151,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/ServiceProvider.git",
-                "reference": "f1857241b28044e7382a1865c4d791378c15a842"
+                "reference": "5722f9f95b67a153a7bad16da536678edec0e016"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/ServiceProvider/zipball/f1857241b28044e7382a1865c4d791378c15a842",
-                "reference": "f1857241b28044e7382a1865c4d791378c15a842",
+                "url": "https://api.github.com/repos/crodas/ServiceProvider/zipball/5722f9f95b67a153a7bad16da536678edec0e016",
+                "reference": "5722f9f95b67a153a7bad16da536678edec0e016",
                 "shasum": ""
             },
             "require": {
@@ -184,20 +184,20 @@
                 }
             ],
             "description": "Little configuration manager and dependency injection",
-            "time": "2013-12-17 09:02:58"
+            "time": "2014-03-31 15:19:11"
         },
         {
             "name": "crodas/simple-view-engine",
-            "version": "v0.1.11",
+            "version": "v0.1.18",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/SimpleView.git",
-                "reference": "c68dcccc2e39039b202fe1a8c3c996ee2844391e"
+                "reference": "db90b47cf78a7298529cdeb58767c6ad6081a135"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/SimpleView/zipball/c68dcccc2e39039b202fe1a8c3c996ee2844391e",
-                "reference": "c68dcccc2e39039b202fe1a8c3c996ee2844391e",
+                "url": "https://api.github.com/repos/crodas/SimpleView/zipball/db90b47cf78a7298529cdeb58767c6ad6081a135",
+                "reference": "db90b47cf78a7298529cdeb58767c6ad6081a135",
                 "shasum": ""
             },
             "require": {
@@ -222,7 +222,46 @@
                 }
             ],
             "description": "Simple View engine designed to generate code. Based on Laravel's 4 Blade.",
-            "time": "2013-11-01 05:18:28"
+            "time": "2014-04-05 17:42:25"
+        },
+        {
+            "name": "crodas/validator",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/crodas/Validator.git",
+                "reference": "81a44326ea8710b6357538cd8f6767923c8e3ae0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/crodas/Validator/zipball/81a44326ea8710b6357538cd8f6767923c8e3ae0",
+                "reference": "81a44326ea8710b6357538cd8f6767923c8e3ae0",
+                "shasum": ""
+            },
+            "require": {
+                "crodas/notoj": "~0.1",
+                "crodas/path": "*",
+                "crodas/simple-view-engine": "*",
+                "crodas/watch-files": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "crodas": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-4-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "César D. Rodas",
+                    "email": "crodas@php.net"
+                }
+            ],
+            "description": "Validation library",
+            "time": "2013-10-25 02:32:21"
         },
         {
             "name": "crodas/watch-files",
@@ -266,12 +305,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/jsonlint.git",
-                "reference": "354f9496736f87a581e5f724e5e76e66d457493e"
+                "reference": "fc3a80f048972dfc50b3411b364a797330c8a2eb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/jsonlint/zipball/354f9496736f87a581e5f724e5e76e66d457493e",
-                "reference": "354f9496736f87a581e5f724e5e76e66d457493e",
+                "url": "https://api.github.com/repos/Seldaek/jsonlint/zipball/fc3a80f048972dfc50b3411b364a797330c8a2eb",
+                "reference": "fc3a80f048972dfc50b3411b364a797330c8a2eb",
                 "shasum": ""
             },
             "require": {
@@ -305,7 +344,7 @@
                 "parser",
                 "validator"
             ],
-            "time": "2013-11-11 13:15:48"
+            "time": "2014-03-19 15:35:12"
         },
         {
             "name": "symfony/console",
@@ -314,21 +353,23 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console.git",
-                "reference": "ceb261293b65e9df55b98a9665ef29d56de0c48f"
+                "reference": "abfdf388c2f47c4d4ba721afab7e91f15ffa476f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Console/zipball/ceb261293b65e9df55b98a9665ef29d56de0c48f",
-                "reference": "ceb261293b65e9df55b98a9665ef29d56de0c48f",
+                "url": "https://api.github.com/repos/symfony/Console/zipball/abfdf388c2f47c4d4ba721afab7e91f15ffa476f",
+                "reference": "abfdf388c2f47c4d4ba721afab7e91f15ffa476f",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
             "require-dev": {
+                "psr/log": "~1.0",
                 "symfony/event-dispatcher": "~2.1"
             },
             "suggest": {
+                "psr/log": "For using the console logger",
                 "symfony/event-dispatcher": ""
             },
             "type": "library",
@@ -360,7 +401,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "http://symfony.com",
-            "time": "2014-02-11 13:52:21"
+            "time": "2014-04-02 16:54:39"
         },
         {
             "name": "symfony/finder",
@@ -369,12 +410,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Finder.git",
-                "reference": "a708807d3a54b258abb5bda6832ced8b9bbf8ffb"
+                "reference": "d45faef922df8438cce99b5ee226bf06c32d145e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Finder/zipball/a708807d3a54b258abb5bda6832ced8b9bbf8ffb",
-                "reference": "a708807d3a54b258abb5bda6832ced8b9bbf8ffb",
+                "url": "https://api.github.com/repos/symfony/Finder/zipball/d45faef922df8438cce99b5ee226bf06c32d145e",
+                "reference": "d45faef922df8438cce99b5ee226bf06c32d145e",
                 "shasum": ""
             },
             "require": {
@@ -409,7 +450,7 @@
             ],
             "description": "Symfony Finder Component",
             "homepage": "http://symfony.com",
-            "time": "2014-02-24 16:21:51"
+            "time": "2014-03-03 12:53:01"
         },
         {
             "name": "symfony/yaml",
@@ -418,12 +459,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "e49a47d60348665261f6e279ba383241deb73cab"
+                "reference": "cee3067d680232674c6505d91db9d3d635a9a8f4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/e49a47d60348665261f6e279ba383241deb73cab",
-                "reference": "e49a47d60348665261f6e279ba383241deb73cab",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/cee3067d680232674c6505d91db9d3d635a9a8f4",
+                "reference": "cee3067d680232674c6505d91db9d3d635a9a8f4",
                 "shasum": ""
             },
             "require": {
@@ -458,7 +499,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "http://symfony.com",
-            "time": "2014-02-24 16:21:51"
+            "time": "2014-03-26 11:51:10"
         }
     ],
     "packages-dev": [

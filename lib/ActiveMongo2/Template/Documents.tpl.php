@@ -749,14 +749,24 @@ class Mapper
                 throw new \RuntimeException("{{$prop.''}} cannot be empty");
             }
             @end
+            if (!empty({{$prop->getPHPVariable()}})) {
             @foreach ($prop->getCallback('Validate') as $val)
-                if (!empty({{$prop->getPHPVariable()}})) {
-                    {{$val->toCode($prop, $prop->getPHPVariable())}}
-                    if ($return === FALSE) {
-                        throw new \RuntimeException("Validation failed for {{$prop.''}}");
-                    }
+                {{$val->toCode($prop, $prop->getPHPVariable())}}
+                if ($return === FALSE) {
+                    throw new \RuntimeException("Validation failed for {{$prop.''}}");
                 }
             @end
+                @if ($prop->getAnnotation()->has('Date'))
+                    $_date = \date_create('@' . {{$prop->getPHPVariable()}}->sec);
+                    if (\{{$valns}}\validate({{@$collection->getClass() . "::" . $prop->getPHPName()}}, $_date) === false) {
+                        throw new \RuntimeException("Validation failed for {{$prop.''}}");
+                    }
+                @else
+                    if (\{{$valns}}\validate({{@$collection->getClass() . "::" . $prop->getPHPName()}}, {{$prop->getPHPVariable()}}) === false) {
+                        throw new \RuntimeException("Validation failed for {{$prop.''}}");
+                    }
+                @end
+            }
         @end
 
         return $doc;

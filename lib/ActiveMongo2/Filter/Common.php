@@ -46,8 +46,11 @@ use ActiveMongo2\Reference;
 function is_date(&$date)
 {
     /* is_date */
-    if ($date instanceof \MongoDate || $date instanceof \Datetime) {
+    if ($date instanceof \MongoDate) {
         return true;
+    }
+    if ($date instanceof \Datetime) {
+        $date = new \MongoDate($date->getTimestamp());
     }
     if (is_string($date)) { 
         $date = strtotime($date);

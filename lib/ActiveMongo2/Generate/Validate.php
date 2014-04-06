@@ -1,7 +1,7 @@
 <?php
 /*
   +---------------------------------------------------------------------------------+
-  | Copyright (c) 2013 ActiveMongo                                                  |
+  | Copyright (c) 2014 ActiveMongo                                                  |
   +---------------------------------------------------------------------------------+
   | Redistribution and use in source and binary forms, with or without              |
   | modification, are permitted provided that the following conditions are met:     |
@@ -34,75 +34,30 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2;
+namespace ActiveMongo2\Generate;
 
-use Notoj;
-use WatchFiles\Watch;
-use crodas\SimpleView\FixCode;
-use crodas\File;
-use crodas\Path;
+use crodas\Validator\Init;
 
-class Generate
+class Validate extends Init
 {
-    protected $files = array();
-    protected $config;
+    protected $col;
 
-    protected function fixPath(Generate\Collections $collections)
+    public function setCollections(Collections $col)
     {
-        $self = $this;
-        $fixPath = function($value) use ($self) {
-            $value->setPath($self->getRelativePath($value->getPath()));
-        };
-        $collections->map($fixPath);
-        array_map($fixPath, $collections->getAnnotationByName('DefaultValue'));
-        array_map($fixPath, $collections->getAnnotationByName('Plugin'));
-        array_map($fixPath, $collections->getAnnotationByName('Hydratate'));
-        array_map($fixPath, $collections->getAnnotationByName('Validate'));
+        $this->col = $col;
     }
 
-    protected function writeFileWatch(Watch $watcher, Generate\Collections $collections)
+    public function getAnnotations()
     {
-        foreach ($collections->getFiles() as $file) {
-            $watcher->watchDir(dirname($file));
-            $watcher->watchFile($file);
+        $cols = array();
+        foreach ($this->col as $col) {
+            $cols[] = $col->getAnnotation();
         }
-
-        $watcher->watchFile($this->config->getLoader());
-        $watcher->watch();
+        return $cols;
     }
 
-    public function __construct(Configuration $config, Watch $watcher)
+    public function generateValidators()
     {
-        $this->config = $config;
-
-        $collections = new Generate\Collections((array)$config->getModelPath(), $this);
-        $this->fixPath($collections);
-
-        $target    = $config->getLoader();
-        $namespace = sha1($target);
-        $valns     = $collections->getValidatorNS();
-
-        $args = compact('docs', 'namespace','mapper', 'indexes', 'self', 'collections', 'valns');
-        $code = Template\Templates::get('documents')
-            ->render($args, true);
-
-        $code .= $collections->getValidatorCode();
-
-        File::write($target, FixCode::fix($code));
-        $this->writeFileWatch($watcher, $collections);
-    }
-    
-    public function getRelativePath($dir1, $dir2=NULL)
-    {
-        if (empty($dir2)) {
-            $dir2 = $this->config->getLoader();
-        }
-
-        if (substr($dir1, 0, 4) == "/../") {
-            // already relative path
-            return $dir1;
-        }
-
-        return Path::getRelative($dir1, $dir2);
+        return $this->getValidatorCode();
     }
 }
