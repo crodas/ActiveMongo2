@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "18a9a114fe3a24366d8e11ace2da0170",
+    "hash": "daaa9f9a1b5db0b05bfdbfdef45cf116",
     "packages": [
         {
             "name": "crodas/class-info",
@@ -230,15 +230,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/Validator.git",
-                "reference": "81a44326ea8710b6357538cd8f6767923c8e3ae0"
+                "reference": "b1bd65268acb9cec30fb002ccef201aeef6820fa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/Validator/zipball/81a44326ea8710b6357538cd8f6767923c8e3ae0",
-                "reference": "81a44326ea8710b6357538cd8f6767923c8e3ae0",
+                "url": "https://api.github.com/repos/crodas/Validator/zipball/b1bd65268acb9cec30fb002ccef201aeef6820fa",
+                "reference": "b1bd65268acb9cec30fb002ccef201aeef6820fa",
                 "shasum": ""
             },
             "require": {
+                "crodas/cli": "*",
                 "crodas/notoj": "~0.1",
                 "crodas/path": "*",
                 "crodas/simple-view-engine": "*",
@@ -261,7 +262,7 @@
                 }
             ],
             "description": "Validation library",
-            "time": "2013-10-25 02:32:21"
+            "time": "2014-04-06 16:19:29"
         },
         {
             "name": "crodas/watch-files",
