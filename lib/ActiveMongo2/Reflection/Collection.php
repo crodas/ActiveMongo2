@@ -53,28 +53,44 @@ class Collection extends ArrayObject
         return current($this->properties($search));
     }
 
+    protected function propertiesByAnnotation($search)
+    {
+        $properties = array();
+        $search     = substr($search, 1);
+        foreach ($this->data['properties'] as $prop) {
+            foreach ($prop['annotation'] as $ann) {
+                if ($ann['method'] == $search) {
+                    $properties[] = $prop;
+                    break;  
+                }
+            }
+        }
+
+        return $properties;
+    } 
+
+    protected function propertiesFilter($search)
+    {
+        $properties = array();
+        foreach ($this->data['properties'] as $prop) {
+            if ($prop['property'] == $search) {
+                $properties[] = $prop;
+                break;
+            }
+        }
+
+        return $properties;
+    }
+
     public function properties($search)
     {
         $properties = array();
         if ($search[0] == '@') {
-            $search = substr($search, 1);
-            foreach ($this->data['properties'] as $prop) {
-                foreach ($prop['annotation'] as $ann) {
-                    if ($ann['method'] == $search) {
-                        $properties[] = $prop;
-                        break;  
-                    }
-                }
-            }
+            $properties = $this->propertiesByAnnotation($search);
         } else if (!empty($this->data['properties'][$search])) {
             $properties[] = $this->data['properties'][$search];
         } else {
-            foreach ($this->data['properties'] as $prop) {
-                if ($prop['property'] == $search) {
-                    $properties[] = $prop;
-                    break;
-                }
-            }
+            $properties = $this->propertiesFilter($search);
         } 
 
         return $properties;

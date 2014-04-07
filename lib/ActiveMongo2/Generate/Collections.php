@@ -110,7 +110,7 @@ class Collections extends ArrayObject
         return $this;
     }
 
-    public function getIndexes()
+    protected function getUniqueIndexes()
     {
         $indexes = array();
         foreach ($this->getAllPropertiesWithAnnotation('Unique') as $prop) {
@@ -119,6 +119,13 @@ class Collections extends ArrayObject
             $index['extra']  = array("unique" => true);
             $indexes[] = $index;
         }
+
+        return $indexes;
+    }
+
+    public function getIndexes()
+    {
+        $indexes = $this->getUniqueIndexes();
 
         foreach ($this->getAllPropertiesWithAnnotation('Index') as $prop) {
             $order = strtolower(current((array)$prop[0]['args'])) == 'desc' ? -1 : 1;
