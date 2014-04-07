@@ -34,126 +34,49 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
+namespace ActiveMongo2\Reflection;
 
-namespace ActiveMongo2;
+use ArrayObject;
 
-use ActiveMongo2\Filter as f;
-
-class Reference implements DocumentProxy, \JsonSerializable
+class Collection extends ArrayObject
 {
-    protected $class;
-    protected $_class;
-    protected $doc;
-    protected $ref;
-    protected $map;
-    protected $conn;
-    protected $mapper;
+    protected $data;
 
-    public function __construct(Array $info, $class, $conn, Array $map, $mapper)
+    public function __construct(Array $data)
     {
-        $this->ref    = $info;
-        $this->map    = $map;
-        $this->_class = $class;
-        $this->class  = $conn->getCollection($class);
-        $this->conn   = $conn;
-        $this->mapper = $mapper;
+        $this->data = $data;
+        parent::__construct($data);
     }
 
-    public function getObject()
+    public function property($search)
     {
-        $this->_loadDocument();
-        return $this->doc;
+        return current($this->properties($search));
     }
 
-    public function getClass()
+    public function properties($search)
     {
-        return $this->_class;
-    }
-
-    public function getReference()
-    {
-        return $this->ref;
-    }
-
-    public function getObjectOrReference()
-    {
-        return $this->doc ?: $this->ref;
-    }
-
-    public function jsonSerialize() 
-    {
-        return $this->getObject();
-    }
-
-    private function _loadDocument()
-    {
-        if (!$this->doc) {
-            try {
-                $this->doc = $this->class->getById($this->ref['$id']);
-            } catch (\Exception $e) {
-                if ($this->conn->GetConfiguration()->failOnMissingReference()) {
-                    // throw exception
-                    throw $e;
+        $properties = array();
+        if ($search[0] == '@') {
+            $search = substr($search, 1);
+            foreach ($this->data['properties'] as $prop) {
+                foreach ($prop['annotation'] as $ann) {
+                    if ($ann['method'] == $search) {
+                        $properties[] = $prop;
+                        break;  
+                    }
                 }
-                // do nothing
             }
-        }
-    }
-
-    public function __call($name, $args)
-    {
-        if (!empty($this->ref[$name])) {
-            return $this->ref[$name];
-        }
-
-        $this->_loadDocument();
-
-        if (!empty($this->doc->$name)) {
-            return $this->doc->$name;
-        }
-
-        return call_user_func_array(array($this->doc, $name), $args);
-    }
-
-    public function __set($name, $value)
-    {
-        $this->_loadDocument();
-        $this->doc->{$name} = $value;
-        if (array_key_exists($name, $this->ref)) {
-            $this->ref[$name] = $value;
-        }
-    }
-
-    protected function __getCachedValue($name)
-    {
-        if (array_key_exists($name, $this->map)) {
-            $expected = $this->map[$name];
-            if (array_key_exists($expected, $this->ref)) {
-                $doc = $this->ref[$expected];
-                if (is_array($doc)) {
-                    $tmp = $doc;
-                    f\_hydratate_reference_one($tmp, [], $this->conn, [], $this->mapper);
-                    return $tmp;
+        } else if (!empty($this->data['properties'][$search])) {
+            $properties[] = $this->data['properties'][$search];
+        } else {
+            foreach ($this->data['properties'] as $prop) {
+                if ($prop['property'] == $search) {
+                    $properties[] = $prop;
+                    break;
                 }
-                return $doc;
             }
+        } 
 
-            if ($expected == '_id') {
-                // avoid one query!
-                return $this->ref['$id'];
-            }
-        }
-        return FALSE;
-    }
-
-    public function __get($name)
-    {
-        $cached = $this->__getCachedValue($name);
-        if ($cached !== FALSE) {
-            return $cached;
-        }
-
-        $this->_loadDocument();
-        return $this->doc->$name;
+        return $properties;
     }
 }

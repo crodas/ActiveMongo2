@@ -199,7 +199,7 @@ class Mapper
             $class = $this->mapper[$name]['class'];
         }
 
-        return $this->{"reflect_" . sha1($class)}();
+        return new \ActiveMongo2\Reflection\Collection($this->{"reflect_" . sha1($class)}());
     }
 
     public function getReference($object, Array $extra = array())
@@ -230,6 +230,16 @@ class Mapper
         }
 
         return $this->{"validate_" . sha1($class)}($object);
+    }
+
+    public function get_property($object, $name)
+    {
+        $class = strtolower($this->get_class($object));
+        if (empty($this->class_mapper[$class])) {
+            throw new \RuntimeException("Cannot map class {$class} to its document");
+        }
+
+        return $this->{"get_property_" . sha1($class)}($object, $name);
     }
 
     public function update($object, Array &$doc, Array $old)
@@ -368,6 +378,28 @@ class Mapper
     }
 
     @foreach ($collections as $collection)
+
+    protected function get_property_{{sha1($collection->getClass())}}($object, $name)
+    {
+        switch ($name) {
+        @foreach ($collection->getProperties() as $prop)
+        case {{@$prop->getPHPName()}}:
+        case {{@$prop->getName()}}:
+            @if ($prop->isPublic())
+                $return = $object->{{ $prop->getPHPName() }};
+            @else
+                $property = new \ReflectionProperty($object, {{ @$prop->getPHPName() }});
+                $property->setAccessible(true);
+                $return = $property->getValue($object);
+            @end
+            break;
+        @end
+        default:
+            throw new \RuntimeException("Missing property {$name}");
+        }
+
+        return $return;
+    }
 
     /**
      *  Get update object {{$collection->getClass()}} 
@@ -708,7 +740,7 @@ class Mapper
             ),
             'properties'  => array(
         @foreach ($collection->getProperties() as $prop) 
-            {{@$prop->getPHPName()}} => array(
+            {{@$prop->getPHPName()}} => new \ActiveMongo2\Reflection\Property(array(
                 'property' => {{@$prop.''}},
                 'type'     => {{@$prop->getType()}},
                 'annotation' => array(
@@ -716,7 +748,7 @@ class Mapper
                         {{@$ann}},
                     @end
                 ),
-            ),
+            ), $this),
         @end
         ));
 

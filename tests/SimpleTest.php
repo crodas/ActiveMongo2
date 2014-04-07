@@ -381,7 +381,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertTrue(count($cols) > 5);
         foreach ($cols as $col) {
             $this->assertTrue($col instanceof \ActiveMongo2\Collection);
-            $this->assertTrue(is_array($col->getReflection()));
+            $this->assertTrue($col->getReflection() instanceof \ActiveMongo2\Reflection\Collection);
         }
     }
 
@@ -409,7 +409,20 @@ class SimpleTest extends \phpunit_framework_testcase
         $post->author_id = $user->userid;
         $post->xxxyyy = 31;
         $conn->save($post);
-
-        
     }
+
+    public function testReflections()
+    {
+        $conn = getConnection();
+        $reflection = $conn->getReflection('ActiveMongo2\Tests\Document\UserDocument');
+        $this->assertTrue($reflection instanceof \ActiveMongo2\Reflection\Collection);
+        $this->assertEquals(1, count($reflection->properties('@Id')));
+        $this->assertEquals(2, count($reflection->properties('@Embed')));
+
+        $tmp = new UserDocument;
+        $tmp->userid = "foobar_" . uniqid(true);
+
+        $this->assertEquals($reflection->property('_id')->get($tmp), $tmp->userid);
+    }
+
 }
