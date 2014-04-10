@@ -629,9 +629,9 @@ namespace {
                     var_export($cache);
                     echo "\n            ));\n";
                 }
-                echo "        \n        foreach (\$extra as \$key => \$value) {\n            if (is_object(\$value)) {\n                if (\$value instanceof \\ActiveMongo2\\Reference) {\n                    \$extra[\$key] = \$value->getReference();\n                } else {\n                    \$extra[\$key] = \$this->getReference(\$value);\n                }\n            }\n        }\n\n        return array_merge(array(\n                '\$id'   => \$document['_id'],\n                '\$ref'  => ";
+                echo "        \n        foreach (\$extra as \$key => \$value) {\n            if (is_object(\$value)) {\n                if (\$value instanceof \\ActiveMongo2\\Reference) {\n                    \$extra[\$key] = \$value->getReference();\n                } else {\n                    \$extra[\$key] = \$this->getReference(\$value);\n                }\n            }\n        }\n\n        return array_merge(array(\n                '\$ref'  => ";
                 var_export($collection->getName());
-                echo ", \n                '__class' => ";
+                echo ", \n                '\$id'   => \$document['_id'],\n                '__class' => ";
                 var_export($collection->getClass());
                 echo ",\n                '__instance' => ";
                 var_export($collection->getName());
