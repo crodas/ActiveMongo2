@@ -671,8 +671,8 @@ class Mapper
         }
 
         return array_merge(array(
-                '$id'   => $document['_id'],
                 '$ref'  => {{@$collection->getName()}}, 
+                '$id'   => $document['_id'],
                 '__class' => {{@$collection->getClass()}},
                 '__instance' => {{@$collection->getName()}} . ':' . serialize($document['_id']),
             )

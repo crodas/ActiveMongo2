@@ -15,7 +15,6 @@ class Middle extends BaseDocument
 /** 
  *  @Persist
  *  @RefCache('title', 'tags', 'author')
- *  @Elastica
  */
 class PostDocument extends Middle
 {
