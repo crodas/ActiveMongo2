@@ -232,6 +232,16 @@ class Mapper
         return $this->{"validate_" . sha1($class)}($object);
     }
 
+    public function set_property($object, $name, $value)
+    {
+        $class = strtolower($this->get_class($object));
+        if (empty($this->class_mapper[$class])) {
+            throw new \RuntimeException("Cannot map class {$class} to its document");
+        }
+
+        return $this->{"set_property_" . sha1($class)}($object, $name, $value);
+    }
+
     public function get_property($object, $name)
     {
         $class = strtolower($this->get_class($object));
@@ -378,6 +388,29 @@ class Mapper
     }
 
     @foreach ($collections as $collection)
+
+    protected function set_property_{{sha1($collection->getClass())}}($object, $name, $value)
+    {
+        switch ($name) {
+        @foreach ($collection->getProperties() as $prop)
+        case {{@$prop->getPHPName()}}:
+        case {{@$prop->getName()}}:
+            @if ($prop->isPublic())
+                $object->{{ $prop->getPHPName() }} = $value;
+            @else
+                $property = new \ReflectionProperty($object, {{ @$prop->getPHPName() }});
+                $property->setAccessible(true);
+                $property->setValue($object, $value);
+            @end
+            break;
+        @end
+        default:
+            throw new \RuntimeException("Missing property {$name}");
+        }
+
+        return true;
+    }
+
 
     protected function get_property_{{sha1($collection->getClass())}}($object, $name)
     {

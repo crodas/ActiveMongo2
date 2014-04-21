@@ -50,6 +50,12 @@ class Property extends ArrayObject
         parent::__construct($data);
     }
 
+    public function set($doc, $value)
+    {
+        return $this->instance->set_property($doc, $this->data['property'], $value);
+    }
+
+
     public function get($doc)
     {
         return $this->instance->get_property($doc, $this->data['property']);
