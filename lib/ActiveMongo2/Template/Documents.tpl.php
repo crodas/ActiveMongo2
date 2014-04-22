@@ -766,6 +766,8 @@ class Mapper
     {
         $reflection = array(
             'class'    => {{@$collection->getClass()}},
+            'name'     => {{@$collection->getName()}},
+            'collection'     => {{@$collection->getName()}},
             'annotation' => array(
         @foreach ($collection->getAnnotation() as $ann) 
             {{@$ann}},

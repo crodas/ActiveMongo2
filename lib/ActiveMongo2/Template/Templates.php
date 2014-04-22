@@ -688,6 +688,10 @@ namespace {
                 }
                 echo "\n        if (empty(\$doc['_id'])) {\n            \$oldDoc = \$this->getRawDocument(\$object, false);\n            if (!empty(\$oldDoc['_id'])) {\n                \$doc['_id'] = \$oldDoc['_id'];\n            }\n        }\n\n        return \$doc;\n    }\n\n    protected function reflect_" . (sha1($collection->getClass())) . "() \n    {\n        \$reflection = array(\n            'class'    => ";
                 var_export($collection->getClass());
+                echo ",\n            'name'     => ";
+                var_export($collection->getName());
+                echo ",\n            'collection'     => ";
+                var_export($collection->getName());
                 echo ",\n            'annotation' => array(\n";
                 foreach($collection->getAnnotation() as $ann) {
                     $this->context['ann'] = $ann;
