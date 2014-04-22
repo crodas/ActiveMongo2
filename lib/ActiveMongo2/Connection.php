@@ -298,15 +298,20 @@ class Connection
         if (!empty($this->queue[$objId])) return;
 
         $this->queue[$objId] = true;
-        $document = $this->mapper->validate($obj);
+        try {
+            $document = $this->mapper->validate($obj);
 
-        if ($oldDoc) {
-            $return = $this->update($obj, $document, $col, $oldDoc, $trigger_events, $w);
-        } else {
-            $return = $this->create($obj, $document, $col, $trigger_events);
+            if ($oldDoc) {
+                $return = $this->update($obj, $document, $col, $oldDoc, $trigger_events, $w);
+            } else {
+                $return = $this->create($obj, $document, $col, $trigger_events);
+            }
+        } catch (\Exception $e) {
+            unset($this->queue[$objId]);
+            throw $e;
         }
-
         unset($this->queue[$objId]);
+
         return $return;
     }
 
