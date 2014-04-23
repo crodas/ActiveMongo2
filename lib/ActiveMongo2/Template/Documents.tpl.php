@@ -19,17 +19,6 @@ class Mapper
         spl_autoload_register(array($this, '__autoloader'));
     }
 
-    public function getClass($name)
-    {
-        $class = __NAMESPACE__ . "\\$name";
-        if (!class_exists($class, false)) {
-            $define = __NAMESPACE__ . "\\define_class_" . sha1($name);
-            $define();
-        }
-
-        return $class;
-    }
-
     protected function array_diff(Array $arr1, Array $arr2)
     {
         $diff = array();
@@ -264,11 +253,8 @@ class Mapper
 
     public function getRawDocument($object)
     {
-        if ($object instanceof ActiveMongo2Mapped){
-            return $object->{{$instance}}_getOriginal();
-        }
         if (!empty($object->{{$instance}}) && $object->{{$instance}} instanceof ActiveMongo2Mapped) {
-            return $object->{{$instance}}->{{$instance}}_getOriginal();
+            return $object->{{$instance}}->getOriginal();
         }
 
         return array();
@@ -344,19 +330,12 @@ class Mapper
             throw new \RuntimeException("Cannot get class for collection {$col}");
         }
 
-
-        return $this->getClass($this->class_mapper[$class]['zname'] . '_' . sha1($class));
-
         return $class;
     }
 
     public function get_class($object)
-    {
-        if ($object instanceof ActiveMongo2Mapped) {
-            $class = $object->{{$instance}}_getClass();
-        } else if (!empty($object->{{$instance}}) && $object->{{$instance}} instanceof ActiveMongo2Mapped) {
-            $class = $object->{{$instance}}->{{$instance}}_getClass();
-        } else if ($object instanceof \ActiveMongo2\Reference) {
+    { 
+        if ($object instanceof \ActiveMongo2\Reference) {
             $class = $object->getClass();
         } else {
             $class = strtolower(get_class($object));
@@ -654,25 +633,11 @@ class Mapper
             }
         @end
 
-        if (!$object instanceof ActiveMongo2Mapped) {
-            $class    = $this->getClass({{@$collection->getSafeName() . '_' }} .  sha1(strtolower(get_class($object))));
-            $zobject  = new $class;
-            @foreach ($collection->getProperties() as $prop)
-                @if ($prop->isPublic())
-                    $zobject->{{$prop->getPHPName()}} = $object->{{$prop->getPHPName()}};
-                @else
-                    $property = new \ReflectionProperty($zobject, {{@$prop->getPHPName()}});
-                    $property->setAccessible(true);
-                    $property->setValue($zobject, {{$prop->getPHPVariable()}});
-                @end
-            @end
-            $object->{{$instance}} = $zobject;
-            $object = $zobject;
+        if (empty($object->{{$instance}})) {
+            $object->{{$instance}} = new ActiveMongo2Mapped({{@$collection->getClass()}}, $data);
+        } else {
+            $object->{{$instance}}->{{$instance}}_setOriginal($data);
         }
-
-        $object->{{$instance}}_setOriginal($data);
-
-
     }
 
     /**
@@ -823,6 +788,8 @@ class Mapper
                     throw new \RuntimeException("Validation failed for {{$prop.''}}");
                 }
             @end
+
+
                 @if ($prop->getAnnotation()->has('Date'))
                     $_date = \date_create('@' . {{$prop->getPHPVariable()}}->sec);
                     if (\{{$valns}}\validate({{@$collection->getClass() . "::" . $prop->getPHPName()}}, $_date) === false) {
@@ -904,49 +871,29 @@ class Mapper
     @end
 }
 
-interface ActiveMongo2Mapped
+class ActiveMongo2Mapped
 {
-    public function {{$instance}}_getClass();
-    public function {{$instance}}_setOriginal(Array $data);
-    public function {{$instance}}_getOriginal();
-}
+    protected $class;
+    protected $data;
 
-@foreach ($collections as $collection)
-/**
- * 
- */
-function define_class_{{sha1($collection->getHash())}}()
-{
-
-    if (!class_exists({{@"\\".$collection->getClass()}}, false)) {
-        require_once __DIR__ . {{@$collection->getPath()}};
-    }
-
-    final class {{$collection->getHash()}} extends \{{$collection->getClass()}} implements ActiveMongo2Mapped
+    public function __construct($name, Array $data)
     {
-        private ${{$instance}}_original;
+        $this->class = $name;
+        $this->data  = $data;
+    }
 
-        public function {{$instance}}_getClass()
-        {
-            return {{@$collection->getClass()}};
-        }
+    public function getClass()
+    {
+        return $this->class;
+    }
 
-        public function {{$instance}}_setOriginal(Array $data)
-        {
-            $this->{{$instance}}_original = $data;
-        }
+    public function getOriginal()
+    {
+        return $this->data;
+    }
 
-        public function {{$instance}}_getOriginal()
-        {
-            return $this->{{$instance}}_original;
-        }
-
-        public function __destruct()
-        {
-            if(is_callable('parent::__destruct')) {
-                parent::__destruct();
-            }
-        }
+    public function {{$instance}}_setOriginal(Array $data)
+    {
+        $this->data = $data;
     }
 }
-@end

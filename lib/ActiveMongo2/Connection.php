@@ -142,7 +142,7 @@ class Connection
         return $doc;
     }
 
-    protected function setObjectDocument(&$object, $document)
+    protected function setObjectDocument($object, $document)
     {
         $this->mapper->populate($object, $document);
     }
@@ -190,7 +190,7 @@ class Connection
         return $object instanceof $class;
     }
 
-    public function file(&$obj)
+    public function file($obj)
     {
         $col = $this->getMongoCollection($obj);
         if ($obj instanceof DocumentProxy) {
@@ -227,7 +227,7 @@ class Connection
         return $col;
     }
 
-    protected function create(&$obj, $document, $col, $trigger_events)
+    protected function create($obj, $document, $col, $trigger_events)
     {
         $trigger_events && $this->mapper->trigger('preCreate', $obj, array(&$document, $this));
 
@@ -243,7 +243,7 @@ class Connection
         return $this;
     }
 
-    protected function update(&$obj, $document, $col, $oldDoc, $trigger_events, $w) {
+    protected function update($obj, $document, $col, $oldDoc, $trigger_events, $w) {
         $update = $this->mapper->update($obj, $document, $oldDoc);
 
         if (empty($update)) {
@@ -278,7 +278,7 @@ class Connection
         }
     }
 
-    public function save(&$obj, $w = null, $trigger_events = true)
+    public function save($obj, $w = null, $trigger_events = true)
     {
         if ($this->handleSaveProxy($obj)) {
             return $this;

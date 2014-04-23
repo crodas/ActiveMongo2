@@ -27,6 +27,7 @@ class CacheReferenceTest extends \phpunit_framework_testcase
         // add reference
         $post->readers[] = $user;
         $conn->save($post);
+
         $this->assertEquals(count($this->getPost()->readers), 1);
 
         
