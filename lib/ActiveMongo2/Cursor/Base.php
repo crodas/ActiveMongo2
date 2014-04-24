@@ -53,6 +53,25 @@ trait Base
         return $cache;
     }
 
+    public function  paginate($page, $perPage)
+    {
+        if (array_key_exists($page, $_REQUEST)) {
+            $page = $_REQUEST[$page];
+        }
+        $page  = max(1,  (int)$page);
+        $total = $this->count(); 
+        $this->skip(($page-1)*$perPage)
+            ->limit($perPage);
+
+        $pages = range(1, ceil($total/$perPage));
+        $pages = array_merge(
+            array_slice($pages, max(0,$page-3), 10),
+            array_slice($pages, -2)
+        );
+
+        return array_unique($pages);
+    }
+
     public function first()
     {
         return $this->current();

@@ -60,6 +60,38 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals(0, $find->count());
     }
 
+    public function testPagination()
+    {
+        $conn = getConnection();
+        for ($i=0; $i < 1000; $i++) {
+            $user = new UserDocument;
+            $user->username = "crodas-" . rand(0, 0xfffff);
+            $conn->save($user);
+        }
+        $userCol = $conn->getCollection('user');
+        $cursor = $userCol->find();
+        $pages = $cursor->paginate(1, 20);
+        $this->assertEquals(min($pages), 1);
+        $this->assertEquals(max($pages), 50);
+
+        $pages = $cursor->paginate(15, 20);
+        $this->assertEquals(min($pages), 13);
+        $this->assertEquals(max($pages), 50);
+
+        $info = $cursor->info();
+        $this->assertEquals(280, $info['skip']);
+        $this->assertEquals(20, $info['limit']);
+
+        $_REQUEST['page'] = 20;
+        $pages = $cursor->paginate('page', 20);
+        $this->assertEquals(min($pages), 18);
+        $this->assertEquals(max($pages), 50);
+
+        $info = $cursor->info();
+        $this->assertEquals(380, $info['skip']);
+        $this->assertEquals(20, $info['limit']);
+    }
+
 
     /** @dependsOn testSimpleFind */
     public function testDrop()
