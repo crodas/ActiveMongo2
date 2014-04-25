@@ -53,7 +53,7 @@ function _hydratate_reference_many(&$value, Array $args, $conn, $unused, $mapper
 
 /**
  *  @Validate(ReferenceMany)
- *  @DataType Array
+ *  @DataType RefereneMany
  */
 function _validate_reference_many(&$value, Array $zargs, $conn, $args, $mapper)
 {
