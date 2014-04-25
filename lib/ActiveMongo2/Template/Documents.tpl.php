@@ -743,6 +743,9 @@ class Mapper
             {{@$prop->getPHPName()}} => new \ActiveMongo2\Reflection\Property(array(
                 'property' => {{@$prop.''}},
                 'type'     => {{@$prop->getType()}},
+                @if ($prop->getReferenceCollection())
+                'collection' => {{@$prop->getReferenceCollection()}},
+                @end
                 'annotation' => array(
                     @foreach ($prop->getAnnotation() as $ann)
                         {{@$ann}},

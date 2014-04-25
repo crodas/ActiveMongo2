@@ -122,6 +122,16 @@ class Property extends Base
         return $prefix . "[" . var_export($this->getName(), true) . "]";
     }
 
+    public function getReferenceCollection()
+    {
+        $ann = $this->annotation->getOne('Embed,EmbedOne,EmbedMany,ReferenceOne,Reference,ReferenceMany');
+        if (empty($ann) || empty($ann['args'])) {
+            return false;
+        }
+
+        return current($ann['args']);
+    }
+
     public function getType()
     {
         return $this->type;

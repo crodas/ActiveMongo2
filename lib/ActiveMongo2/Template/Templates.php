@@ -696,7 +696,13 @@ namespace {
                     var_export($prop.'');
                     echo ",\n                'type'     => ";
                     var_export($prop->getType());
-                    echo ",\n                'annotation' => array(\n";
+                    echo ",\n";
+                    if ($prop->getReferenceCollection()) {
+                        echo "                'collection' => ";
+                        var_export($prop->getReferenceCollection());
+                        echo ",\n";
+                    }
+                    echo "                'annotation' => array(\n";
                     foreach($prop->getAnnotation() as $ann) {
                         $this->context['ann'] = $ann;
                         echo "                        ";
