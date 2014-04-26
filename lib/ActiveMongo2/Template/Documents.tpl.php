@@ -3,6 +3,7 @@
 namespace ActiveMongo2\Generated{{$namespace}};
 
 use ActiveMongo2\Connection;
+use Notoj\Annotations;
 
 @set($instance, '_' . uniqid(true))
 
@@ -746,11 +747,11 @@ class Mapper
                 @if ($prop->getReferenceCollection())
                 'collection' => {{@$prop->getReferenceCollection()}},
                 @end
-                'annotation' => array(
+                'annotation' => new Annotations(array(
                     @foreach ($prop->getAnnotation() as $ann)
                         {{@$ann}},
                     @end
-                ),
+                )),
             ), $this),
         @end
         ));
