@@ -98,7 +98,7 @@ function _hydratate_reference_one(&$value, Array $args, $conn, $unused, $mapper)
 /**
  *  @Validate(Reference)
  *  @Validate(ReferenceOne)
- *  @DataType Array
+ *  @DataType Reference
  */
 function _validate_reference_one(&$value, Array $rargs, $conn, $args, $mapper)
 {
