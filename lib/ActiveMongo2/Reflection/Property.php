@@ -62,7 +62,7 @@ class Property extends ArrayObject
         if ($raw && is_object($value)) {
             try {
                 return $this->instance->getDocument($value);
-            } catch (\Exception $e) {]
+            } catch (\Exception $e) {}
         }
         return $value;
     }
