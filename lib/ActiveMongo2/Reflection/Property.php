@@ -60,7 +60,9 @@ class Property extends ArrayObject
     {
         $value = $this->instance->get_property($doc, $this->data['property']);
         if ($raw && is_object($value)) {
-            return $this->instance->getDocument($value);
+            try {
+                return $this->instance->getDocument($value);
+            } catch (\Exception $e) {]
         }
         return $value;
     }
