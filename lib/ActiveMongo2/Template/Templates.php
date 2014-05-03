@@ -56,84 +56,6 @@ namespace {
     }
 
     /** 
-     *  Template class generated from Callback.tpl
-     */
-    class class_1895ec604b22a2e3f627b9d8d7ae6142d332247e extends base_template_df562f12800ad133cdbc6f040ca106a099504656
-    {
-
-        public function render(Array $vars = array(), $return = false)
-        {
-            $this->context = $vars;
-
-            extract($vars);
-            if ($return) {
-                ob_start();
-            }
-            if (!$self->isEmbeddable()) {
-                echo "    if (empty(self::\$loaded[";
-                var_export($self->getPath());
-                echo "])) {\n";
-                if ($self->isClass() || $self->isMethod()) {
-                    echo "            if (!class_exists(";
-                    var_export($self->getClass());
-                    echo ", false)) {\n";
-                }
-                else {
-                    echo "            if (!function_exists(";
-                    var_export($self->getFunction());
-                    echo ")) {\n";
-                }
-                echo "            require __DIR__ . ";
-                var_export($self->getPath());
-                echo ";\n        }\n        self::\$loaded[";
-                var_export($self->getPath());
-                echo "] = true;\n    }\n";
-            }
-            echo "\n\$args = empty(\$args) ? [] : \$args;\n\n";
-            if ($self->isEmbeddable()) {
-                echo "    " . ($self->toEmbedCode($var)) . "\n";
-            }
-            else if ($self->isMethod()) {
-                if ($self->isPublic()) {
-                    if ($self->isStatic()) {
-                        echo "            \$return = \\" . ($self->getClass()) . "::" . ($self->getMethod()) . "(\n";
-                    }
-                    else if ($prop->getClass() == $self->getClass()) {
-                        echo "            \$return = \$document->" . ($self->getMethod()) . "(\n";
-                    }
-                    else {
-                        echo "            // Improve me (should construct once and reuse it)\n            \$return = (new \\" . ($self->getClass()) . ")->" . ($self->getMethod()) . "(\n";
-                    }
-
-                    echo "            " . ($var) . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
-                    var_export($args);
-                    echo ", // annotation arguments\n            \$this // mapper instance\n        );\n";
-                }
-                else {
-                    echo "        \$reflection = new \\ReflectionMethod(";
-                    var_export("\\". $self->getClass());
-                    echo ", ";
-                    var_export($self->getMethod());
-                    echo ");\n        \$reflection->setAccessible(true);\n        \$return = \$reflection->invoke(\n            " . ($var) . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
-                    var_export($args);
-                    echo ", // annotation arguments\n            \$this // mapper instance\n        );\n";
-                }
-            }
-            else {
-                echo "    \$return = \\" . ($self->getFunction()) . "(\n        " . ($var) . ", // document variable \n        \$args,  // external arguments (defined at run time)\n        \$this->connection, // connection\n        ";
-                var_export($args);
-                echo ", // annotation arguments\n        \$this // mapper instance\n    );\n";
-            }
-
-
-            if ($return) {
-                return ob_get_clean();
-            }
-
-        }
-    }
-
-    /** 
      *  Template class generated from Reference/Update.tpl.php
      */
     class class_f8c39509b1fb331e8b8ef22a135640af98725ce5 extends base_template_df562f12800ad133cdbc6f040ca106a099504656
@@ -315,7 +237,7 @@ namespace {
             if ($return) {
                 ob_start();
             }
-            echo "<?php\n\nnamespace ActiveMongo2\\Generated" . ($namespace) . ";\n\nuse ActiveMongo2\\Connection;\nuse Notoj\\Annotations;\n\n";
+            echo "<?php\n\nnamespace ActiveMongo2\\Generated" . ($namespace) . ";\n\nuse ActiveMongo2\\Connection;\nuse Notoj\\Annotation;\n\n";
             $instance = '_' . uniqid(true);
             $this->context['instance'] = $instance;
             echo "\nclass Mapper\n{\n    protected \$mapper = " . (var_export($collections->byName(), true)) . ";\n    protected \$class_mapper = " . (var_export($collections->byClass(), true)) . ";\n    protected static \$loaded = array();\n    protected \$connection;\n\n    public function __construct(Connection \$conn)\n    {\n        \$this->connection = \$conn;\n        spl_autoload_register(array(\$this, '__autoloader'));\n    }\n\n    protected function array_diff(Array \$arr1, Array \$arr2)\n    {\n        \$diff = array();\n        foreach (\$arr1 as \$key => \$value) {\n            if (empty(\$arr2[\$key]) || \$arr2[\$key] !== \$arr1[\$key]) {\n                \$diff[\$key] = \$value;\n            }\n        }\n        return \$diff;\n    }\n\n    public function getCollections()\n    {\n        return array(\n";
@@ -702,7 +624,7 @@ namespace {
                         var_export($prop->getReferenceCollection());
                         echo ",\n";
                     }
-                    echo "                'annotation' => new Annotations(array(\n";
+                    echo "                'annotation' => new Annotation(array(\n";
                     foreach($prop->getAnnotation() as $ann) {
                         $this->context['ann'] = $ann;
                         echo "                        ";
@@ -816,6 +738,84 @@ namespace {
         }
     }
 
+    /** 
+     *  Template class generated from Callback.tpl
+     */
+    class class_1895ec604b22a2e3f627b9d8d7ae6142d332247e extends base_template_df562f12800ad133cdbc6f040ca106a099504656
+    {
+
+        public function render(Array $vars = array(), $return = false)
+        {
+            $this->context = $vars;
+
+            extract($vars);
+            if ($return) {
+                ob_start();
+            }
+            if (!$self->isEmbeddable()) {
+                echo "    if (empty(self::\$loaded[";
+                var_export($self->getPath());
+                echo "])) {\n";
+                if ($self->isClass() || $self->isMethod()) {
+                    echo "            if (!class_exists(";
+                    var_export($self->getClass());
+                    echo ", false)) {\n";
+                }
+                else {
+                    echo "            if (!function_exists(";
+                    var_export($self->getFunction());
+                    echo ")) {\n";
+                }
+                echo "            require __DIR__ . ";
+                var_export($self->getPath());
+                echo ";\n        }\n        self::\$loaded[";
+                var_export($self->getPath());
+                echo "] = true;\n    }\n";
+            }
+            echo "\n\$args = empty(\$args) ? [] : \$args;\n\n";
+            if ($self->isEmbeddable()) {
+                echo "    " . ($self->toEmbedCode($var)) . "\n";
+            }
+            else if ($self->isMethod()) {
+                if ($self->isPublic()) {
+                    if ($self->isStatic()) {
+                        echo "            \$return = \\" . ($self->getClass()) . "::" . ($self->getMethod()) . "(\n";
+                    }
+                    else if ($prop->getClass() == $self->getClass()) {
+                        echo "            \$return = \$document->" . ($self->getMethod()) . "(\n";
+                    }
+                    else {
+                        echo "            // Improve me (should construct once and reuse it)\n            \$return = (new \\" . ($self->getClass()) . ")->" . ($self->getMethod()) . "(\n";
+                    }
+
+                    echo "            " . ($var) . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
+                    var_export($args);
+                    echo ", // annotation arguments\n            \$this // mapper instance\n        );\n";
+                }
+                else {
+                    echo "        \$reflection = new \\ReflectionMethod(";
+                    var_export("\\". $self->getClass());
+                    echo ", ";
+                    var_export($self->getMethod());
+                    echo ");\n        \$reflection->setAccessible(true);\n        \$return = \$reflection->invoke(\n            " . ($var) . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
+                    var_export($args);
+                    echo ", // annotation arguments\n            \$this // mapper instance\n        );\n";
+                }
+            }
+            else {
+                echo "    \$return = \\" . ($self->getFunction()) . "(\n        " . ($var) . ", // document variable \n        \$args,  // external arguments (defined at run time)\n        \$this->connection, // connection\n        ";
+                var_export($args);
+                echo ", // annotation arguments\n        \$this // mapper instance\n    );\n";
+            }
+
+
+            if ($return) {
+                return ob_get_clean();
+            }
+
+        }
+    }
+
 }
 
 namespace ActiveMongo2\Template {
@@ -825,10 +825,10 @@ namespace ActiveMongo2\Template {
         public static function getAll()
         {
             return array (
-                0 => 'callback',
-                1 => 'reference/update',
-                2 => 'reference/deferred',
-                3 => 'documents',
+                0 => 'reference/update',
+                1 => 'reference/deferred',
+                2 => 'documents',
+                3 => 'callback',
             );
         }
 
@@ -841,14 +841,14 @@ namespace ActiveMongo2\Template {
         public static function get($name, Array $context = array())
         {
             static $classes = array (
-                'callback.tpl' => 'class_1895ec604b22a2e3f627b9d8d7ae6142d332247e',
-                'callback' => 'class_1895ec604b22a2e3f627b9d8d7ae6142d332247e',
                 'reference/update.tpl.php' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
                 'reference/update' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
                 'reference/deferred.tpl.php' => 'class_7e3d172c6b9ee7fd7d68e93c41ee0d852447ceca',
                 'reference/deferred' => 'class_7e3d172c6b9ee7fd7d68e93c41ee0d852447ceca',
                 'documents.tpl.php' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
                 'documents' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
+                'callback.tpl' => 'class_1895ec604b22a2e3f627b9d8d7ae6142d332247e',
+                'callback' => 'class_1895ec604b22a2e3f627b9d8d7ae6142d332247e',
             );
             $name = strtolower($name);
             if (empty($classes[$name])) {

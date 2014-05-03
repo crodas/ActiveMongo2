@@ -56,9 +56,13 @@ class Property extends ArrayObject
     }
 
 
-    public function get($doc)
+    public function get($doc, $raw = false)
     {
-        return $this->instance->get_property($doc, $this->data['property']);
+        $value = $this->instance->get_property($doc, $this->data['property']);
+        if ($raw && is_object($value)) {
+            return $this->instance->getDocument($value);
+        }
+        return $value;
     }
 
 }

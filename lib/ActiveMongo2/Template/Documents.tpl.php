@@ -204,6 +204,9 @@ class Mapper
 
     public function getDocument($object)
     {
+        if ($object instanceof \ActiveMongo2\Reference) {
+            $object = $object->getObject();
+        }
         $class = strtolower($this->get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");

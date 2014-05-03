@@ -56,7 +56,7 @@ class FluentTest extends \phpunit_framework_testcase
         $this->assertEquals($query->getUpdate(), $update);
 
         $result = $query->execute();
-        $this->assertFalse($result['updatedExisting']);
+        $this->assertTrue(!$result['updatedExisting'] || $result['nModified'] == 0);
         $this->assertEquals(0, $result['n']);
 
         for ($i=0; $i < 50; $i++) {
