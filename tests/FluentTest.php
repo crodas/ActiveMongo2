@@ -3,6 +3,21 @@ use ActiveMongo2\Tests\Document\UserDocument;
 
 class FluentTest extends \phpunit_framework_testcase
 {
+    public function testQueryWithSize()
+    {
+        $conn  = getconnection();
+        $users = $conn->getcollection('user');
+        $query = $users->query()
+            ->field('username')->size( '5' ) 
+            ->field('username')->exists(1);
+
+        $expects = array(
+            'username' => array('$size' => 5, '$exists' => true),
+        );
+
+        $this->assertEquals($query->GetQuery(), $expects);
+        $this->assertNull($query->getUpdate());
+    }
     public function testQuery()
     {
         $conn  = getconnection();
