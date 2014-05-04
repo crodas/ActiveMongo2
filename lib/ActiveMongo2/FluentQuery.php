@@ -54,7 +54,8 @@ class FluentQuery implements \IteratorAggregate
             'addOr'  => '$or',
         ),
         'withExpr' => array(
-            'not' =>  '$not'
+            'not' =>  '$not',
+            'pullExpr' => '$pull',
         ),
         'withValue' => array(
             'in'    => '$in',
@@ -144,14 +145,6 @@ class FluentQuery implements \IteratorAggregate
         return $this->parent->finalizeChild($this);
     }
 
-    public function not()
-    {
-        $not = $this->createChild('$not');
-        $not->exprValue = true;
-        $not->field = '$expr';
-        return $not;
-    }
-
     public function getQuery()
     {
         if ($this->parent) {
@@ -203,14 +196,6 @@ class FluentQuery implements \IteratorAggregate
         $this->query[$this->field][$op] = $value;
 
         return $this;
-    }
-
-    public function pullExpr()
-    {
-        $not = $this->createChild('$pull');
-        $not->exprValue = true;
-        $not->field = '$expr';
-        return $not;
     }
 
     public function field($name)
@@ -266,6 +251,14 @@ class FluentQuery implements \IteratorAggregate
         return $this;
     }
 
+
+    protected function withExpr($rule, $args)
+    {
+        $not = $this->createChild($rule);
+        $not->exprValue = true;
+        $not->field = '$expr';
+        return $not;
+    }
 
     protected function withValue($rules, $args)
     {
