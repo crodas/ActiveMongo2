@@ -79,15 +79,16 @@ class FluentQuery implements \IteratorAggregate
 
         ),
 
-        'updateWithNoValue' => array(
-            'unset' => '$unset',
-        ),
         'updateWithValue' => array(
             'set'       => '$set',
-            'inc'       => '$inc',
             'rename'    => '$rename',
-            'pop'       => '$pop',
         ),
+        
+        'updateWithDefValue' => array(
+            'inc'       => array(1, '$inc'),
+            'unset'     => array(1, '$unset'),
+        ),
+
         'updateArrayOrScalar' => array(
             'addToSet'  => '$addToSet', 
             'push'      => '$push',
@@ -201,21 +202,6 @@ class FluentQuery implements \IteratorAggregate
         return $this;
     }
 
-    public function set($value)
-    {
-        return $this->genericUpdate('$set', $value);
-    }
-
-    public function inc($value = 1)
-    {
-        return $this->genericUpdate('$inc', $value+0);
-    }
-
-    public function rename($name)
-    {
-        return $this->genericUpdate('$rename', $name);
-    }
-
     public function addToSet($value)
     {
         if (is_array($value)) {
@@ -248,11 +234,6 @@ class FluentQuery implements \IteratorAggregate
     public function pop($end = true)
     {
         return $this->genericUpdate('$pop', $end ? 1 : -1);
-    }
-
-    public function unsetField()
-    {
-        return $this->genericUpdate('$unset', 1);
     }
 
     public function field($name)
@@ -316,6 +297,19 @@ class FluentQuery implements \IteratorAggregate
         }
 
         return $this;
+    }
+
+    protected function updateWithDefValue($rules, $args)
+    {
+        $value = current($args);
+        $value = $value ? $value : $rules[0];
+        return $this->genericUpdate($rules[1], $value);
+    }
+
+    protected function updateWithValue($rules, $args)
+    {
+        $value = current($args);
+        return $this->genericUpdate($rules, $value);
     }
 
     public function __call($name, $args)
