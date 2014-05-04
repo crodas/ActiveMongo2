@@ -88,11 +88,13 @@ class FluentQuery implements \IteratorAggregate
             'inc'           => array(1, '$inc'),
             'unset'         => array(1, '$unset'),
             'unsetField'    => array(1, '$unset'),
+            'pop'           => array(1, '$pop'),
         ),
 
         'updateArrayOrScalar' => array(
             'addToSet'  => '$addToSet', 
             'push'      => '$push',
+            'pull'      => array('$pull', '$pullAll'),
         ),
     );
 
@@ -203,38 +205,12 @@ class FluentQuery implements \IteratorAggregate
         return $this;
     }
 
-    public function addToSet($value)
-    {
-        if (is_array($value)) {
-            $value = array('$each' => array_values($value));
-        }
-        return $this->genericUpdate('$addToSet', $value);
-    }
-
-    public function push($value)
-    {
-        if (is_array($value)) {
-            $value = array('$each' => array_values($value));
-        }
-        return $this->genericUpdate('$push', $value);
-    }
-
-    public function pull($value)
-    {
-        return $this->genericUpdate(is_array($value) ? '$pullAll' : '$pull', $value);
-    }
-
     public function pullExpr()
     {
         $not = $this->createChild('$pull');
         $not->exprValue = true;
         $not->field = '$expr';
         return $not;
-    }
-
-    public function pop($end = true)
-    {
-        return $this->genericUpdate('$pop', $end ? 1 : -1);
     }
 
     public function field($name)
@@ -311,6 +287,20 @@ class FluentQuery implements \IteratorAggregate
     {
         $value = current($args);
         return $this->genericUpdate($rules, $value);
+    }
+
+    protected function updateArrayOrScalar($rule, $args)
+    {
+        $value = current($args);
+        if (is_array($value)) {
+            if (is_array($rule)) {
+                $rule = $rule[1];
+            } else {
+                $value = array('$each' => array_values($value));
+            }
+        }
+        $rule = current((array)$rule);
+        return $this->genericUpdate($rule, $value);
     }
 
     public function __call($name, $args)

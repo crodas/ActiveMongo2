@@ -50,6 +50,9 @@ class FluentTest extends \phpunit_framework_testcase
             ->field('zzy')->push(1)
             ->field('zzz')->push(array(1,2,3))
             ->field('www')->addToSet(array(1,2,3))
+            ->field('afoo')->addToSet(1)
+            ->field('yy')->pull(1)
+            ->field('xxxx')->pull([1,2])
             ->field('yyy')->unsetField();
 
         $expects = array(
@@ -63,7 +66,12 @@ class FluentTest extends \phpunit_framework_testcase
             '$set' => array('xxx' => 1),
             '$unset' => array('yyy' => 1),
             '$push'  => array('zzy' => 1, 'zzz' => array('$each' => array(1,2,3))),
-            '$addToSet'  => array('www' => array('$each' => array(1,2,3))),
+            '$pull' => array('yy' => 1),
+            '$pullAll' => array('xxxx' => array(1,2)),
+            '$addToSet'  => array(
+                'afoo' => 1,
+                'www' => array('$each' => array(1,2,3))
+            ),
         );
 
 
