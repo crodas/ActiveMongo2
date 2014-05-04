@@ -53,13 +53,10 @@ class Connection
      */
     protected $collections;
 
-    /**
-     *  Classes to Collections mapping
-     */
-    protected $classes;
     protected $mapper;
     protected $cache;
     protected $config;
+    protected $queue = array();
 
     public function __construct(Configuration $config, MongoClient $conn, $db)
     {
@@ -68,6 +65,9 @@ class Connection
         $this->mapper = $config->initialize($this);
         $this->conn   = $conn;
         $this->db     = $conn->selectDB($db);
+        if ($config->hasGenerated())  {
+            $this->ensureIndex(true);
+        }
     }
 
     public function setCacheStorage(Cache\Storage $storage)
@@ -76,19 +76,6 @@ class Connection
         return $this;
     }
 
-    /**
-     *  Clone a document 
-     *  
-     *  Clones a document and removed internals variables
-     *
-     *  @return object
-     */
-    public function cloneDocument($doc)
-    {
-        $tmp = clone $doc;
-        return $tmp;
-    }
-    
     public function command($command, $args = array())
     {
         return $this->db->command($command, $args);
@@ -104,7 +91,6 @@ class Connection
         return $this->config;
     }
 
-
     public function getConnection()
     {
         return $this->conn;
@@ -115,6 +101,15 @@ class Connection
         return $this->getCollection($name);
     }
 
+    public function getCollections()
+    {
+        $cols = array();
+        foreach ($this->mapper->getCollections() as $class => $col) {
+            $cols[] = $this->getCollection($class);
+        }
+        return $cols;
+    }
+
     public function getDocumentClass($collection)
     {
         return $this->mapper->mapCollection($collection)['class'];
@@ -122,27 +117,20 @@ class Connection
 
     public function getCollection($collection)
     {
-        try {
-            $data = $this->mapper->mapCollection($collection);
-        } catch (\RuntimeException $e) {
-            $data = $this->mapper->mapClass($collection);
-        }
+        list($col, $class) = $this->mapper->getCollectionObject($collection, $this->db);
 
-        if (!empty($this->collections[$data['class']])) {
-            return $this->collections[$data['class']];
+        if (!empty($this->collections[$class])) {
+            return $this->collections[$class];
         }
 
         $cache = $this->cache;
-        if (!empty($data['is_gridfs'])) {
-            $mongoCol = $this->db->getGridFs($data['name']);
-            $cache    = new Cache\Storage\None;
-        } else {
-            $mongoCol = $this->db->selectCollection($data['name']);
+        if ($col instanceof \MongoGridFS) {
+            $cache = new Cache\Storage\None;
         }
 
-        $this->collections[$data['class']] = new Collection($this, $this->mapper, $mongoCol, $cache, $this->config, $data['class']);
+        $this->collections[$class] = new Collection($this, $this->mapper, $col, $cache, $this->config, $class);
 
-        return $this->collections[$data['class']];
+        return $this->collections[$class];
     }
 
     public function registerDocument($class, $document)
@@ -154,7 +142,7 @@ class Connection
         return $doc;
     }
 
-    protected function setObjectDocument(&$object, $document)
+    protected function setObjectDocument($object, $document)
     {
         $this->mapper->populate($object, $document);
     }
@@ -223,23 +211,23 @@ class Connection
         return new StoreFile($col, $document, $this, $obj);
     }
 
+    public function getReflection($name)
+    {
+        if (!is_string($name)) {
+            $name = $this->mapper->get_class($name);
+        }
+        return $this->mapper->getReflection($name);
+    }
+
     protected function getMongoCollection($obj)
     {
         $class = $this->mapper->get_class($obj);
-        if (empty($this->classes[$class])) {
-            $data = $this->mapper->mapClass($class);;
-            $collection = $data['name'];
-            if ($data['is_gridfs']) {
-                $this->classes[$class] = $this->db->getGridFs($collection);
-            } else {
-                $this->classes[$class] = $this->db->selectCollection($collection);
-            }
-        }
+        list($col, $class) = $this->mapper->getCollectionObject($class, $this->db);
 
-        return $this->classes[$class];
+        return $col;
     }
 
-    protected function create(&$obj, $document, $col, $trigger_events)
+    protected function create($obj, $document, $col, $trigger_events)
     {
         $trigger_events && $this->mapper->trigger('preCreate', $obj, array(&$document, $this));
 
@@ -255,7 +243,7 @@ class Connection
         return $this;
     }
 
-    protected function update(&$obj, $document, $col, $oldDoc, $trigger_events, $w) {
+    protected function update($obj, $document, $col, $oldDoc, $trigger_events, $w) {
         $update = $this->mapper->update($obj, $document, $oldDoc);
 
         if (empty($update)) {
@@ -290,7 +278,7 @@ class Connection
         }
     }
 
-    public function save(&$obj, $w = null, $trigger_events = true)
+    public function save($obj, $w = null, $trigger_events = true)
     {
         if ($this->handleSaveProxy($obj)) {
             return $this;
@@ -305,18 +293,31 @@ class Connection
             throw new \RuntimeException("@GridFS must be saved with file");
         }
 
-        $document = $this->mapper->validate($obj);
-        $oldDoc   = $this->mapper->getRawDocument($obj, false);
-        if ($oldDoc) {
-            return $this->update($obj, $document, $col, $oldDoc, $trigger_events, $w);
-        }
+        $oldDoc = $this->mapper->getRawDocument($obj, false);
+        $objId  = $this->mapper->get_class($obj) . '::' . ($oldDoc ? $oldDoc['_id'] : spl_object_hash($obj));
+        if (!empty($this->queue[$objId])) return;
 
-        return $this->create($obj, $document, $col, $trigger_events);
+        $this->queue[$objId] = true;
+        try {
+            $document = $this->mapper->validate($obj);
+
+            if ($oldDoc) {
+                $return = $this->update($obj, $document, $col, $oldDoc, $trigger_events, $w);
+            } else {
+                $return = $this->create($obj, $document, $col, $trigger_events);
+            }
+        } catch (\Exception $e) {
+            unset($this->queue[$objId]);
+            throw $e;
+        }
+        unset($this->queue[$objId]);
+
+        return $return;
     }
 
-    public function ensureIndex()
+    public function ensureIndex($background = false)
     {
-        $this->mapper->ensureIndex($this->db);
+        $this->mapper->ensureIndex($this->db, $background);
     }
 
     public function dropDatabase()

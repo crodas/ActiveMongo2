@@ -44,6 +44,7 @@ class Configuration
     protected $loader;
     protected $path;
     protected $devel = false;
+    protected $generated = false;
     protected $cache;
     protected $default = array('w' => 1);
     protected $failOnMissRef = true;
@@ -100,18 +101,26 @@ class Configuration
         return $this;
     }
 
-    public function initialize(Connection $conn)
+    protected function generateIfNeeded()
     {
-        Notoj::enableCache($this->loader . ".tmp");
-
         if ($this->devel || !is_file($this->loader)) {
+            Notoj::enableCache($this->loader . ".tmp");
             $watcher = new Watch($this->loader . ".lock");
-            if (!$watcher->isWatching() || $watcher->hasChanged()) {
+            if ($watcher->hasChanged()) {
                 new Generate($this, $watcher);
+                $this->generate = true;
             }
         }
-        
-        
+    }
+
+    public function hasGenerated()
+    {
+        return $this->generated;
+    }
+
+    public function initialize(Connection $conn)
+    {
+        $this->generateIfNeeded();
         $class = "\\ActiveMongo2\\Generated" . sha1($this->GetLoader()) . "\\Mapper";
         if (!class_exists($class, false)) {
             require $this->getLoader();

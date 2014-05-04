@@ -1,7 +1,7 @@
 <?php
 /*
   +---------------------------------------------------------------------------------+
-  | Copyright (c) 2013 ActiveMongo                                                  |
+  | Copyright (c) 2014 ActiveMongo                                                  |
   +---------------------------------------------------------------------------------+
   | Redistribution and use in source and binary forms, with or without              |
   | modification, are permitted provided that the following conditions are met:     |
@@ -34,100 +34,65 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
+namespace ActiveMongo2\Reflection;
 
-namespace ActiveMongo2\Filter;
+use ArrayObject;
 
-use ActiveMongo2\Reference;
-
-require_once __DIR__ . "/Common.php";
-
-/**
- *  @Hydratate(ReferenceMany)
- */
-function _hydratate_reference_many(&$value, Array $args, $conn, $unused, $mapper)
+class Collection extends ArrayObject
 {
-    foreach ((array)$value as $id => $val) {
-        _hydratate_reference_one($value[$id], $args, $conn, $unused, $mapper);
-    }
-}
+    protected $data;
 
-/**
- *  @Validate(ReferenceMany)
- *  @DataType RefereneMany
- */
-function _validate_reference_many(&$value, Array $zargs, $conn, $args, $mapper)
-{
-    if (!is_array($value)) {
-        return false;
+    public function __construct(Array $data)
+    {
+        $this->data = $data;
+        parent::__construct($data);
     }
 
-    foreach ($value as $id => $val) {
-        if (!_validate_reference_one($value[$id], $zargs, $conn, $args, $mapper)) {
-            return false;
-        }
+    public function property($search)
+    {
+        return current($this->properties($search));
     }
 
-    return _validate_array($value, $zargs, $conn, $args, $mapper);
-}
-
-
-/**
- *  @Hydratate(Reference)
- *  @Hydratate(ReferenceOne)
- *  @DataType Reference
- */
-function _hydratate_reference_one(&$value, Array $args, $conn, $unused, $mapper)
-{
-    $expected = current($args);
-    if ($expected && $expected != $value['$ref'] && !empty($value['__class']) && $expected != $value['__class']) {
-        throw new \RuntimeException("Expecting document {$expected} but got {$value['$ref']}");
-    }
-
-    try {
-        $class = $mapper->mapCollection($value['$ref'])['class'];
-    } catch (\Exception $e) {
-        if (empty($value['__class'])) {
-            throw new \RuntimeException("reference of {$value['$ref']} needs __class interal type");
-        }
-        $class = $value['__class'];
-    }
-    $value = new Reference($value, $class, $conn, $mapper->getMapping($class), $mapper);
-    $mapper->trigger('onHydratation', $value);
-}
-
-/**
- *  @Validate(Reference)
- *  @Validate(ReferenceOne)
- *  @DataType Reference
- */
-function _validate_reference_one(&$value, Array $rargs, $conn, $args, $mapper)
-{
-    if ($value instanceof Reference) {
-        $value = $value->getObjectOrReference();
-        if (is_array($value)) {
-            if (!empty($args[1])) {
-                foreach ((array)$args[1] as $prop) {
-                    if (!empty($array[$prop])) {
-                        $value[$prop] = $array[$prop];
-                    }
+    protected function propertiesByAnnotation($search)
+    {
+        $properties = array();
+        $search     = substr($search, 1);
+        foreach ($this->data['properties'] as $prop) {
+            foreach ($prop['annotation'] as $ann) {
+                if ($ann['method'] == $search) {
+                    $properties[] = $prop;
+                    break;  
                 }
             }
-            return true;
         }
+
+        return $properties;
+    } 
+
+    protected function propertiesFilter($search)
+    {
+        $properties = array();
+        foreach ($this->data['properties'] as $prop) {
+            if ($prop['property'] == $search) {
+                $properties[] = $prop;
+                break;
+            }
+        }
+
+        return $properties;
     }
 
-    $document = $value;
-    $info     = $mapper->mapClass($document);
-    if (!$info['is_gridfs']) {
-        $conn->save($document);
-    }
+    public function properties($search)
+    {
+        $properties = array();
+        if ($search[0] == '@') {
+            $properties = $this->propertiesByAnnotation($search);
+        } else if (!empty($this->data['properties'][$search])) {
+            $properties[] = $this->data['properties'][$search];
+        } else {
+            $properties = $this->propertiesFilter($search);
+        } 
 
-    $check = !empty($args) ? current($args) : null;
-    if ($check && !$document instanceof $check && !$conn->is(current($args), $document)) {
-        throw new \RuntimeException("Invalid value");
+        return $properties;
     }
-    
-    $value = $mapper->getReference($document, empty($args[1]) ? [] : array_flip($args[1]));
-
-    return true;
 }

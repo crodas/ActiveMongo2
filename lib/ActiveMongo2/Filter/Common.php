@@ -39,6 +39,31 @@ namespace ActiveMongo2\Filter;
 use ActiveMongo2\Reference;
 
 /**
+ *  @DataType date
+ *  @Validate(Date)
+ *  @Embed
+ */
+function is_date(&$date)
+{
+    /* is_date */
+    if ($date instanceof \MongoDate) {
+        return true;
+    }
+    if ($date instanceof \Datetime) {
+        $date = new \MongoDate($date->getTimestamp());
+    }
+    if (is_string($date)) { 
+        $date = strtotime($date);
+    }
+    if (is_integer($date) && $date > 0) {
+        $date = new \MongoDate($date);
+        return true;
+    }
+    return false;
+}
+
+/**
+ *  @Validate(Hash)
  *  @DataType hash
  *  @Embed
  */
@@ -64,6 +89,33 @@ function _validate_string(&$value)
     $value = "" . $value;
     return true;
 }
+
+/** 
+ * @Validate(Geo) 
+ * @Validate(Location)
+ */
+function _validate_geo(&$value) {
+    if (!is_array($value)) {
+        return false;
+    }
+    $value = array_values($values);
+    if (count($values) != 2) {
+        return false;
+    }
+}
+
+/** 
+ * @Validate(Bool) 
+ * @Validate(Boolean) 
+ * @DataType Boolean
+ * @Embed
+ */
+function _validate_boolean(&$value)
+{
+    $value = (bool)$value;
+    return true;
+}
+
 
 /** 
  * @Validate(Integer) 
@@ -111,7 +163,7 @@ function _validate_float(&$value)
 
 /**
  *  @Validate(Password)
- *  @DataType String
+ *  @DataType Password
  *  @Embed
  */
 function _validate_password(&$value, $args)
@@ -138,6 +190,7 @@ function _hydrate_array(&$value)
 /** 
  * @Validate(Array) 
  * @DataType Array
+ * @Embed
  */
 function _validate_array(&$value)
 {

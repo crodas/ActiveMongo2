@@ -47,42 +47,49 @@ class Generate
     protected $files = array();
     protected $config;
 
-    public function __construct(Configuration $config, Watch $watcher)
+    protected function fixPath(Generate\Collections $collections)
     {
-        $this->files  = array();
-        $this->config = $config;
-
-        $collections = new Generate\Collections((array)$config->getModelPath(), $this);
-        $fixPath = function($value) {
-            $value->setPath($this->getRelativePath($value->getPath()));
+        $self = $this;
+        $fixPath = function($value) use ($self) {
+            $value->setPath($self->getRelativePath($value->getPath()));
         };
         $collections->map($fixPath);
-        array_map($fixPath, $collections->getDefaults());
-        array_map($fixPath, $collections->getPlugins());
-        array_map($fixPath, $collections->getHydratators());
-        array_map($fixPath, $collections->getValidators());
+        array_map($fixPath, $collections->getAnnotationByName('DefaultValue'));
+        array_map($fixPath, $collections->getAnnotationByName('Plugin'));
+        array_map($fixPath, $collections->getAnnotationByName('Hydratate'));
+        array_map($fixPath, $collections->getAnnotationByName('Validate'));
+    }
 
-        $target       = $config->getLoader();
-        $namespace    = sha1($target);
-
-        $self = $this;
-        $code = Template\Templates::get('documents')
-            ->render(compact(
-                'docs', 'namespace',
-                'mapper', 'indexes', 'self',
-                'collections'
-            ), true);
-
-        File::write($target, FixCode::fix($code));
-        $this->files = array_unique($this->files);
-
-        foreach ($this->files as $file) {
+    protected function writeFileWatch(Watch $watcher, Generate\Collections $collections)
+    {
+        foreach ($collections->getFiles() as $file) {
             $watcher->watchDir(dirname($file));
             $watcher->watchFile($file);
         }
 
-        $watcher->watchFile($target);
+        $watcher->watchFile($this->config->getLoader());
         $watcher->watch();
+    }
+
+    public function __construct(Configuration $config, Watch $watcher)
+    {
+        $this->config = $config;
+
+        $collections = new Generate\Collections((array)$config->getModelPath(), $this);
+        $this->fixPath($collections);
+
+        $target    = $config->getLoader();
+        $namespace = sha1($target);
+        $valns     = $collections->getValidatorNS();
+
+        $args = compact('docs', 'namespace','mapper', 'indexes', 'self', 'collections', 'valns');
+        $code = Template\Templates::get('documents')
+            ->render($args, true);
+
+        $code .= $collections->getValidatorCode();
+
+        File::write($target, FixCode::fix($code));
+        $this->writeFileWatch($watcher, $collections);
     }
     
     public function getRelativePath($dir1, $dir2=NULL)

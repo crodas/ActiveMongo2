@@ -44,19 +44,30 @@ class Property extends Base
     protected $collection;
     protected $type = null;
 
+    protected function getTypeFromAnnotation($annotation)
+    {
+        foreach ($annotation->getOne('DataType') as $type) {
+            if ($this->type === null) {
+                $this->type = $type;
+            } else {
+                throw new \Exception("{$this->getPHPName()} has two data tyeps {$type} and {$this->type}");
+            }
+        }
+    }
+
     public function __construct(Collection $col, Annotation $prop)
     {
         $this->collection = $col;
         $this->annotation = $prop;
 
-        foreach ($this->getValidators() as $val) {
-            foreach ($val->annotation->getOne('DataType') as $type) {
-                if ($this->type === null) {
-                    $this->type = $type;
-                } else {
-                    throw new \Exception("{$this->getPHPName()} has two data tyeps {$type} and {$this->type}");
-                }
-            }
+        if ($prop->has('Id')) {
+            $this->type = '_id';
+        }
+        foreach ($this->getCallback('Validate') as $val) {
+            $this->getTypeFromAnnotation($val->annotation);
+        }
+        foreach ($this->getCallback('DefaultValue') as $val) {
+            $this->getTypeFromAnnotation($val->annotation);
         }
     }
 
@@ -75,42 +86,21 @@ class Property extends Base
         return in_array('public', $this->annotation['visibility']);
     }
 
-    public function getDefault() 
-    {
-        $defaults = array();
-        foreach ($this->collection->getDefaults() as $name => $type) {
-            if ($this->annotation->has($name)) {
-                $defaults[] = $type;
-                $type->name = $name;
-            }
-        }
-        return $defaults;
-    }
-
     public function getProperty()
     {
         return $this->annotation['property'];
     }
 
-    protected function getCallback($filter)
+    public function getCallback($filter)
     {
         $types = array();
-        foreach ($this->collection->$filter() as $name => $type) {
+        foreach ($this->collection->getAnnotationByName($filter) as $name => $type) {
             if ($this->annotation->has($name)) {
                 $types[] = $type;
+                $type->name = $name;
             }
         }
         return $types;
-    }
-
-    public function getValidators()
-    {
-        return $this->getCallback('getValidators');
-    }
-
-    public function getHydratations()
-    {
-        return $this->getCallback('getHydratators');
     }
 
     public function __toString()
@@ -120,7 +110,7 @@ class Property extends Base
 
     public function getPHPBaseVariable($prefix = '$doc')
     {
-        if (!$this->isId() && $this->collection->isGridFS()) {
+        if (!$this->isId() && $this->collection->is('GridFs')) {
             $prefix = $prefix . '["metadata"]';
         }
         return $prefix;
@@ -132,25 +122,38 @@ class Property extends Base
         return $prefix . "[" . var_export($this->getName(), true) . "]";
     }
 
+    public function getReferenceCollection()
+    {
+        $ann = $this->annotation->getOne('Embed,EmbedOne,EmbedMany,ReferenceOne,Reference,ReferenceMany');
+        if (empty($ann) || empty($ann['args'])) {
+            return false;
+        }
+
+        return current($ann['args']);
+    }
+
     public function getType()
     {
         return $this->type;
     }
 
-    public function getName($prefix = false)
+    public function getRawName() 
     {
+        $field = $this->annotation->getOne('Field');
         if ($this->isId()) {
             return '_id';
+        } else if (!empty($field)) {
+            return current($field);
         }
 
-        $field = $this->annotation->getOne('Field');
-        if (!empty($field)) {
-            $property = current($field);
-        } else {
-            $property = $this->getPHPName();
-        }
+        return $this->getPHPName();
+    }
 
-        if ($prefix && $this->collection->isGridFs()) {
+    public function getName($prefix = false)
+    {
+        $property = $this->GetRawName();
+
+        if ($prefix && !$this->isId() && $this->collection->is('GridFs')) {
             // It is an special case
             $property = "metadata.$property";
         }

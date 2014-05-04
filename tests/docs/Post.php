@@ -18,11 +18,17 @@ class Middle extends BaseDocument
  */
 class PostDocument extends Middle
 {
-    /** @Universal */
+    /** @Universal @Index(desc) */
     public $global_id;
 
     /** @Reference("user") @Deferred */
     public $author_ref;
+
+    /** @Array @Limit(-3) */
+    public $array = array();
+
+    /** @Geo @Index */
+    public $geo;
 
     /** @ReferenceMany("user") @Deferred */
     public $author_refs;
@@ -45,11 +51,17 @@ class PostDocument extends Middle
     /** @EmbedMany("user") */
     public $readers_1;
 
-    /** @Integer */
+    /** @Integer @Between([-20, 20], "xxxyy must be between -20 and 20 {$value} given") */
     public $xxxyyy;
 
     /** @Array */
     public $tags;
+
+    /** @Date */
+    public $created;
+
+    /** @Date */
+    public $updated;
 
     /**
      *  @preSave

@@ -49,14 +49,12 @@ class Unupdatable
      */
     public static function check($object, Array $args, $conn, $rargs)
     {
-        foreach ($rargs as $prop) {
-            foreach ($args[0] as $key => $props) {
-                if ($key == $prop) {
-                    throw new \RuntimeException("{$prop} cannot be updated");
-                }
-                if (is_array($props) && array_key_exists($prop, $props)) {
-                    throw new \RuntimeException("{$prop} cannot be updated");
-                }
+        $check = array_combine($rargs, $rargs);
+        foreach ($args[0] as $key => $props) {
+            if (!empty($check[$key])) {
+                throw new \RuntimeException("{$key} cannot be changed");
+            } else if ($diff = array_intersect_key((array)$props, $check)) {
+                throw new \RuntimeException(implode(",", array_keys($diff)) . " cannot be changed");
             }
         }
     }

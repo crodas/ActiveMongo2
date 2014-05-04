@@ -31,13 +31,20 @@ class SimpleTest extends \phpunit_framework_testcase
         $user->username = "crodas-" . rand(0, 0xfffff);
         $user->pass     = "foobar";
         $this->assertFalse($user->runEvent);
+        $tmp = $user;
         $conn->save($user);
-        $this->assertTrue($user->runEvent);
+        $this->assertTrue($tmp->runEvent);
 
         $find = $conn->getCollection('user')
             ->find(array('_id' => $user->userid));
 
         $this->assertEquals(1, $find->count());
+
+
+        /* */
+        $count = $conn->user->count();
+        $conn->save($tmp); 
+        $this->assertEquals($count, $conn->user->count());
 
         foreach ($find as $u) {
             $this->assertTrue($u instanceof $user);
@@ -51,6 +58,38 @@ class SimpleTest extends \phpunit_framework_testcase
             ->find(array('_id' => $user->userid));
 
         $this->assertEquals(0, $find->count());
+    }
+
+    public function testPagination()
+    {
+        $conn = getConnection();
+        for ($i=0; $i < 1000; $i++) {
+            $user = new UserDocument;
+            $user->username = "crodas-" . rand(0, 0xfffff);
+            $conn->save($user);
+        }
+        $userCol = $conn->getCollection('user');
+        $cursor = $userCol->find();
+        $pages = $cursor->paginate(1, 20);
+        $this->assertEquals(min($pages), 1);
+        $this->assertEquals(max($pages), 50);
+
+        $pages = $cursor->paginate(15, 20);
+        $this->assertEquals(min($pages), 13);
+        $this->assertEquals(max($pages), 50);
+
+        $info = $cursor->info();
+        $this->assertEquals(280, $info['skip']);
+        $this->assertEquals(20, $info['limit']);
+
+        $_REQUEST['page'] = 20;
+        $pages = $cursor->paginate('page', 20);
+        $this->assertEquals(min($pages), 18);
+        $this->assertEquals(max($pages), 50);
+
+        $info = $cursor->info();
+        $this->assertEquals(380, $info['skip']);
+        $this->assertEquals(20, $info['limit']);
     }
 
 
@@ -128,9 +167,14 @@ class SimpleTest extends \phpunit_framework_testcase
         $post->author = $user;
         $post->collaborators[] = $user;
         $post->title  = "foobar post";
+        $post->array  = [1];
         $post->readers[] = $user;
         $post->author_id = $user->userid;
         $conn->save($post);
+
+        $post->array  = [2,3,4,5,6];
+        $conn->save($post);
+        $this->assertNotEquals(NULL, $post->created);
 
         $savedPost = $conn->getCollection('post')->findOne();
         $this->assertEquals($savedPost->author->userid, $user->userid);
@@ -150,6 +194,17 @@ class SimpleTest extends \phpunit_framework_testcase
         $savedPost = $conn->getCollection('post')->findOne();
         $this->assertEquals($savedPost->author->username, $user->username);
         $this->assertEquals($savedPost->collaborators[0]->username, $user->username);
+
+        $post->array[] = 9;
+        $post->array[] = 10;
+        $conn->save($post);
+        $savedPost = $conn->getCollection('post')->findOne();
+        $this->assertEquals($savedPost->array, [6,9,10]);
+
+        $post->array[] = 19;
+        $conn->save($post);
+        $savedPost = $conn->getCollection('post')->findOne();
+        $this->assertEquals($savedPost->array, [9,10,19]);
 
         $post->tmp = 0;
         $conn->delete($post);
@@ -268,6 +323,8 @@ class SimpleTest extends \phpunit_framework_testcase
         $post->tags = array(['x' => 'foobar'], ['x' => 'xx'], ['x' => 'xxyy']);
         $post->author_id = $user->userid;
         $conn->save($post);
+
+        $user->some_post = $post;
         $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
         $this->assertEquals($zpost->tags, $post->tags);
 
@@ -286,6 +343,9 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($zpost->tags, array_values($post->tags));
         unset($post->tags[1]);
         $conn->save($post);
+
+        // dont fail is _id not define
+        $conn->save($user);
 
         $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
         $this->assertEquals($zpost->tags, array_values($post->tags));
@@ -333,4 +393,64 @@ class SimpleTest extends \phpunit_framework_testcase
         }
         $this->assertEquals($one->count(), $i);
     }
+
+    public function testREflectionByClassOrCollection()
+    {
+        $conn = getConnection();
+        $this->assertEquals(
+            $conn->getReflection('post'),    
+            $conn->getReflection('ActiveMongo2\Tests\Document\BaseDocument')
+        );
+    }
+
+    public function testGetCollections()
+    {
+        $cols = getConnection()->getCollections();
+        $this->assertTrue(count($cols) > 5);
+        foreach ($cols as $col) {
+            $this->assertTrue($col instanceof \ActiveMongo2\Collection);
+            $this->assertTrue($col->getReflection() instanceof \ActiveMongo2\Reflection\Collection);
+        }
+    }
+
+    /**
+     *  @expectedException UnexpectedValueException
+     */
+    public function testValidator()
+    {
+        $cols = getConnection()->getCollections();
+
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "crodas";
+
+        $conn->save($user);
+
+
+        $post = new PostDocument;
+        $post->author_ref = $user;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers[] = $user;
+        $post->author_id = $user->userid;
+        $post->xxxyyy = 31;
+        $conn->save($post);
+    }
+
+    public function testReflections()
+    {
+        $conn = getConnection();
+        $reflection = $conn->getReflection('ActiveMongo2\Tests\Document\UserDocument');
+        $this->assertTrue($reflection instanceof \ActiveMongo2\Reflection\Collection);
+        $this->assertEquals(1, count($reflection->properties('@Id')));
+        $this->assertEquals(2, count($reflection->properties('@Embed')));
+
+        $tmp = new UserDocument;
+        $tmp->userid = "foobar_" . uniqid(true);
+
+        $this->assertEquals($reflection->property('_id')->get($tmp), $tmp->userid);
+    }
+
 }

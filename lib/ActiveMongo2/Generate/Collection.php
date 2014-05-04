@@ -1,7 +1,7 @@
 <?php
 /*
   +---------------------------------------------------------------------------------+
-  | Copyright (c) 2013 ActiveMongo                                                  |
+  | Copyright (c) 2014 ActiveMongo                                                  |
   +---------------------------------------------------------------------------------+
   | Redistribution and use in source and binary forms, with or without              |
   | modification, are permitted provided that the following conditions are met:     |
@@ -43,11 +43,12 @@ use ActiveMongo2\Generate;
 class Collection extends Base
 {
     protected $collections;
+    protected $validator;
 
     public function getPlugins($type)
     {
         $plugins = array();
-        foreach ($this->collections->getPlugins() as $name => $p) {
+        foreach ($this->collections->getAnnotationByName('Plugin') as $name => $p) {
             if ($this->annotation->has($name)) {
                 foreach ($p->getMethodsByAnnotation($type) as $method) {
                     $method->name = $name;
@@ -62,20 +63,18 @@ class Collection extends Base
     {
         $this->annotation  = $annotation;
         $this->collections = $collections;
-        $parent     = $annotation->getParent();
+
+        $parent = $annotation->getParent();
         while ($parent) {
             if (empty($collections[$parent['class']])) {
                 $collections[$parent['class']] = new self($parent, $collections);
             }
             $parent = $parent->getParent();
         }
-    }
 
-    public function getDefaults()
-    {
-        return $this->collections->getDefaults();
-    }
 
+
+    }
 
     public function getTypes()
     {
@@ -91,11 +90,6 @@ class Collection extends Base
         return $properties;
     }
 
-    public function isGridFs()
-    {
-        return $this->annotation->has('GridFs');
-    }
-
     public function __toString()
     {
         return $this->getClass();
@@ -107,9 +101,10 @@ class Collection extends Base
             'class' => $this->getClass(),
             'file'  => $this->getPath(),
             'name'  => $this->getName(),
-            'is_gridfs' => $this->isGridFs(),
+            'zname' => $this->getSafeName(),
+            'is_gridfs' => $this->is('GridFs'),
             'parent' => $this->getParent() ? $this->GetParent()->getClass() : NULL,
-            'disc'   => $this->isSingleCollection() ? $this->getDiscriminator() : NULL,
+            'disc'   => $this->is('SingleCollection') ? $this->getDiscriminator() : NULL,
         ];
     }
 
@@ -129,40 +124,31 @@ class Collection extends Base
         return $prop;
     }
 
-    public function isSingleCollection($recursive = true)
-    {
-        return $this->annotation->has('SingleCollection') ||
-            ($recursive && $this->getParent() && $this->getParent()->isSingleCollection());
-    }
-
     public function getClass()
     {
         return strtolower($this->annotation['class']);
     }
 
+    public function getSafeName()
+    {
+        return preg_replace('/[^a-z0-9]/i', '___', $this->getName());
+    }
+
     public function getHash()
     {
-        return $this->getName() . '_' . sha1($this->getClass());
+        return $this->getSafeName() . '_' . sha1($this->getClass());
     }
 
     protected function getNameFromParent()
     {
         $parent = $this->getParent();
         while ($parent) {
-            if ($parent->isSingleCollection(false)) {
+            if ($parent->is('SingleCollection', false)) {
                 return $parent->getName();
             }
             $parent = $parent->getParent();
         }
         return NULL;
-    }
-
-    protected function getAnnotationArgs()
-    {
-        if (!$this->annotation->has('Persist') && !$this->annotation->has('Embeddable')) {
-            return false;
-        }
-        return $this->annotation->getOne('Persist') ?: $this->annotation->getOne('Embeddable');
     }
 
     protected function getNameFromAnnotation($args, $ann)
@@ -211,7 +197,7 @@ class Collection extends Base
         } else if (($pname = $this->getNameFromParent())
             || ($pname = $this->getNameFromAnnotation($args, [0, 'collection']))) {
             $name = $pname;
-        } else if ($this->isGridFs()) {
+        } else if ($this->is('GridFs')) {
             $name = "fs";
         } else {
             $parts = explode("\\", $this->getClass());
@@ -221,21 +207,11 @@ class Collection extends Base
         return $name;
     }
 
-    public function getValidators()
+    public function getAnnotationByName($name)
     {
-        return $this->collections->getValidators();
+        return $this->collections->getAnnotationByName($name);
     }
 
-    public function getHydratators()
-    {
-        return $this->collections->getHydratators();
-    }
-
-    public function getAnnotation()
-    {
-        return $this->annotation;
-    }
-    
     public function getParent()
     {
         $parent = $this->annotation->getParent();

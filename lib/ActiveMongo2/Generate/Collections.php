@@ -44,10 +44,16 @@ class Collections extends ArrayObject
 {
     protected $files = array();
     protected $annotations;
+    protected $validator;
     protected static $events = array(
         'preSave', 'postSave', 'preCreate', 'postCreate', 'onHydratation', 
         'preUpdate', 'postUpdate', 'preDelete', 'postDelete'
     );
+
+    public function getFiles()
+    {
+        return $this->files;
+    }
 
     public function getEvents()
     {
@@ -104,7 +110,7 @@ class Collections extends ArrayObject
         return $this;
     }
 
-    public function getIndexes()
+    protected function getUniqueIndexes()
     {
         $indexes = array();
         foreach ($this->getAllPropertiesWithAnnotation('Unique') as $prop) {
@@ -114,9 +120,20 @@ class Collections extends ArrayObject
             $indexes[] = $index;
         }
 
+        return $indexes;
+    }
+
+    public function getIndexes()
+    {
+        $indexes = $this->getUniqueIndexes();
+
         foreach ($this->getAllPropertiesWithAnnotation('Index') as $prop) {
+            $order = strtolower(current((array)$prop[0]['args'])) == 'desc' ? -1 : 1;
+            if ($prop[1]->getAnnotation()->has('Geo')) {
+                $order = '2dsphere';
+            }
             $index['prop']  = $prop[1];
-            $index['field'] = array($prop[1]->getName() => 1);
+            $index['field'] = array($prop[1]->getName() =>  $order);
             $index['extra']  = array();
             $indexes[] = $index;
         }
@@ -167,6 +184,7 @@ class Collections extends ArrayObject
             'ReferenceMany' => true,
         );
 
+        $refs = array();
         foreach ($references as $type => $multi) {
             foreach ($this->getAllPropertiesWithAnnotation($type, true) as $ann) {
                 list($ann, $prop) = $ann;
@@ -207,8 +225,12 @@ class Collections extends ArrayObject
         return $refCache;
     }
 
-    protected function getAnnotationByName($name)
+    public function getAnnotationByName($name)
     {
+        static $cache = array();
+        if (!empty($cache[$name])) {
+            return $cache[$name];
+        }
         $anns = array();
         foreach ($this->annotations->get($name) as $ann) {
             $type = new Type($ann, $name);
@@ -219,44 +241,7 @@ class Collections extends ArrayObject
                 }
             }
         }
-        return $anns;
-    }
-
-    public function getHydratators()
-    {
-        static $h = array();
-        if (empty($h)) {
-            $h = $this->getAnnotationByName('Hydratate');
-        }
-        return $h;
-    }
-
-    public function getValidators()
-    {
-        static $h = array();
-        if (empty($h)) {
-            $h = $this->getAnnotationByName('Validate');
-        }
-        return $h;
-    }
-
-
-    public function getPlugins()
-    {
-        static $plugins = array();
-        if (empty($plugins)) {
-            $plugins = $this->getAnnotationByName('Plugin');
-        }
-        return $plugins;
-    }
-
-    public function getDefaults()
-    {
-        static $types = array();
-        if (empty($types)) {
-            $types = $this->getAnnotationByName('DefaultValue');
-        }
-        return $types;
+        return $cache[$name] = $anns;
     }
 
     protected function addDirs(Array $dirs)
@@ -279,6 +264,16 @@ class Collections extends ArrayObject
 
     }
 
+    public function getValidatorCode()
+    {
+        return substr($this->validator->getCode(), 5);
+    }
+
+    public function getValidatorNS()
+    {
+        return $this->validator->getNamespace();
+    }
+
     public function __construct(Array $dirs)
     {
         $this->annotations = new Annotations;
@@ -289,5 +284,9 @@ class Collections extends ArrayObject
         $this->readCollections();
 
         $this->files = array_unique($this->files);
+
+        $validator = new Validate('', '');
+        $validator->setCollections($this);
+        $this->validator = $validator->generateValidators();
     }
 }

@@ -3,6 +3,7 @@
 namespace ActiveMongo2\Generated{{$namespace}};
 
 use ActiveMongo2\Connection;
+use Notoj\Annotation;
 
 @set($instance, '_' . uniqid(true))
 
@@ -19,17 +20,6 @@ class Mapper
         spl_autoload_register(array($this, '__autoloader'));
     }
 
-    public function getClass($name)
-    {
-        $class = __NAMESPACE__ . "\\$name";
-        if (!class_exists($class, false)) {
-            $define = __NAMESPACE__ . "\\define_class_" . sha1($name);
-            $define();
-        }
-
-        return $class;
-    }
-
     protected function array_diff(Array $arr1, Array $arr2)
     {
         $diff = array();
@@ -41,6 +31,16 @@ class Mapper
         return $diff;
     }
 
+    public function getCollections()
+    {
+        return array(
+        @foreach ($collections as $collection)
+            @if ($collection->getName())
+                {{@$collection->getClass()}} => {{@$collection->getName()}},
+            @end
+        @end
+        );
+    }
 
     public function __autoloader($class)
     {
@@ -52,6 +52,30 @@ class Mapper
             return true;
         }
         return false;
+    }
+
+    public function getCollectionObject($col, $db)
+    {
+        if (!is_scalar($col) || empty($this->mapper[$col])) {
+            $data = $this->mapClass($col);     
+        } else {
+            $data = $this->mapper[$col];
+        }
+
+        if (empty(self::$loaded[$data['file']])) {
+            if (!class_exists($data['class'], false)) {
+                require __DIR__ .  $data['file'];
+            }
+            self::$loaded[$data['file']] = true;
+        }
+
+        if (!empty($data['is_gridfs'])) {
+            $col = $db->getGridFs($data['name']);
+        } else {
+            $col = $db->selectCollection($data['name']);
+        }
+
+        return [$col, $data['class']];
     }
 
     public function mapCollection($col)
@@ -76,7 +100,7 @@ class Mapper
     {
         switch ($table) {
         @foreach($collections as $collection)
-            @if ($collection->isSingleCollection() && $collection->getParent()) {
+            @if ($collection->is('SingleCollection') && $collection->getParent()) {
             case {{@$collection->getClass()}}:
                 $query[{{@$collection->getDiscriminator()}}] = {{@$collection->getClass()}};
             break;
@@ -94,7 +118,7 @@ class Mapper
         $class = strtolower($class);
         if (empty($this->class_mapper[$class])) {
             @foreach($collections as $collection)
-                @if ($collection->isSingleCollection())
+                @if ($collection->is('SingleCollection'))
                 if ($class == {{@$collection->getClass()}} ||  $class == {{@$collection->getName()}}){
                     return {{@['name' => $collection->getName(), 'dynamic' => true, 'prop' => $collection->getDiscriminator(), 'class' => NULL]}};
                 }
@@ -106,13 +130,23 @@ class Mapper
         $data = $this->class_mapper[$class];
 
         if (empty(self::$loaded[$data['file']])) {
-            if (class_exists($data['class'], false)) {
+            if (!class_exists($data['class'], false)) {
                 require __DIR__ . $data['file'];
             }
             self::$loaded[$data['file']] = true;
         }
 
         return $data;
+    }
+
+    protected function is_array($array)
+    {
+        if (is_array($array)) {
+            $keys = array_keys($array);
+            $expected = range(0, count($array)-1);
+            return count(array_diff($keys, $expected)) == 0;
+        }
+        return false;
     }
 
     protected function array_unique($array, $toRemove)
@@ -145,6 +179,19 @@ class Mapper
         return $this->class_mapper[$class];
     }
 
+    public function getReflection($name)
+    {
+        $class = strtolower($name);
+        if (empty($this->class_mapper[$class])) {
+            if (empty($this->mapper[$name])) {
+                throw new \RuntimeException("Cannot map class {$class} to its document");
+            }
+            $class = $this->mapper[$name]['class'];
+        }
+
+        return new \ActiveMongo2\Reflection\Collection($this->{"reflect_" . sha1($class)}());
+    }
+
     public function getReference($object, Array $extra = array())
     {
         $class = strtolower($this->get_class($object));
@@ -157,6 +204,9 @@ class Mapper
 
     public function getDocument($object)
     {
+        if ($object instanceof \ActiveMongo2\Reference) {
+            $object = $object->getObject();
+        }
         $class = strtolower($this->get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
@@ -175,6 +225,26 @@ class Mapper
         return $this->{"validate_" . sha1($class)}($object);
     }
 
+    public function set_property($object, $name, $value)
+    {
+        $class = strtolower($this->get_class($object));
+        if (empty($this->class_mapper[$class])) {
+            throw new \RuntimeException("Cannot map class {$class} to its document");
+        }
+
+        return $this->{"set_property_" . sha1($class)}($object, $name, $value);
+    }
+
+    public function get_property($object, $name)
+    {
+        $class = strtolower($this->get_class($object));
+        if (empty($this->class_mapper[$class])) {
+            throw new \RuntimeException("Cannot map class {$class} to its document");
+        }
+
+        return $this->{"get_property_" . sha1($class)}($object, $name);
+    }
+
     public function update($object, Array &$doc, Array $old)
     {
         $class = strtolower($this->get_class($object));
@@ -187,8 +257,8 @@ class Mapper
 
     public function getRawDocument($object)
     {
-        if ($object instanceof ActiveMongo2Mapped){
-            return $object->{{$instance}}_getOriginal();
+        if (!empty($object->{{$instance}}) && $object->{{$instance}} instanceof ActiveMongo2Mapped) {
+            return $object->{{$instance}}->getOriginal();
         }
 
         return array();
@@ -243,13 +313,13 @@ class Mapper
         $class = NULL;
         switch ($col) {
         @foreach ($collections as $collection)
-            @if ($collection->isGridFS())
+            @if ($collection->is('GridFs'))
             case {{@$collection->getName() . '.files'}}:
             case {{@$collection->getName() . '.chunks'}}:
             @else
             case {{@$collection->getName()}}:
             @end
-                @if (!$collection->isSingleCollection())
+                @if (!$collection->is('SingleCollection'))
                     $class = {{@$collection->getClass()}};
                 @else
                     if (!empty({{$collection->getDiscriminator(true)->getPHPVariable()}})) {
@@ -264,17 +334,12 @@ class Mapper
             throw new \RuntimeException("Cannot get class for collection {$col}");
         }
 
-
-        return $this->getClass($this->class_mapper[$class]['name'] . '_' . sha1($class));
-
         return $class;
     }
 
     public function get_class($object)
-    {
-        if ($object instanceof ActiveMongo2Mapped) {
-            $class = $object->{{$instance}}_getClass();
-        } else if ($object instanceof \ActiveMongo2\Reference) {
+    { 
+        if ($object instanceof \ActiveMongo2\Reference) {
             $class = $object->getClass();
         } else {
             $class = strtolower(get_class($object));
@@ -294,17 +359,63 @@ class Mapper
         return $this->$method($document, $key, $value);
     }
 
-    public function ensureIndex($db)
+    public function ensureIndex($db, $background = false)
     {
-        @foreach($collections->getIndexes() as $index)
-            $db->{{$index['prop']->getParent()->getName()}}->ensureIndex(
+        @foreach($collections->getIndexes() as $id => $index)
+            // {{$id}}
+            $db->selectCollection({{@$index['prop']->getParent()->getName()}})->ensureIndex(
                 {{@$index['field']}},
-                {{@$index['extra']}}
+                array_merge(compact('background'), {{@$index['extra']}})
             );
         @end
     }
 
     @foreach ($collections as $collection)
+
+    protected function set_property_{{sha1($collection->getClass())}}($object, $name, $value)
+    {
+        switch ($name) {
+        @foreach ($collection->getProperties() as $prop)
+        case {{@$prop->getPHPName()}}:
+        case {{@$prop->getName()}}:
+            @if ($prop->isPublic())
+                $object->{{ $prop->getPHPName() }} = $value;
+            @else
+                $property = new \ReflectionProperty($object, {{ @$prop->getPHPName() }});
+                $property->setAccessible(true);
+                $property->setValue($object, $value);
+            @end
+            break;
+        @end
+        default:
+            throw new \RuntimeException("Missing property {$name}");
+        }
+
+        return true;
+    }
+
+
+    protected function get_property_{{sha1($collection->getClass())}}($object, $name)
+    {
+        switch ($name) {
+        @foreach ($collection->getProperties() as $prop)
+        case {{@$prop->getPHPName()}}:
+        case {{@$prop->getName()}}:
+            @if ($prop->isPublic())
+                $return = $object->{{ $prop->getPHPName() }};
+            @else
+                $property = new \ReflectionProperty($object, {{ @$prop->getPHPName() }});
+                $property->setAccessible(true);
+                $return = $property->getValue($object);
+            @end
+            break;
+        @end
+        default:
+            throw new \RuntimeException("Missing property {$name}");
+        }
+
+        return $return;
+    }
 
     /**
      *  Get update object {{$collection->getClass()}} 
@@ -322,13 +433,16 @@ class Mapper
         @end
 
         @foreach ($collection->getProperties() as $prop)
+            $has_changed = false;
             if (array_key_exists({{@$prop.''}}, {{$prop->getPHPBaseVariable('$current')}})
                 || array_key_exists({{@$prop.''}}, $old)) {
                 if (!array_key_exists({{@$prop.''}}, {{$prop->getPHPBaseVariable('$current')}})) {
                     $change['$unset'][{{@$prop.''}}] = 1;
                 } else if (!array_key_exists({{@$prop.''}}, $old)) {
                     $change['$set'][{{@$prop.''}}] = {{$prop->getPHPVariable('$current')}};
+                    $has_changed = true;
                 } else if ({{$prop->getPHPVariable('$current')}} !== $old[{{@$prop.''}}]) {
+                    $has_changed = true;
                     @if ($prop->getAnnotation()->has('Inc'))
                         if (empty($old[{{@$prop.''}}])) {
                             $prev = 0;
@@ -357,7 +471,7 @@ class Mapper
                         } else {
                             foreach ({{$prop->getPHPVariable('$current')}} as $index => $value) {
                                 if (!array_key_exists($index, $old[{{@$prop.''}}])) {
-                                    $change['$push'][{{@$prop.''}}] = $value;
+                                    $change['$push'][{{@$prop.''}}]['$each'][] = $value;
                                     continue;
                                 }
                                 if ($value['__embed_class'] != $old[{{@$prop.''}}][$index]['__embed_class']) {
@@ -385,7 +499,7 @@ class Mapper
                         // add things to the array
                         $toRemove = array_diff_key($old[{{@$prop.''}}], {{$prop->getPHPVariable('$current')}});
 
-                        if (count($toRemove) > 0 && $this->array_unique($old[{{@$prop.''}}], $toRemove)) {
+                        if ((count($toRemove) > 0 && $this->array_unique($old[{{@$prop.''}}], $toRemove)) || !$this->is_array($old[{{@$prop.''}}])) {
                             $change['$set'][{{@$prop.''}}] = array_values({{$prop->getPHPVariable('$current')}});
                         } else {
                             foreach ({{$prop->getPHPVariable('$current')}} as $index => $value) {
@@ -393,7 +507,7 @@ class Mapper
                                     @if ($prop->getAnnotation()->has('ReferenceMany'))
                                         $change['$addToSet'][{{@$prop.''}}]['$each'][] = $value;
                                     @else
-                                        $change['$push'][{{@$prop.''}}] = $value;
+                                        $change['$push'][{{@$prop.''}}]['$each'][] = $value;
                                     @end
                                     continue;
                                 }
@@ -431,6 +545,20 @@ class Mapper
                     @end
                 }
             }
+
+            @set($ann, $prop->getAnnotation())
+            @if ($ann->has('Array') || $ann->has('ReferenceMany') || $ann->has('EmbedMany'))
+                @if ($ann->has('Limit'))
+                if ($has_changed && !empty($change['$push'][{{@$prop.''}}])) {
+                    $change['$push'][{{@$prop.''}}]['$slice'] = {{@0+current($prop->getAnnotation()->getOne('Limit'))}};
+                }
+                @end
+                @if ($ann->has('Sort'))
+                if ($has_changed && !empty($change['$push'][{{@$prop.''}}])) {
+                    $change['$sort'][{{@$prop.''}}]['$sort'] = {{@0+current($prop->getAnnotation()->getOne('Limit'))}};
+                }
+                @end
+            @end
         @end
 
         return $change;
@@ -450,20 +578,11 @@ class Mapper
      */
     protected function populate_{{sha1($collection->getClass())}}(\{{$collection->getClass()}} &$object, $data)
     {
-        if (!$object instanceof ActiveMongo2Mapped) {
-            $class    = $this->getClass({{@$collection->getName() . '_' }} .  sha1(strtolower(get_class($object))));
-            $populate = get_object_vars($object);
-            $object = new $class;
-            foreach ($populate as $key => $value) {
-                $object->$key = $value;
-            }
-        }
-
         @if ($p = $collection->getParent())
             $this->populate_{{sha1($p->getClass())}}($object, $data);
         @end
 
-        @if ($collection->isGridFs())
+        @if ($collection->is('GridFs'))
             if (!$data instanceof \MongoGridFsFile) {
                 throw new \RuntimeException("Internal error, trying to populate a GridFSFile with an array");
             }
@@ -503,7 +622,7 @@ class Mapper
             @end
 
             if (array_key_exists({{@$prop.''}}, {{$prop->getPHPBaseVariable()}})) {
-                @foreach ($prop->getHydratations() as $h)
+                @foreach ($prop->getCallback('Hydratate') as $h)
                     {{ $h->toCode($prop, $prop->getPHPVariable()) }}
                 @end
 
@@ -517,9 +636,12 @@ class Mapper
                 
             }
         @end
-        $object->{{$instance}}_setOriginal($data);
 
-
+        if (empty($object->{{$instance}})) {
+            $object->{{$instance}} = new ActiveMongo2Mapped({{@$collection->getClass()}}, $data);
+        } else {
+            $object->{{$instance}}->{{$instance}}_setOriginal($data);
+        }
     }
 
     /**
@@ -551,8 +673,8 @@ class Mapper
         }
 
         return array_merge(array(
-                '$id'   => $document['_id'],
                 '$ref'  => {{@$collection->getName()}}, 
+                '$id'   => $document['_id'],
                 '__class' => {{@$collection->getClass()}},
                 '__instance' => {{@$collection->getName()}} . ':' . serialize($document['_id']),
             )
@@ -586,7 +708,7 @@ class Mapper
         @end
 
         @foreach ($collection->getProperties() as $prop)
-            @foreach($prop->getDefault() as $default)
+            @foreach($prop->getCallback('DefaultValue') as $default)
                 if (empty({{$prop->getPHPVariable()}})) {
                     {{$default->toCode($prop)}}
                     {{$prop->getPHPVariable()}} = $return;
@@ -594,12 +716,56 @@ class Mapper
             @end
         @end
 
-        @if ($collection->isSingleCollection())
+        @if ($collection->is('SingleCollection'))
             // SINGLE COLLECTION
             {{$collection->getDiscriminator(true)->getPHPVariable()}} = {{@$collection->getClass()}};
         @end 
 
+        if (empty($doc['_id'])) {
+            $oldDoc = $this->getRawDocument($object, false);
+            if (!empty($oldDoc['_id'])) {
+                $doc['_id'] = $oldDoc['_id'];
+            }
+        }
+
         return $doc;
+    }
+
+    protected function reflect_{{sha1($collection->getClass())}}() 
+    {
+        $reflection = array(
+            'class'    => {{@$collection->getClass()}},
+            'name'     => {{@$collection->getName()}},
+            'collection'     => {{@$collection->getName()}},
+            'annotation' => array(
+        @foreach ($collection->getAnnotation() as $ann) 
+            {{@$ann}},
+        @end
+            ),
+            'properties'  => array(
+        @foreach ($collection->getProperties() as $prop) 
+            {{@$prop->getPHPName()}} => new \ActiveMongo2\Reflection\Property(array(
+                'property' => {{@$prop.''}},
+                'type'     => {{@$prop->getType()}},
+                @if ($prop->getReferenceCollection())
+                'collection' => {{@$prop->getReferenceCollection()}},
+                @end
+                'annotation' => new Annotation(array(
+                    @foreach ($prop->getAnnotation() as $ann)
+                        {{@$ann}},
+                    @end
+                )),
+            ), $this),
+        @end
+        ));
+
+        @if ($collection->getParent()) {
+            $reflection['properties'] = array_merge(
+                $this->reflect_{{sha1($collection->GetParent())}}()['properties'], 
+                $reflection['properties']
+            );
+        @end
+        return $reflection;
     }
 
     /**
@@ -622,14 +788,26 @@ class Mapper
                 throw new \RuntimeException("{{$prop.''}} cannot be empty");
             }
             @end
-            @foreach ($prop->getValidators() as $val)
-                if (!empty({{$prop->getPHPVariable()}})) {
-                    {{$val->toCode($prop, $prop->getPHPVariable())}}
-                    if ($return === FALSE) {
-                        throw new \RuntimeException("Validation failed for {{$prop.''}}");
-                    }
+            if (!empty({{$prop->getPHPVariable()}})) {
+            @foreach ($prop->getCallback('Validate') as $val)
+                {{$val->toCode($prop, $prop->getPHPVariable())}}
+                if ($return === FALSE) {
+                    throw new \RuntimeException("Validation failed for {{$prop.''}}");
                 }
             @end
+
+
+                @if ($prop->getAnnotation()->has('Date'))
+                    $_date = \date_create('@' . {{$prop->getPHPVariable()}}->sec);
+                    if (\{{$valns}}\validate({{@$collection->getClass() . "::" . $prop->getPHPName()}}, $_date) === false) {
+                        throw new \RuntimeException("Validation failed for {{$prop.''}}");
+                    }
+                @else
+                    if (\{{$valns}}\validate({{@$collection->getClass() . "::" . $prop->getPHPName()}}, {{$prop->getPHPVariable()}}) === false) {
+                        throw new \RuntimeException("Validation failed for {{$prop.''}}");
+                    }
+                @end
+            }
         @end
 
         return $doc;
@@ -700,49 +878,29 @@ class Mapper
     @end
 }
 
-interface ActiveMongo2Mapped
+class ActiveMongo2Mapped
 {
-    public function {{$instance}}_getClass();
-    public function {{$instance}}_setOriginal(Array $data);
-    public function {{$instance}}_getOriginal();
-}
+    protected $class;
+    protected $data;
 
-@foreach ($collections as $collection)
-/**
- * 
- */
-function define_class_{{sha1($collection->getHash())}}()
-{
-
-    if (!class_exists({{@"\\".$collection->getClass()}}, false)) {
-        require_once __DIR__ . {{@$collection->getPath()}};
-    }
-
-    final class {{$collection->getHash()}} extends \{{$collection->getClass()}} implements ActiveMongo2Mapped
+    public function __construct($name, Array $data)
     {
-        private ${{$instance}}_original;
+        $this->class = $name;
+        $this->data  = $data;
+    }
 
-        public function {{$instance}}_getClass()
-        {
-            return {{@$collection->getClass()}};
-        }
+    public function getClass()
+    {
+        return $this->class;
+    }
 
-        public function {{$instance}}_setOriginal(Array $data)
-        {
-            $this->{{$instance}}_original = $data;
-        }
+    public function getOriginal()
+    {
+        return $this->data;
+    }
 
-        public function {{$instance}}_getOriginal()
-        {
-            return $this->{{$instance}}_original;
-        }
-
-        public function __destruct()
-        {
-            if(is_callable('parent::__destruct')) {
-                parent::__destruct();
-            }
-        }
+    public function {{$instance}}_setOriginal(Array $data)
+    {
+        $this->data = $data;
     }
 }
-@end

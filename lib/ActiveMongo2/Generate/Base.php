@@ -45,6 +45,13 @@ abstract class Base
     protected $file;
     protected $parent;
 
+    public function is($name, $recursive = true)
+    {
+        return $this->annotation->has($name) ||
+            ($recursive && $this->getParent() && $this->getParent()->is($name));
+    }
+
+
     public function isMethod()
     {
         return !empty($this->annotation['class']) && !empty($this->annotation['function']);
@@ -55,6 +62,15 @@ abstract class Base
         $this->parent = $p;
         return $this;
     }
+
+    public function getAnnotationArgs()
+    {
+        if (!$this->annotation->has('Persist') && !$this->annotation->has('Embeddable')) {
+            return false;
+        }
+        return $this->annotation->getOne('Persist') ?: $this->annotation->getOne('Embeddable');
+    }
+
 
     public function getParent()
     {

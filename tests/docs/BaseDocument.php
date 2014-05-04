@@ -7,6 +7,7 @@ namespace ActiveMongo2\Tests\Document;
  *  @SingleCollection
  *  @Sluggable("titulo", "uri")
  *  @Autoincrement
+ *  @Timeable
  */
 abstract class BaseDocument
 {
