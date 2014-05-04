@@ -126,17 +126,6 @@ class FluentQuery implements \IteratorAggregate
         return $this;
     }
     
-    protected function createChild($op)
-    {
-        if ($this->exprValue) {
-            return $this->end()->createChild($op);
-        }
-        $expr = new self($this->col);
-        $expr->parent   = $this;
-        $expr->operator = $op;
-        return $expr;
-    }
-
     public function end()
     {
         if (empty($this->parent)) {
@@ -198,6 +187,9 @@ class FluentQuery implements \IteratorAggregate
         return $this;
     }
 
+    /**
+     *  @AddAlias(f)
+     */
     public function field($name)
     {
         if ($this->exprValue) {
@@ -240,7 +232,13 @@ class FluentQuery implements \IteratorAggregate
 
     protected function withChild($rule, $args)
     {
-        return $this->createchild($rule);
+        if ($this->exprValue) {
+            return $this->end()->withChild($rule, $args);
+        }
+        $expr = new self($this->col);
+        $expr->parent   = $this;
+        $expr->operator = $rule;
+        return $expr;
     }
 
     protected function withTypedValue($rules, $args)
@@ -254,7 +252,7 @@ class FluentQuery implements \IteratorAggregate
 
     protected function withExpr($rule, $args)
     {
-        $not = $this->createChild($rule);
+        $not = $this->withChild($rule, array());
         $not->exprValue = true;
         $not->field = '$expr';
         return $not;
