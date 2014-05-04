@@ -85,8 +85,9 @@ class FluentQuery implements \IteratorAggregate
         ),
         
         'updateWithDefValue' => array(
-            'inc'       => array(1, '$inc'),
-            'unset'     => array(1, '$unset'),
+            'inc'           => array(1, '$inc'),
+            'unset'         => array(1, '$unset'),
+            'unsetField'    => array(1, '$unset'),
         ),
 
         'updateArrayOrScalar' => array(
