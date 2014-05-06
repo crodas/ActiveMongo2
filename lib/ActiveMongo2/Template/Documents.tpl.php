@@ -4,6 +4,7 @@ namespace ActiveMongo2\Generated{{$namespace}};
 
 use ActiveMongo2\Connection;
 use Notoj\Annotation;
+use Notoj;
 
 @set($instance, '_' . uniqid(true))
 

@@ -280,6 +280,9 @@ class FluentQuery implements \IteratorAggregate
         return $this->genericUpdate($rules, $value);
     }
 
+    /**
+     *  @Map($this->operations['updateArrayOrScalar'])
+     */
     protected function updateArrayOrScalar($rule, $args)
     {
         $value = current($args);
