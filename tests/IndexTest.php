@@ -12,14 +12,11 @@ class IndexTest extends \phpunit_framework_testcase
         $conn = getConnection();
         $conn->ensureIndex();
 
-        $info = $conn->command(array('buildinfo'=>true));
-
-
         $indexes = $conn->user_posts->rawCollection()->getIndexInfo();
 
         $this->assertEquals(0, $conn->user_posts->count());
         $this->assertTrue(is_array($indexes));
-        $this->assertEquals(2, count($indexes), 'mongod ' . $info['version']);
+        $this->assertEquals(2, count($indexes));
         $this->assertEquals(true,  $indexes[1]['unique']);
 
         $post = new PostNoTitleDocument;
