@@ -309,7 +309,7 @@ namespace {
             foreach($collections->getIndexes() as $id => $index) {
                 $this->context['id'] = $id;
                 $this->context['index'] = $index;
-                echo "        var_dump(['create_index', ";
+                echo "        /*\n        var_dump(['create_index', ";
                 var_export($index['prop']->getParent()->getName());
                 echo ", ";
                 var_export($index['field']);
@@ -317,7 +317,7 @@ namespace {
                 var_export($index['extra']);
                 echo ", compact('background', 'w'), ";
                 var_export($is_new);
-                echo "]);\n        try {\n            \$col = \$db->selectCollection(";
+                echo "]);\n        */\n        try {\n            \$col = \$db->createCollection(";
                 var_export($index['prop']->getParent()->getName());
                 echo "); \n";
                 if ($is_new) {
