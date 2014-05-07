@@ -315,6 +315,8 @@ namespace {
                 var_export($index['field']);
                 echo ", ";
                 var_export($index['extra']);
+                echo ", compact('background', 'w'), ";
+                var_export($is_new);
                 echo "]);\n        try {\n            \$col = \$db->selectCollection(";
                 var_export($index['prop']->getParent()->getName());
                 echo "); \n";
