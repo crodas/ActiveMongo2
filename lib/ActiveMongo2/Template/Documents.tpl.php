@@ -364,7 +364,7 @@ class Mapper
     {
         @foreach($collections->getIndexes() as $id => $index)
             // {{$id}}
-            $db->selectCollection({{@$index['prop']->getParent()->getName()}})->ensureIndex(
+            $db->createCollection({{@$index['prop']->getParent()->getName()}})->createIndex(
                 {{@$index['field']}},
                 array_merge(compact('background'), {{@$index['extra']}})
             );

@@ -65,7 +65,7 @@ class Connection
         $this->mapper = $config->initialize($this);
         $this->conn   = $conn;
         $this->db     = $conn->selectDB($db);
-        if ($config->hasGenerated())  {
+        if ($config->hasGenerated() || $config->isDevel())  {
             $this->ensureIndex(true);
         }
     }

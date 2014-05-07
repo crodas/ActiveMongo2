@@ -128,6 +128,11 @@ class Configuration
         return new $class($conn);
     }
 
+    public function isDevel()
+    {
+        return $this->devel;
+    }
+
     public function development()
     {
         $this->devel = true;

@@ -306,9 +306,9 @@ namespace {
             foreach($collections->getIndexes() as $id => $index) {
                 $this->context['id'] = $id;
                 $this->context['index'] = $index;
-                echo "            // " . ($id) . "\n            \$db->selectCollection(";
+                echo "            // " . ($id) . "\n            \$db->createCollection(";
                 var_export($index['prop']->getParent()->getName());
-                echo ")->ensureIndex(\n                ";
+                echo ")->createIndex(\n                ";
                 var_export($index['field']);
                 echo ",\n                array_merge(compact('background'), ";
                 var_export($index['extra']);
