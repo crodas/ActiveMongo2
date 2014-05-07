@@ -128,9 +128,9 @@ class Collections extends ArrayObject
 
             if (empty($indexes[$name])) {
                 $indexes[$name] = $index;
-            } else {
-                $indexes[$name]['extra'] = array_merge($indexes[$name]['extra'], $index['extra']);
             }
+
+            $indexes[$name]['extra'] = array_merge($indexes[$name]['extra'], $index['extra']);
         }
 
         return $indexes;
