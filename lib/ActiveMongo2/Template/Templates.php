@@ -326,9 +326,9 @@ namespace {
                     var_export($index['extra']);
                     echo ")\n            );\n";
                 }
-                echo "            var_dump(['create_index', ";
+                echo "            /*\n            var_dump(['create_index', ";
                 var_export($index['prop']->getParent()->getName());
-                echo ", \$return]);\n        } catch (\\Exception \$e) {\n            // delete index and try to rebuild it\n            \$col->deleteIndex(";
+                echo ", \$return]);\n            */\n        } catch (\\Exception \$e) {\n            // delete index and try to rebuild it\n            \$col->deleteIndex(";
                 var_export($index['field']);
                 echo ");\n\n";
                 if ($is_new) {

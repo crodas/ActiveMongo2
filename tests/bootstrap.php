@@ -24,6 +24,7 @@ function getConnection($cache = false)
     $mongo = new MongoClient;
     if (!$first) {
         $mongo->selectDB('activemongo2_tests')->drop();
+        var_dump('delete');
     }
 
     $zconn = new \ActiveMongo2\Connection($conf, $mongo, 'activemongo2_tests');
