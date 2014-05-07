@@ -1,5 +1,4 @@
 <?php
-
 namespace ActiveMongo2\Service;
 
 /**
@@ -7,6 +6,7 @@ namespace ActiveMongo2\Service;
  *      host: {default: 'localhost'},
  *      user: {default: NULL},
  *      pass: {default: NULL},
+ *      replicaSet: {default: NULL},
  *      db: {required: true},
  *      opts: { default:{}, type: 'hash'},
  *      path: { require: true, type: array_dir},
@@ -17,7 +17,17 @@ namespace ActiveMongo2\Service;
  */
 function activemongo2_service($config)
 {
-    $conn = new \MongoClient($config['host'], $config['opts']);
+    if (!$config['replicaSet']){
+        $conn = new \MongoClient($config['host'], $config['opts']);
+    }
+    else {    
+        $conn = new \MongoClient( $config[ 'host' ], array(
+            "replicaSet" => $config['replicaSet'] 
+        ), $config[ 'opts' ] );
+        $conn->setReadPreference( \MongoClient::RP_SECONDARY );
+        \MongoCursor::$slaveOkay = true;
+    }
+
     $db   = $conn->selectDB($config['db']);
     if ($config['user'] || $config['pass']) {
         $db->authenticate($config['user'], $config['pass']);
@@ -38,4 +48,3 @@ function activemongo2_service($config)
     $mongo = new \ActiveMongo2\Connection($conf, $conn, $db);
     return $mongo;
 }
-

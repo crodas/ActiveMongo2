@@ -2,8 +2,10 @@
 
 namespace ActiveMongo2\Generated{{$namespace}};
 
+use MongoClient;
 use ActiveMongo2\Connection;
 use Notoj\Annotation;
+use Notoj;
 
 @set($instance, '_' . uniqid(true))
 
@@ -361,12 +363,21 @@ class Mapper
 
     public function ensureIndex($db, $background = false)
     {
+        @set($is_new, version_compare(MongoClient::VERSION, '1.5.0', '>'))
+
         @foreach($collections->getIndexes() as $id => $index)
             // {{$id}}
-            $db->selectCollection({{@$index['prop']->getParent()->getName()}})->ensureIndex(
+            @if ($is_new)
+            $db->createCollection({{@$index['prop']->getParent()->getName()}})->createIndex(
                 {{@$index['field']}},
                 array_merge(compact('background'), {{@$index['extra']}})
             );
+            @else
+            $db->createCollection({{@$index['prop']->getParent()->getName()}})->ensureIndex(
+                {{@$index['field']}},
+                array_merge(compact('background'), {{@$index['extra']}})
+            );
+            @end
         @end
     }
 

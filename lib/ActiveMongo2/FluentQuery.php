@@ -47,6 +47,58 @@ class FluentQuery implements \IteratorAggregate
     protected $update;
     protected $field;
 
+    protected $operations = array(
+        'withChild' => array(
+            'addNor' => '$nor',
+            'addAnd' => '$and',
+            'addOr'  => '$or',
+        ),
+        'withExpr' => array(
+            'not' =>  '$not',
+            'pullExpr' => '$pull',
+        ),
+        'withValue' => array(
+            'in'    => '$in',
+            'all'   => '$all',
+            'notIn' => '$nin',
+            'notEquals'         => '$ne',
+            'greaterThan'       => '$gt',
+            'greaterOrEqThan'   => '$gte',
+            'greaterThanOrEq'   => '$gte',
+            'lowerThan'         => '$le',
+            'lowerOrEqThan'     => '$lte',
+            'lowerThanOrEq'     => '$lte',
+            'range'     => array('$gte', '$lte'),
+            'equals'    => '$eq',
+            'eq'        => '$eq',
+        ),
+        'withTypedValue' => array(
+            'type'      => array('int', '$type'),
+            'exists'    => array('boolean', '$exists'),
+            'mod'       => array('int', '$mod'),
+            'size'      => array('int', '$size'),
+
+        ),
+
+        'updateWithValue' => array(
+            'set'       => '$set',
+            'rename'    => '$rename',
+        ),
+        
+        'updateWithDefValue' => array(
+            'inc'           => array(1, '$inc'),
+            'unset'         => array(1, '$unset'),
+            'unsetField'    => array(1, '$unset'),
+            'pop'           => array(1, '$pop'),
+        ),
+
+        'updateArrayOrScalar' => array(
+            'addToSet'  => '$addToSet', 
+            'push'      => '$push',
+            'pull'      => array('$pull', '$pullAll'),
+        ),
+    );
+
     public function __construct(Collection $col)
     {
         $this->col = $col;
@@ -74,46 +126,12 @@ class FluentQuery implements \IteratorAggregate
         return $this;
     }
     
-    protected function createChild($op)
-    {
-        if ($this->exprValue) {
-            return $this->end()->createChild($op);
-        }
-        $expr = new self($this->col);
-        $expr->parent   = $this;
-        $expr->operator = $op;
-        return $expr;
-    }
-
     public function end()
     {
         if (empty($this->parent)) {
             throw new \Exception("You cannot call to end()");
         }
         return $this->parent->finalizeChild($this);
-    }
-
-    public function addNor()
-    {
-        return $this->createchild('$nor');
-    }
-
-    public function addAnd()
-    {
-        return $this->createchild('$and');
-    }
-
-    public function addOr()
-    {
-        return $this->createchild('$or');
-    }
-
-    public function not()
-    {
-        $not = $this->createChild('$not');
-        $not->exprValue = true;
-        $not->field = '$expr';
-        return $not;
     }
 
     public function getQuery()
@@ -155,6 +173,12 @@ class FluentQuery implements \IteratorAggregate
         if (empty($this->field)) {
             throw new \RuntimeException("You need to call ->field first");
         }
+
+        if ($op == '$eq') {
+            $this->query[$this->field] = $value;
+            return $this;
+        } 
+        
         if (empty($this->query[$this->field])) {
             $this->query[$this->field] = array();
         }
@@ -163,142 +187,9 @@ class FluentQuery implements \IteratorAggregate
         return $this;
     }
 
-    public function in(Array $values)
-    {
-        return $this->genericQuery('$in', $values);
-    }
-
-    public function all(Array $values)
-    {
-        return $this->genericQuery('$all', $values);
-    }
-
-    public function notIn(Array $value)
-    {
-        return $this->genericQuery('$nin', $value);
-    }
-
-    public function eq($value)
-    {
-        return $this->equals($value);
-    }
-
-    public function equals($value)
-    {
-        $this->assertField();
-        if ($this->exprValue) {
-            throw new \Exception("Invalid call, please use ->notEquals(\$value) instead");
-        }
-        $this->query[$this->field] = $value;
-        return $this;
-    }
-
-    public function notEquals($value)
-    {
-        return $this->genericQuery('$ne', $value);
-    }
-
-    public function greaterThan($value)
-    {
-        return $this->genericQuery('$gt', $value);
-    }
-
-    public function greaterThanOrEq($value)
-    {
-        return $this->genericQuery('$gte', $value);
-    }
-
-    public function lowerThan($value)
-    {
-        return $this->genericQuery('$lt', $value);
-    }
-
-    public function lowerThanOrEq($value)
-    {
-        return $this->genericQuery('$lte', $value);
-    }
-
-    public function range($min, $max)
-    {
-        $this->genericQuery('$gte', $min);
-        $this->genericQuery('$lte', $max);
-        return $this;
-    }
-
-    public function exists($exists = true)
-    {
-        return $this->genericQuery('$exists', (bool)$value);
-    }
-
-    public function mod($value)
-    {
-        return $this->genericQuery('$mod', $value+0);
-    }
-
-    public function type($value)
-    {
-        return $this->genericQuery('$type', $value+0);
-    }
-
-    public function size($value)
-    {
-        return $this->genericQuery('$size', (int)$value);
-    }
-
-    public function set($value)
-    {
-        return $this->genericUpdate('$set', $value);
-    }
-
-    public function inc($value = 1)
-    {
-        return $this->genericUpdate('$inc', $value+0);
-    }
-
-    public function rename($name)
-    {
-        return $this->genericUpdate('$rename', $name);
-    }
-
-    public function addToSet($value)
-    {
-        if (is_array($value)) {
-            $value = array('$each' => array_values($value));
-        }
-        return $this->genericUpdate('$addToSet', $value);
-    }
-
-    public function push($value)
-    {
-        if (is_array($value)) {
-            $value = array('$each' => array_values($value));
-        }
-        return $this->genericUpdate('$push', $value);
-    }
-
-    public function pull($value)
-    {
-        return $this->genericUpdate(is_array($value) ? '$pullAll' : '$pull', $value);
-    }
-
-    public function pullExpr()
-    {
-        $not = $this->createChild('$pull');
-        $not->exprValue = true;
-        $not->field = '$expr';
-        return $not;
-    }
-
-    public function pop($end = true)
-    {
-        return $this->genericUpdate('$pop', $end ? 1 : -1);
-    }
-
-    public function unsetField()
-    {
-        return $this->genericUpdate('$unset', 1);
-    }
-
+    /**
+     *  @AddAlias(f)
+     */
     public function field($name)
     {
         if ($this->exprValue) {
@@ -337,6 +228,87 @@ class FluentQuery implements \IteratorAggregate
         }
 
         return $this->col->find($this->query);
+    }
+
+    protected function withChild($rule, $args)
+    {
+        if ($this->exprValue) {
+            return $this->end()->withChild($rule, $args);
+        }
+        $expr = new self($this->col);
+        $expr->parent   = $this;
+        $expr->operator = $rule;
+        return $expr;
+    }
+
+    protected function withTypedValue($rules, $args)
+    {
+        $value = current($args);
+        settype($value, $rules[0]);
+        $this->genericQuery($rules[1], $value);
+        return $this;
+    }
+
+
+    protected function withExpr($rule, $args)
+    {
+        $not = $this->withChild($rule, array());
+        $not->exprValue = true;
+        $not->field = '$expr';
+        return $not;
+    }
+
+    protected function withValue($rules, $args)
+    {
+        foreach ((array)$rules as $i => $rule) {
+            $this->genericQuery($rule, $args[$i]);
+        }
+
+        return $this;
+    }
+
+    protected function updateWithDefValue($rules, $args)
+    {
+        $value = current($args);
+        $value = $value ? $value : $rules[0];
+        return $this->genericUpdate($rules[1], $value);
+    }
+
+    protected function updateWithValue($rules, $args)
+    {
+        $value = current($args);
+        return $this->genericUpdate($rules, $value);
+    }
+
+    /**
+     *  @Map($this->operations['updateArrayOrScalar'])
+     */
+    protected function updateArrayOrScalar($rule, $args)
+    {
+        $value = current($args);
+        if (is_array($value)) {
+            if (is_array($rule)) {
+                $rule = $rule[1];
+            } else {
+                $value = array('$each' => array_values($value));
+            }
+        }
+        $rule = current((array)$rule);
+        return $this->genericUpdate($rule, $value);
+    }
+
+    public function __call($name, $args)
+    {
+        $name = strtolower($name);
+        foreach ($this->operations as $rule => $rules) {
+            foreach ($rules as $method => $operation) {
+                if (strtolower($method) == $name) {
+                    return $this->$rule($operation, $args);
+                }
+            }
+        }
+
+        throw new \RuntimeException("Invalid call to $name");
     }
 
     public function first()

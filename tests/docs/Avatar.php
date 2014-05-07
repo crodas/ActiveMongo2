@@ -16,4 +16,7 @@ class Files
 
     /** @Stream */
     public $file;
+
+    /** @String (@xss) */
+    public $type;
 }
