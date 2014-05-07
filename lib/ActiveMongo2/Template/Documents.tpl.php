@@ -380,8 +380,8 @@ class Mapper
                 {{@$index['field']}},
                 array_merge(compact('w'), {{@$index['extra']}})
             );
-            var_dump(['create_index', {{@$index['prop']->getParent()->getName()}}, $return]);
             @end
+            var_dump(['create_index', {{@$index['prop']->getParent()->getName()}}, $return]);
         } catch (\Exception $e) {
             // delete index and try to rebuild it
             $col->deleteIndex({{@$index['field']}});
