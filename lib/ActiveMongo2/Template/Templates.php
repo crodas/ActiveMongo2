@@ -237,7 +237,7 @@ namespace {
             if ($return) {
                 ob_start();
             }
-            echo "<?php\n\nnamespace ActiveMongo2\\Generated" . ($namespace) . ";\n\nuse ActiveMongo2\\Connection;\nuse Notoj\\Annotation;\nuse Notoj;\n\n";
+            echo "<?php\n\nnamespace ActiveMongo2\\Generated" . ($namespace) . ";\n\nuse MongoClient;\nuse ActiveMongo2\\Connection;\nuse Notoj\\Annotation;\nuse Notoj;\n\n";
             $instance = '_' . uniqid(true);
             $this->context['instance'] = $instance;
             echo "\nclass Mapper\n{\n    protected \$mapper = " . (var_export($collections->byName(), true)) . ";\n    protected \$class_mapper = " . (var_export($collections->byClass(), true)) . ";\n    protected static \$loaded = array();\n    protected \$connection;\n\n    public function __construct(Connection \$conn)\n    {\n        \$this->connection = \$conn;\n        spl_autoload_register(array(\$this, '__autoloader'));\n    }\n\n    protected function array_diff(Array \$arr1, Array \$arr2)\n    {\n        \$diff = array();\n        foreach (\$arr1 as \$key => \$value) {\n            if (empty(\$arr2[\$key]) || \$arr2[\$key] !== \$arr1[\$key]) {\n                \$diff[\$key] = \$value;\n            }\n        }\n        return \$diff;\n    }\n\n    public function getCollections()\n    {\n        return array(\n";
@@ -302,17 +302,23 @@ namespace {
                 }
                 echo "                break;\n";
             }
-            echo "        }\n\n        if (empty(\$class)) {\n            throw new \\RuntimeException(\"Cannot get class for collection {\$col}\");\n        }\n\n        return \$class;\n    }\n\n    public function get_class(\$object)\n    { \n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = \$object->getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n\n        return \$class;\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(\$this->get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$db, \$background = false)\n    {\n";
+            echo "        }\n\n        if (empty(\$class)) {\n            throw new \\RuntimeException(\"Cannot get class for collection {\$col}\");\n        }\n\n        return \$class;\n    }\n\n    public function get_class(\$object)\n    { \n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = \$object->getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n\n        return \$class;\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(\$this->get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$db, \$background = false)\n    {\n        \$is_new = version_compare(MongoClient::VERSION, '1.5.0', '>');\n\n";
             foreach($collections->getIndexes() as $id => $index) {
                 $this->context['id'] = $id;
                 $this->context['index'] = $index;
-                echo "            // " . ($id) . "\n            \$db->createCollection(";
+                echo "            // " . ($id) . "\n            if (\$is_new) {\n                die('here');\n            \$db->createCollection(";
                 var_export($index['prop']->getParent()->getName());
                 echo ")->createIndex(\n                ";
                 var_export($index['field']);
                 echo ",\n                array_merge(compact('background'), ";
                 var_export($index['extra']);
-                echo ")\n            );\n";
+                echo ")\n            );\n            } else {\n            \$db->createCollection(";
+                var_export($index['prop']->getParent()->getName());
+                echo ")->ensureIndex(\n                ";
+                var_export($index['field']);
+                echo ",\n                array_merge(compact('background'), ";
+                var_export($index['extra']);
+                echo ")\n            );\n            }\n";
             }
             echo "    }\n\n";
             foreach($collections as $collection) {
