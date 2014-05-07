@@ -309,25 +309,41 @@ namespace {
             foreach($collections->getIndexes() as $id => $index) {
                 $this->context['id'] = $id;
                 $this->context['index'] = $index;
-                echo "            // " . ($id) . "\n";
+                echo "        try {\n            \$col = \$db->createCollection(";
+                var_export($index['prop']->getParent()->getName());
+                echo "); \n";
                 if ($is_new) {
-                    echo "            \$db->createCollection(";
-                    var_export($index['prop']->getParent()->getName());
-                    echo ")->createIndex(\n                ";
+                    echo "            \$col->createIndex(\n                ";
                     var_export($index['field']);
                     echo ",\n                array_merge(compact('background'), ";
                     var_export($index['extra']);
                     echo ")\n            );\n";
                 }
                 else {
-                    echo "            \$db->createCollection(";
-                    var_export($index['prop']->getParent()->getName());
-                    echo ")->ensureIndex(\n                ";
+                    echo "            \$col->ensureIndex(\n                ";
                     var_export($index['field']);
                     echo ",\n                array_merge(compact('background'), ";
                     var_export($index['extra']);
                     echo ")\n            );\n";
                 }
+                echo "        } catch (\\MongoResultException \$e) {\n            // delete index and try to rebuild it\n            \$col->deleteIndex(";
+                var_export($index['field']);
+                echo ");\n\n";
+                if ($is_new) {
+                    echo "            \$col->createIndex(\n                ";
+                    var_export($index['field']);
+                    echo ",\n                array_merge(compact('background'), ";
+                    var_export($index['extra']);
+                    echo ")\n            );\n";
+                }
+                else {
+                    echo "            \$col->ensureIndex(\n                ";
+                    var_export($index['field']);
+                    echo ",\n                array_merge(compact('background'), ";
+                    var_export($index['extra']);
+                    echo ")\n            );\n";
+                }
+                echo "        }\n";
             }
             echo "    }\n\n";
             foreach($collections as $collection) {

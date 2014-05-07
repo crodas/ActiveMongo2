@@ -366,18 +366,35 @@ class Mapper
         @set($is_new, version_compare(MongoClient::VERSION, '1.5.0', '>'))
 
         @foreach($collections->getIndexes() as $id => $index)
-            // {{$id}}
+        try {
+            $col = $db->createCollection({{@$index['prop']->getParent()->getName()}}); 
             @if ($is_new)
-            $db->createCollection({{@$index['prop']->getParent()->getName()}})->createIndex(
+            $col->createIndex(
                 {{@$index['field']}},
                 array_merge(compact('background'), {{@$index['extra']}})
             );
             @else
-            $db->createCollection({{@$index['prop']->getParent()->getName()}})->ensureIndex(
+            $col->ensureIndex(
                 {{@$index['field']}},
                 array_merge(compact('background'), {{@$index['extra']}})
             );
             @end
+        } catch (\MongoResultException $e) {
+            // delete index and try to rebuild it
+            $col->deleteIndex({{@$index['field']}});
+
+            @if ($is_new)
+            $col->createIndex(
+                {{@$index['field']}},
+                array_merge(compact('background'), {{@$index['extra']}})
+            );
+            @else
+            $col->ensureIndex(
+                {{@$index['field']}},
+                array_merge(compact('background'), {{@$index['extra']}})
+            );
+            @end
+        }
         @end
     }
 

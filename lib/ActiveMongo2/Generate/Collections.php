@@ -112,24 +112,28 @@ class Collections extends ArrayObject
 
     public function getIndexes()
     {
+        $indexes = array();
+
         foreach ($this->getAllPropertiesWithAnnotation('Unique,Index') as $prop) {
             $order = strtolower(current((array)$prop[0]['args'])) == 'desc' ? -1 : 1;
             if ($prop[1]->getAnnotation()->has('Geo')) {
                 $order = '2dsphere';
             }
+            $index = array();
+            $name  = $prop[1]->getName() . '_' .  $order;
+
             $index['prop']  = $prop[1];
             $index['field'] = array($prop[1]->getName() =>  $order);
+            $index['extra'] = array();
+
             if ($prop[1]->getAnnotation()->has('Unique')) {
                 $index['extra']  = array("unique" => true);
-            } else {
-                $index['extra']  = array();
             }
-            $name = $prop[1]->getName() . '_' .  $order;
 
             if (empty($indexes[$name])) {
                 $indexes[$name] = $index;
             }
-
+            
             $indexes[$name]['extra'] = array_merge($indexes[$name]['extra'], $index['extra']);
         }
 

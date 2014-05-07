@@ -22,11 +22,11 @@ function getConnection($cache = false)
     }
 
     $mongo = new MongoClient;
-    $zconn = new \ActiveMongo2\Connection($conf, $mongo, 'activemongo2_tests');
-
     if (!$first) {
-        $zconn->dropDatabase();
+        $mongo->selectDB('activemongo2_tests')->drop();
     }
+
+    $zconn = new \ActiveMongo2\Connection($conf, $mongo, 'activemongo2_tests');
 
     $first = true;
 
