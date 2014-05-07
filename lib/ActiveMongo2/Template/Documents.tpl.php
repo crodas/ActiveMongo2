@@ -367,7 +367,7 @@ class Mapper
 
         @foreach($collections->getIndexes() as $id => $index)
         try {
-            $col = $db->createCollection({{@$index['prop']->getParent()->getName()}}); 
+            $col = $db->selectCollection({{@$index['prop']->getParent()->getName()}}); 
             @if ($is_new)
             $col->createIndex(
                 {{@$index['field']}},
