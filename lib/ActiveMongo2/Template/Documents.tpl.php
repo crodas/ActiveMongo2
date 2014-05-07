@@ -363,6 +363,8 @@ class Mapper
 
     public function ensureIndex($db, $background = false)
     {
+        $w = $background ? 0 : 1;
+
         @set($is_new, version_compare(MongoClient::VERSION, '1.5.0', '>'))
 
         @foreach($collections->getIndexes() as $id => $index)
@@ -371,27 +373,27 @@ class Mapper
             @if ($is_new)
             $col->createIndex(
                 {{@$index['field']}},
-                array_merge(compact('background'), {{@$index['extra']}})
+                array_merge(compact('w'), {{@$index['extra']}})
             );
             @else
             $col->ensureIndex(
                 {{@$index['field']}},
-                array_merge(compact('background'), {{@$index['extra']}})
+                array_merge(compact('w'), {{@$index['extra']}})
             );
             @end
-        } catch (\MongoResultException $e) {
+        } catch (\Exception $e) {
             // delete index and try to rebuild it
             $col->deleteIndex({{@$index['field']}});
 
             @if ($is_new)
             $col->createIndex(
                 {{@$index['field']}},
-                array_merge(compact('background'), {{@$index['extra']}})
+                array_merge(compact('w'), {{@$index['extra']}})
             );
             @else
             $col->ensureIndex(
                 {{@$index['field']}},
-                array_merge(compact('background'), {{@$index['extra']}})
+                array_merge(compact('w'), {{@$index['extra']}})
             );
             @end
         }

@@ -302,7 +302,7 @@ namespace {
                 }
                 echo "                break;\n";
             }
-            echo "        }\n\n        if (empty(\$class)) {\n            throw new \\RuntimeException(\"Cannot get class for collection {\$col}\");\n        }\n\n        return \$class;\n    }\n\n    public function get_class(\$object)\n    { \n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = \$object->getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n\n        return \$class;\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(\$this->get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$db, \$background = false)\n    {\n";
+            echo "        }\n\n        if (empty(\$class)) {\n            throw new \\RuntimeException(\"Cannot get class for collection {\$col}\");\n        }\n\n        return \$class;\n    }\n\n    public function get_class(\$object)\n    { \n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = \$object->getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n\n        return \$class;\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(\$this->get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$db, \$background = false)\n    {\n        \$w = \$background ? 0 : 1;\n\n";
             $is_new = version_compare(MongoClient::VERSION, '1.5.0', '>');
             $this->context['is_new'] = $is_new;
             echo "\n";
@@ -315,14 +315,14 @@ namespace {
                 if ($is_new) {
                     echo "            \$col->createIndex(\n                ";
                     var_export($index['field']);
-                    echo ",\n                array_merge(compact('background'), ";
+                    echo ",\n                array_merge(compact('w'), ";
                     var_export($index['extra']);
                     echo ")\n            );\n";
                 }
                 else {
                     echo "            \$col->ensureIndex(\n                ";
                     var_export($index['field']);
-                    echo ",\n                array_merge(compact('background'), ";
+                    echo ",\n                array_merge(compact('w'), ";
                     var_export($index['extra']);
                     echo ")\n            );\n";
                 }
@@ -332,14 +332,14 @@ namespace {
                 if ($is_new) {
                     echo "            \$col->createIndex(\n                ";
                     var_export($index['field']);
-                    echo ",\n                array_merge(compact('background'), ";
+                    echo ",\n                array_merge(compact('w'), ";
                     var_export($index['extra']);
                     echo ")\n            );\n";
                 }
                 else {
                     echo "            \$col->ensureIndex(\n                ";
                     var_export($index['field']);
-                    echo ",\n                array_merge(compact('background'), ";
+                    echo ",\n                array_merge(compact('w'), ";
                     var_export($index['extra']);
                     echo ")\n            );\n";
                 }
