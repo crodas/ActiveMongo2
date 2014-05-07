@@ -309,7 +309,7 @@ namespace {
             foreach($collections->getIndexes() as $id => $index) {
                 $this->context['id'] = $id;
                 $this->context['index'] = $index;
-                echo "        try {\n            \$col = \$db->createCollection(";
+                echo "        try {\n            \$col = \$db->selectCollection(";
                 var_export($index['prop']->getParent()->getName());
                 echo "); \n";
                 if ($is_new) {
