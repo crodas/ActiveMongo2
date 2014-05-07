@@ -368,6 +368,7 @@ class Mapper
         @set($is_new, version_compare(MongoClient::VERSION, '1.5.0', '>'))
 
         @foreach($collections->getIndexes() as $id => $index)
+        var_dump(['create_index', {{@$index['prop']->getParent()->getName()}}, {{@$index['field']}}, {{@$index['extra']}}]);
         try {
             $col = $db->selectCollection({{@$index['prop']->getParent()->getName()}}); 
             @if ($is_new)

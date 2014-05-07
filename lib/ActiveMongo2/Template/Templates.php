@@ -309,7 +309,13 @@ namespace {
             foreach($collections->getIndexes() as $id => $index) {
                 $this->context['id'] = $id;
                 $this->context['index'] = $index;
-                echo "        try {\n            \$col = \$db->selectCollection(";
+                echo "        var_dump(['create_index', ";
+                var_export($index['prop']->getParent()->getName());
+                echo ", ";
+                var_export($index['field']);
+                echo ", ";
+                var_export($index['extra']);
+                echo "]);\n        try {\n            \$col = \$db->selectCollection(";
                 var_export($index['prop']->getParent()->getName());
                 echo "); \n";
                 if ($is_new) {
@@ -326,7 +332,7 @@ namespace {
                     var_export($index['extra']);
                     echo ")\n            );\n";
                 }
-                echo "        } catch (\\MongoResultException \$e) {\n            // delete index and try to rebuild it\n            \$col->deleteIndex(";
+                echo "        } catch (\\Exception \$e) {\n            // delete index and try to rebuild it\n            \$col->deleteIndex(";
                 var_export($index['field']);
                 echo ");\n\n";
                 if ($is_new) {
