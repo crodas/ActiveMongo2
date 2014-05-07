@@ -302,23 +302,32 @@ namespace {
                 }
                 echo "                break;\n";
             }
-            echo "        }\n\n        if (empty(\$class)) {\n            throw new \\RuntimeException(\"Cannot get class for collection {\$col}\");\n        }\n\n        return \$class;\n    }\n\n    public function get_class(\$object)\n    { \n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = \$object->getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n\n        return \$class;\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(\$this->get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$db, \$background = false)\n    {\n        \$is_new = version_compare(MongoClient::VERSION, '1.5.0', '>');\n\n";
+            echo "        }\n\n        if (empty(\$class)) {\n            throw new \\RuntimeException(\"Cannot get class for collection {\$col}\");\n        }\n\n        return \$class;\n    }\n\n    public function get_class(\$object)\n    { \n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = \$object->getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n\n        return \$class;\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(\$this->get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$db, \$background = false)\n    {\n";
+            $is_new = version_compare(MongoClient::VERSION, '1.5.0', '>');
+            $this->context['is_new'] = $is_new;
+            echo "\n";
             foreach($collections->getIndexes() as $id => $index) {
                 $this->context['id'] = $id;
                 $this->context['index'] = $index;
-                echo "            // " . ($id) . "\n            if (\$is_new) {\n                die('here');\n            \$db->createCollection(";
-                var_export($index['prop']->getParent()->getName());
-                echo ")->createIndex(\n                ";
-                var_export($index['field']);
-                echo ",\n                array_merge(compact('background'), ";
-                var_export($index['extra']);
-                echo ")\n            );\n            } else {\n            \$db->createCollection(";
-                var_export($index['prop']->getParent()->getName());
-                echo ")->ensureIndex(\n                ";
-                var_export($index['field']);
-                echo ",\n                array_merge(compact('background'), ";
-                var_export($index['extra']);
-                echo ")\n            );\n            }\n";
+                echo "            // " . ($id) . "\n";
+                if ($is_new) {
+                    echo "            \$db->createCollection(";
+                    var_export($index['prop']->getParent()->getName());
+                    echo ")->createIndex(\n                ";
+                    var_export($index['field']);
+                    echo ",\n                array_merge(compact('background'), ";
+                    var_export($index['extra']);
+                    echo ")\n            );\n";
+                }
+                else {
+                    echo "            \$db->createCollection(";
+                    var_export($index['prop']->getParent()->getName());
+                    echo ")->ensureIndex(\n                ";
+                    var_export($index['field']);
+                    echo ",\n                array_merge(compact('background'), ";
+                    var_export($index['extra']);
+                    echo ")\n            );\n";
+                }
             }
             echo "    }\n\n";
             foreach($collections as $collection) {

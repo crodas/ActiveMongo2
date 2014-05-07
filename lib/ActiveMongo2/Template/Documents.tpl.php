@@ -363,21 +363,21 @@ class Mapper
 
     public function ensureIndex($db, $background = false)
     {
-        $is_new = version_compare(MongoClient::VERSION, '1.5.0', '>');
+        @set($is_new, version_compare(MongoClient::VERSION, '1.5.0', '>'))
 
         @foreach($collections->getIndexes() as $id => $index)
             // {{$id}}
-            if ($is_new) {
+            @if ($is_new)
             $db->createCollection({{@$index['prop']->getParent()->getName()}})->createIndex(
                 {{@$index['field']}},
                 array_merge(compact('background'), {{@$index['extra']}})
             );
-            } else {
+            @else
             $db->createCollection({{@$index['prop']->getParent()->getName()}})->ensureIndex(
                 {{@$index['field']}},
                 array_merge(compact('background'), {{@$index['extra']}})
             );
-            }
+            @end
         @end
     }
 
