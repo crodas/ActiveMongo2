@@ -110,32 +110,27 @@ class Collections extends ArrayObject
         return $this;
     }
 
-    protected function getUniqueIndexes()
-    {
-        $indexes = array();
-        foreach ($this->getAllPropertiesWithAnnotation('Unique') as $prop) {
-            $index['prop']  = $prop[1];
-            $index['field'] = array($prop[1]->getName() => 1);
-            $index['extra']  = array("unique" => true);
-            $indexes[] = $index;
-        }
-
-        return $indexes;
-    }
-
     public function getIndexes()
     {
-        $indexes = $this->getUniqueIndexes();
-
-        foreach ($this->getAllPropertiesWithAnnotation('Index') as $prop) {
+        foreach ($this->getAllPropertiesWithAnnotation('Unique,Index') as $prop) {
             $order = strtolower(current((array)$prop[0]['args'])) == 'desc' ? -1 : 1;
             if ($prop[1]->getAnnotation()->has('Geo')) {
                 $order = '2dsphere';
             }
             $index['prop']  = $prop[1];
             $index['field'] = array($prop[1]->getName() =>  $order);
-            $index['extra']  = array();
-            $indexes[] = $index;
+            if ($prop[1]->getAnnotation()->has('Unique')) {
+                $index['extra']  = array("unique" => true);
+            } else {
+                $index['extra']  = array();
+            }
+            $name = $prop[1]->getName() . '_' .  $order;
+
+            if (empty($indexes[$name])) {
+                $indexes[$name] = $index;
+            } else {
+                $indexes[$name]['extra'] = array_merge($indexes[$name]['extra'], $index['extra']);
+            }
         }
 
         return $indexes;
