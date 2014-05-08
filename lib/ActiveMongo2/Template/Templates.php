@@ -302,7 +302,7 @@ namespace {
                 }
                 echo "                break;\n";
             }
-            echo "        }\n\n        if (empty(\$class)) {\n            throw new \\RuntimeException(\"Cannot get class for collection {\$col}\");\n        }\n\n        return \$class;\n    }\n\n    public function get_class(\$object)\n    { \n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = \$object->getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n\n        return \$class;\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(\$this->get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$db, \$background = false)\n    {\n        \$w = \$background ? 0 : 1;\n\n";
+            echo "        }\n\n        if (empty(\$class)) {\n            throw new \\RuntimeException(\"Cannot get class for collection {\$col}\");\n        }\n\n        return \$class;\n    }\n\n    public function get_class(\$object)\n    { \n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = \$object->getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n\n        return \$class;\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(\$this->get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$db)\n    {\n\n";
             $is_new = version_compare(MongoClient::VERSION, '1.5.0', '>');
             $this->context['is_new'] = $is_new;
             echo "\n";
@@ -315,35 +315,37 @@ namespace {
                 if ($is_new) {
                     echo "            \$return = \$col->createIndex(\n                ";
                     var_export($index['field']);
-                    echo ",\n                array_merge(compact('w'), ";
+                    echo ",\n                ";
                     var_export($index['extra']);
-                    echo ")\n            );\n";
+                    echo "\n            );\n";
                 }
                 else {
                     echo "            \$return = \$col->ensureIndex(\n                ";
                     var_export($index['field']);
-                    echo ",\n                array_merge(compact('w'), ";
+                    echo ",\n                ";
                     var_export($index['extra']);
-                    echo ")\n            );\n";
+                    echo "\n            );\n";
                 }
-                echo "            /*\n            var_dump(['create_index', ";
-                var_export($index['prop']->getParent()->getName());
-                echo ", \$return]);\n            */\n        } catch (\\Exception \$e) {\n            // delete index and try to rebuild it\n            \$col->deleteIndex(";
+                echo "        } catch (\\Exception \$e) {\n            var_dump(";
+                var_export($index['field']);
+                echo ", ";
+                var_export($index['extra']);
+                echo ", \$col->getIndexInfo());\n            die(\"failed due to \" . \$e);\n            // delete index and try to rebuild it\n            \$col->deleteIndex(";
                 var_export($index['field']);
                 echo ");\n\n";
                 if ($is_new) {
                     echo "            \$col->createIndex(\n                ";
                     var_export($index['field']);
-                    echo ",\n                array_merge(compact('w'), ";
+                    echo ",\n                ";
                     var_export($index['extra']);
-                    echo ")\n            );\n";
+                    echo "\n            );\n";
                 }
                 else {
                     echo "            \$col->ensureIndex(\n                ";
                     var_export($index['field']);
-                    echo ",\n                array_merge(compact('w'), ";
+                    echo ",\n                ";
                     var_export($index['extra']);
-                    echo ")\n            );\n";
+                    echo "\n            );\n";
                 }
                 echo "        }\n";
             }

@@ -361,9 +361,8 @@ class Mapper
         return $this->$method($document, $key, $value);
     }
 
-    public function ensureIndex($db, $background = false)
+    public function ensureIndex($db)
     {
-        $w = $background ? 0 : 1;
 
         @set($is_new, version_compare(MongoClient::VERSION, '1.5.0', '>'))
 
@@ -373,28 +372,27 @@ class Mapper
             @if ($is_new)
             $return = $col->createIndex(
                 {{@$index['field']}},
-                array_merge(compact('w'), {{@$index['extra']}})
+                {{@$index['extra']}}
             );
             @else
             $return = $col->ensureIndex(
                 {{@$index['field']}},
-                array_merge(compact('w'), {{@$index['extra']}})
+                {{@$index['extra']}}
             );
             @end
         } catch (\Exception $e) {
-            die("failed due to " . $e);
             // delete index and try to rebuild it
             $col->deleteIndex({{@$index['field']}});
 
             @if ($is_new)
             $col->createIndex(
                 {{@$index['field']}},
-                array_merge(compact('w'), {{@$index['extra']}})
+                {{@$index['extra']}}
             );
             @else
             $col->ensureIndex(
                 {{@$index['field']}},
-                array_merge(compact('w'), {{@$index['extra']}})
+                {{@$index['extra']}}
             );
             @end
         }

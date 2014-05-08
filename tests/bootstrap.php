@@ -23,8 +23,9 @@ function getConnection($cache = false)
 
     $mongo = new MongoClient;
     if (!$first) {
-        $mongo->selectDB('activemongo2_tests')->drop();
-        $info = $conn->command(array('buildinfo'=>true));
+        $db = $mongo->selectDB('activemongo2_tests');
+        $db->drop();
+        $info = $db->command(array('buildinfo'=>true));
         echo "MongoDB: {$info['version']}\n";
     }
 
