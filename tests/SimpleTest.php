@@ -36,7 +36,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertTrue($tmp->runEvent);
 
         $find = $conn->getCollection('user')
-            ->find(array('_id' => $user->userid));
+            ->find($user->userid.'');
 
         $this->assertEquals(1, $find->count());
 
