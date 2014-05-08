@@ -124,7 +124,7 @@ class Collections extends ArrayObject
 
             $index['prop']  = $prop[1];
             $index['field'] = array($prop[1]->getName() =>  $order);
-            $index['extra'] = array();
+            $index['extra'] = array('w' => 1);
 
             if ($prop[1]->getAnnotation()->has('Unique')) {
                 $index['extra']  = array("unique" => true);
