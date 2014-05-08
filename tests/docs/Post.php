@@ -24,6 +24,9 @@ class PostDocument extends Middle
     /** @Reference("user") @Deferred */
     public $author_ref;
 
+    /** @FileUpload(Path => ../tmp-files) */
+    public $www_file;
+
     /** @Array @Limit(-3) */
     public $array = array();
 

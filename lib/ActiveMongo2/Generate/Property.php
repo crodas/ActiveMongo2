@@ -134,7 +134,7 @@ class Property extends Base
 
     public function getType()
     {
-        return $this->type;
+        return $this->type ?: 'String';
     }
 
     public function getRawName() 
