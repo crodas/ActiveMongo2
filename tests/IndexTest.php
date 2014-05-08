@@ -14,6 +14,8 @@ class IndexTest extends \phpunit_framework_testcase
 
         $indexes = $conn->user_posts->rawCollection()->getIndexInfo();
 
+        sleep(5);
+
         $this->assertEquals(0, $conn->user_posts->count());
         $this->assertTrue(is_array($indexes));
         $this->assertEquals(2, count($indexes));
