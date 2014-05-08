@@ -3,20 +3,20 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "421b82e1bb90dce0902243ec6eb20a37",
+    "hash": "5fd4b27a02be614d774e94a8f73f5202",
     "packages": [
         {
             "name": "crodas/class-info",
-            "version": "dev-master",
+            "version": "v0.1.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/ClassInfo.git",
-                "reference": "c7aba60aa2f91cb8b552d4be6ed72b49f8988427"
+                "reference": "7c90ac240dc582b997f64860d5a5cb4721a89985"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/ClassInfo/zipball/c7aba60aa2f91cb8b552d4be6ed72b49f8988427",
-                "reference": "c7aba60aa2f91cb8b552d4be6ed72b49f8988427",
+                "url": "https://api.github.com/repos/crodas/ClassInfo/zipball/7c90ac240dc582b997f64860d5a5cb4721a89985",
+                "reference": "7c90ac240dc582b997f64860d5a5cb4721a89985",
                 "shasum": ""
             },
             "type": "library",
@@ -36,7 +36,7 @@
                 }
             ],
             "description": "Get classes and functions defined in a given file",
-            "time": "2014-01-06 23:40:59"
+            "time": "2014-01-06 23:40:49"
         },
         {
             "name": "crodas/cli",
@@ -77,16 +77,16 @@
         },
         {
             "name": "crodas/notoj",
-            "version": "v0.1.14",
+            "version": "v0.1.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/Notoj.git",
-                "reference": "2c5fc37462251eb47ab60ad387a554903af34ee6"
+                "reference": "243a7d4b5bf9aa76a3dfe5dc577a24302c85062f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/Notoj/zipball/2c5fc37462251eb47ab60ad387a554903af34ee6",
-                "reference": "2c5fc37462251eb47ab60ad387a554903af34ee6",
+                "url": "https://api.github.com/repos/crodas/Notoj/zipball/243a7d4b5bf9aa76a3dfe5dc577a24302c85062f",
+                "reference": "243a7d4b5bf9aa76a3dfe5dc577a24302c85062f",
                 "shasum": ""
             },
             "require": {
@@ -110,7 +110,7 @@
                 }
             ],
             "description": "Annotation parser. Uses reflection and provides cache out of the box.",
-            "time": "2014-04-25 23:30:37"
+            "time": "2014-05-06 20:16:12"
         },
         {
             "name": "crodas/path",
@@ -147,16 +147,16 @@
         },
         {
             "name": "crodas/service-provider",
-            "version": "dev-master",
+            "version": "v0.1.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/ServiceProvider.git",
-                "reference": "5722f9f95b67a153a7bad16da536678edec0e016"
+                "reference": "54bb69289d1ca9596b93781a607f4a1c8ec41904"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/ServiceProvider/zipball/5722f9f95b67a153a7bad16da536678edec0e016",
-                "reference": "5722f9f95b67a153a7bad16da536678edec0e016",
+                "url": "https://api.github.com/repos/crodas/ServiceProvider/zipball/54bb69289d1ca9596b93781a607f4a1c8ec41904",
+                "reference": "54bb69289d1ca9596b93781a607f4a1c8ec41904",
                 "shasum": ""
             },
             "require": {
@@ -184,7 +184,7 @@
                 }
             ],
             "description": "Little configuration manager and dependency injection",
-            "time": "2014-03-31 15:19:11"
+            "time": "2014-03-31 15:19:06"
         },
         {
             "name": "crodas/simple-view-engine",
@@ -226,16 +226,16 @@
         },
         {
             "name": "crodas/validator",
-            "version": "dev-master",
+            "version": "v0.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/Validator.git",
-                "reference": "b1bd65268acb9cec30fb002ccef201aeef6820fa"
+                "reference": "c621358234ad37992979f9aec0e50a033457da18"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/Validator/zipball/b1bd65268acb9cec30fb002ccef201aeef6820fa",
-                "reference": "b1bd65268acb9cec30fb002ccef201aeef6820fa",
+                "url": "https://api.github.com/repos/crodas/Validator/zipball/c621358234ad37992979f9aec0e50a033457da18",
+                "reference": "c621358234ad37992979f9aec0e50a033457da18",
                 "shasum": ""
             },
             "require": {
@@ -262,7 +262,7 @@
                 }
             ],
             "description": "Validation library",
-            "time": "2014-04-06 16:19:29"
+            "time": "2014-04-06 16:19:14"
         },
         {
             "name": "crodas/watch-files",
@@ -302,16 +302,16 @@
         },
         {
             "name": "seld/jsonlint",
-            "version": "dev-master",
+            "version": "1.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/jsonlint.git",
-                "reference": "fc3a80f048972dfc50b3411b364a797330c8a2eb"
+                "reference": "7cd4c4965e17e6e4c07f26d566619a4c76f8c672"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/jsonlint/zipball/fc3a80f048972dfc50b3411b364a797330c8a2eb",
-                "reference": "fc3a80f048972dfc50b3411b364a797330c8a2eb",
+                "url": "https://api.github.com/repos/Seldaek/jsonlint/zipball/7cd4c4965e17e6e4c07f26d566619a4c76f8c672",
+                "reference": "7cd4c4965e17e6e4c07f26d566619a4c76f8c672",
                 "shasum": ""
             },
             "require": {
@@ -345,38 +345,36 @@
                 "parser",
                 "validator"
             ],
-            "time": "2014-03-19 15:35:12"
+            "time": "2013-11-04 15:41:11"
         },
         {
             "name": "symfony/console",
-            "version": "dev-master",
+            "version": "v2.4.4",
             "target-dir": "Symfony/Component/Console",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console.git",
-                "reference": "b95e9cb9a73988853d51d6e35d18d032b8760877"
+                "reference": "2e452005b1e1d003d23702d227e23614679eb5ca"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Console/zipball/b95e9cb9a73988853d51d6e35d18d032b8760877",
-                "reference": "b95e9cb9a73988853d51d6e35d18d032b8760877",
+                "url": "https://api.github.com/repos/symfony/Console/zipball/2e452005b1e1d003d23702d227e23614679eb5ca",
+                "reference": "2e452005b1e1d003d23702d227e23614679eb5ca",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
             "require-dev": {
-                "psr/log": "~1.0",
                 "symfony/event-dispatcher": "~2.1"
             },
             "suggest": {
-                "psr/log": "For using the console logger",
                 "symfony/event-dispatcher": ""
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.5-dev"
+                    "dev-master": "2.4-dev"
                 }
             },
             "autoload": {
@@ -402,21 +400,21 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "http://symfony.com",
-            "time": "2014-04-18 20:54:24"
+            "time": "2014-04-27 13:34:57"
         },
         {
             "name": "symfony/finder",
-            "version": "dev-master",
+            "version": "v2.4.4",
             "target-dir": "Symfony/Component/Finder",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Finder.git",
-                "reference": "b1c92e9798e819dfd437f57b3b39fac7d35df8a6"
+                "reference": "25e1e7d5e7376f8a92ae3b1d714d956edf33a730"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Finder/zipball/b1c92e9798e819dfd437f57b3b39fac7d35df8a6",
-                "reference": "b1c92e9798e819dfd437f57b3b39fac7d35df8a6",
+                "url": "https://api.github.com/repos/symfony/Finder/zipball/25e1e7d5e7376f8a92ae3b1d714d956edf33a730",
+                "reference": "25e1e7d5e7376f8a92ae3b1d714d956edf33a730",
                 "shasum": ""
             },
             "require": {
@@ -425,7 +423,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.5-dev"
+                    "dev-master": "2.4-dev"
                 }
             },
             "autoload": {
@@ -451,21 +449,21 @@
             ],
             "description": "Symfony Finder Component",
             "homepage": "http://symfony.com",
-            "time": "2014-04-18 21:02:40"
+            "time": "2014-04-27 13:34:57"
         },
         {
             "name": "symfony/yaml",
-            "version": "dev-master",
+            "version": "v2.4.4",
             "target-dir": "Symfony/Component/Yaml",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "e9525fc511a51e7bfa214c6c420515c580fda35a"
+                "reference": "65539ecde838f9c0d18b006b2101e3deb4b5c9ff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/e9525fc511a51e7bfa214c6c420515c580fda35a",
-                "reference": "e9525fc511a51e7bfa214c6c420515c580fda35a",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/65539ecde838f9c0d18b006b2101e3deb4b5c9ff",
+                "reference": "65539ecde838f9c0d18b006b2101e3deb4b5c9ff",
                 "shasum": ""
             },
             "require": {
@@ -474,7 +472,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.5-dev"
+                    "dev-master": "2.4-dev"
                 }
             },
             "autoload": {
@@ -500,7 +498,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "http://symfony.com",
-            "time": "2014-04-18 20:40:13"
+            "time": "2014-04-18 20:37:09"
         }
     ],
     "packages-dev": [
@@ -509,7 +507,7 @@
     "aliases": [
 
     ],
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "stability-flags": [
 
     ],

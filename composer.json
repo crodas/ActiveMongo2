@@ -3,7 +3,7 @@
     "description": "Mongo abstraction",
     "require": {
         "crodas/service-provider": ">=0.1.12",
-        "crodas/notoj": ">=0.1.14",
+        "crodas/notoj": ">=0.1.15",
         "crodas/simple-view-engine": "~0.1",
         "crodas/watch-files": "~0.1",
         "crodas/path": "~0.1",
@@ -11,14 +11,13 @@
         "crodas/validator": ">=0.1.1"
     },
     "license": "BSD-4-Clause",
-    "version": "v0.1.10",
+    "version": "v0.1.11",
     "authors": [
         {
             "name": "César D. Rodas",
             "email": "crodas@php.net"
         }
     ],
-    "minimum-stability": "dev",
     "autoload": {
         "psr-0": {
             "ActiveMongo2": "lib/"
