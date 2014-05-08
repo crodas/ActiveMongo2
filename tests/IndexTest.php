@@ -12,8 +12,6 @@ class IndexTest extends \phpunit_framework_testcase
         $conn = getConnection();
         $conn->ensureIndex();
 
-        sleep(5);
-
         $indexes = $conn->user_posts->rawCollection()->getIndexInfo();
 
 

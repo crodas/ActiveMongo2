@@ -326,11 +326,7 @@ namespace {
                     var_export($index['extra']);
                     echo "\n            );\n";
                 }
-                echo "        } catch (\\Exception \$e) {\n            var_dump(";
-                var_export($index['field']);
-                echo ", ";
-                var_export($index['extra']);
-                echo ", \$col->getIndexInfo());\n            die(\"failed due to \" . \$e);\n            // delete index and try to rebuild it\n            \$col->deleteIndex(";
+                echo "        } catch (\\Exception \$e) {\n            // delete index and try to rebuild it\n            \$col->deleteIndex(";
                 var_export($index['field']);
                 echo ");\n\n";
                 if ($is_new) {

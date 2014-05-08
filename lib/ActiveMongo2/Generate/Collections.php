@@ -127,7 +127,7 @@ class Collections extends ArrayObject
             $index['extra'] = array('w' => 1);
 
             if ($prop[1]->getAnnotation()->has('Unique')) {
-                $index['extra']  = array("unique" => true);
+                $index['extra']  = array("unique" => true, 'w' => 1);
             }
 
             if (empty($indexes[$name])) {
