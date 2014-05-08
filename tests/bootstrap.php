@@ -25,8 +25,6 @@ function getConnection($cache = false)
     if (!$first) {
         $db = $mongo->selectDB('activemongo2_tests');
         $db->drop();
-        $info = $db->command(array('buildinfo'=>true));
-        echo "MongoDB: {$info['version']}\n";
     }
 
     $zconn = new \ActiveMongo2\Connection($conf, $mongo, 'activemongo2_tests');

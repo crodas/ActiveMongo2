@@ -98,8 +98,26 @@ class Mapper
         return $data;
     }
 
-    public function onQuery($table, Array &$query)
+    public function onQuery($table, &$query)
     {
+        if (!is_array($query)) {
+            if ($query instanceof \MongoId) {
+                $query = ['_id' => $query];
+            } else if (is_scalar($query)) {
+                if (is_numeric($query)) {
+                    $query = ['_id' => [
+                        '$in' => [$query . '', 0+$query],
+                    ]];
+                } else if (preg_match('/^[0-9a-f]$/i', $query)) {
+                    $query = ['_id' => [
+                        '$in' => [$query, new \MongoId($query)],
+                    ]];
+                } else {
+                    $query = ['_id' => $query];
+                }
+            }
+        }
+
         switch ($table) {
         @foreach($collections as $collection)
             @if ($collection->is('SingleCollection') && $collection->getParent()) {
