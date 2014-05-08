@@ -120,7 +120,7 @@ class Collections extends ArrayObject
                 $order = '2dsphere';
             }
             $index = array();
-            $name  = $prop[1]->getName() . '_' .  $order;
+            $name  = $prop[1]->getParent()->getName() . "_" . $prop[1]->getName() . '_' .  $order;
 
             $index['prop']  = $prop[1];
             $index['field'] = array($prop[1]->getName() =>  $order);

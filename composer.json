@@ -18,7 +18,6 @@
             "email": "crodas@php.net"
         }
     ],
-    "minimum-stability": "dev",
     "autoload": {
         "psr-0": {
             "ActiveMongo2": "lib/"
