@@ -63,6 +63,32 @@ class GridFsTest extends \phpunit_framework_testcase
         $conn->save($post);
     }
 
+    /** @expectedException RuntimeException */
+    public function testFileStoreInvalidType()
+    {
+        $conn = getConnection(true);
+        $user = new UserDocument;
+        $user->username = "crodas:" . uniqid();
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->title = "foobar";
+        $post->author_id = $user->userid;
+        $post->author = $user;
+        $post->www_file = 'foobar';
+
+        file_put_contents($tmp = __DIR__ . "/foobar.png", "foo-bar");
+
+        $_FILES['foobar'] = array(
+            'tmp_name' => $tmp,
+            'name'  => basename($tmp),
+            'type'  => 'image',
+        );
+
+        $conn->save($post);
+    }
+
+
 
     public function testFileStore()
     {
@@ -82,6 +108,7 @@ class GridFsTest extends \phpunit_framework_testcase
         $_FILES['foobar'] = array(
             'tmp_name' => $tmp,
             'name'  => basename($tmp),
+            'type'  => 'plain/text',
         );
 
         $conn->save($post);

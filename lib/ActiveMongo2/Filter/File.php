@@ -36,17 +36,19 @@
 */
 namespace ActiveMongo2\Filter;
 
+use RuntimeException;
+
 function _mkdir($dir)
 {
     if (!is_dir($dir)) {
         if (!@mkdir($dir)) {
-            throw new \RuntimeException("Cannot create directory {$dir}");
+            throw new RuntimeException("Cannot create directory {$dir}");
         }
     }
 }
 
 /**
- *  @Validate(FileUpload)
+ *  @Validate(FileUpload, Required => [Path])
  *  @Type File
  */
 function __filter_upload(&$upload, $args, $conn, $params, $mapper)
@@ -56,7 +58,7 @@ function __filter_upload(&$upload, $args, $conn, $params, $mapper)
 
     if (!is_array($upload)) {
         if (empty($_FILES[$upload])) {
-            throw new \RuntimeException("Undefined variable \$_FILE['$upload']");
+            throw new RuntimeException("Undefined variable \$_FILE['$upload']");
         }
         $upload = $_FILES[$upload];
     }
@@ -66,8 +68,13 @@ function __filter_upload(&$upload, $args, $conn, $params, $mapper)
     }
 
     if (empty($upload['tmp_name']) || empty($upload['name'])) {
-        throw new \RuntimeException("Invalid \$_FILES object");
+        throw new RuntimeException("Invalid \$_FILES object");
     }
+
+    if (!empty($params['Validate']) && !preg_match("@{$params['Validate']}@", $upload['type'])) {
+        throw new RuntimeException("{$upload['type']} is an unexpected file type");
+    }
+
 
     $part = explode(".", $upload['name']);
     $ext  = "";
@@ -84,14 +91,16 @@ function __filter_upload(&$upload, $args, $conn, $params, $mapper)
     $realpath = $dir . "/{$path}/" . substr($value, 4);
     if (!move_uploaded_file($upload['tmp_name'], $realpath)) {
         if (!copy($upload['tmp_name'], $realpath) || !unlink($upload['tmp_name'])) {
-            throw new \RuntimeException("Cannot move to the final destination");
+            throw new RuntimeException("Cannot move to the final destination");
         }
     }
 
     $upload = array(
-        'realpath' => realpath($realpath),
-        'relpath' => $path . $value,
-        'stored'  => true,
+        'realpath'  => realpath($realpath),
+        'relpath'   => $path . $value,
+        'type'      => $upload['type'],
+        'name'      => basename($upload['name']), 
+        'stored'    => true,
     );
 
     return true;
