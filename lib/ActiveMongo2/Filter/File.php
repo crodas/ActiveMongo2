@@ -49,7 +49,7 @@ function _mkdir($dir)
 
 /**
  *  @Validate(FileUpload, Required => [Path])
- *  @Type File
+ *  @DataType File
  */
 function __filter_upload(&$upload, $args, $conn, $params, $mapper)
 {
