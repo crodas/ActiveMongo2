@@ -240,7 +240,7 @@ namespace {
             echo "<?php\n\nnamespace ActiveMongo2\\Generated" . ($namespace) . ";\n\nuse MongoClient;\nuse ActiveMongo2\\Connection;\nuse Notoj\\Annotation;\nuse Notoj;\n\n";
             $instance = '_' . uniqid(true);
             $this->context['instance'] = $instance;
-            echo "\nclass Mapper\n{\n    protected \$mapper = " . (var_export($collections->byName(), true)) . ";\n    protected \$class_mapper = " . (var_export($collections->byClass(), true)) . ";\n    protected static \$loaded = array();\n    protected \$connection;\n\n    public function __construct(Connection \$conn)\n    {\n        \$this->connection = \$conn;\n        spl_autoload_register(array(\$this, '__autoloader'));\n    }\n\n    public function getRelativePath(\$dir)\n    {\n        if (\$dir[0] == '/') {\n            return \$dir;\n        }\n        return __DIR__ . \"/\" . \$dir;\n    }\n\n    protected function array_diff(Array \$arr1, Array \$arr2)\n    {\n        \$diff = array();\n        foreach (\$arr1 as \$key => \$value) {\n            if (empty(\$arr2[\$key]) || \$arr2[\$key] !== \$arr1[\$key]) {\n                \$diff[\$key] = \$value;\n            }\n        }\n        return \$diff;\n    }\n\n    public function getCollections()\n    {\n        return array(\n";
+            echo "\nclass Mapper\n{\n    protected \$mapper = " . (var_export($collections->byName(), true)) . ";\n    protected \$class_mapper = " . (var_export($collections->byClass(), true)) . ";\n    protected static \$loaded = array();\n    protected \$connection;\n\n    public function __construct(Connection \$conn)\n    {\n        \$this->connection = \$conn;\n        spl_autoload_register(array(\$this, '__autoloader'));\n    }\n\n    public function getRelativePath(\$object, \$dir)\n    {\n        if (\$dir[0] == '/') {\n            return \$dir;\n        }\n        \$info = \$this->mapClass(\$object);\n        return __DIR__ . \$info['dir'] . \"/\" . \$dir;\n    }\n\n    protected function array_diff(Array \$arr1, Array \$arr2)\n    {\n        \$diff = array();\n        foreach (\$arr1 as \$key => \$value) {\n            if (empty(\$arr2[\$key]) || \$arr2[\$key] !== \$arr1[\$key]) {\n                \$diff[\$key] = \$value;\n            }\n        }\n        return \$diff;\n    }\n\n    public function getCollections()\n    {\n        return array(\n";
             foreach($collections as $collection) {
                 $this->context['collection'] = $collection;
                 if ($collection->getName()) {
@@ -821,7 +821,9 @@ namespace {
 
                     echo "            " . ($var) . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
                     var_export($args);
-                    echo ", // annotation arguments\n            \$this // mapper instance\n        );\n";
+                    echo ", // annotation arguments\n            \$this, // mapper instance\n            ";
+                    var_export($prop->getClass());
+                    echo "\n        );\n";
                 }
                 else {
                     echo "        \$reflection = new \\ReflectionMethod(";
@@ -830,13 +832,17 @@ namespace {
                     var_export($self->getMethod());
                     echo ");\n        \$reflection->setAccessible(true);\n        \$return = \$reflection->invoke(\n            " . ($var) . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
                     var_export($args);
-                    echo ", // annotation arguments\n            \$this // mapper instance\n        );\n";
+                    echo ", // annotation arguments\n            \$this, // mapper instance\n            ";
+                    var_export($prop->getClass());
+                    echo "\n        );\n";
                 }
             }
             else {
                 echo "    \$return = \\" . ($self->getFunction()) . "(\n        " . ($var) . ", // document variable \n        \$args,  // external arguments (defined at run time)\n        \$this->connection, // connection\n        ";
                 var_export($args);
-                echo ", // annotation arguments\n        \$this // mapper instance\n    );\n";
+                echo ", // annotation arguments\n        \$this, // mapper instance\n        ";
+                var_export($prop->getClass());
+                echo "\n    );\n";
             }
 
 
