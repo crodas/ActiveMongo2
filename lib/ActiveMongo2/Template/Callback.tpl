@@ -29,7 +29,8 @@ $args = empty($args) ? [] : $args;
             $args,  // external arguments (defined at run time)
             $this->connection, // connection
             {{@$args}}, // annotation arguments
-            $this // mapper instance
+            $this, // mapper instance
+            {{@$prop->getClass()}}
         );
     @else
         $reflection = new \ReflectionMethod({{@"\\". $self->getClass()}}, {{@$self->getMethod()}});
@@ -39,7 +40,8 @@ $args = empty($args) ? [] : $args;
             $args,  // external arguments (defined at run time)
             $this->connection, // connection
             {{@$args}}, // annotation arguments
-            $this // mapper instance
+            $this, // mapper instance
+            {{@$prop->getClass()}}
         );
     @end
 @else
@@ -48,6 +50,7 @@ $args = empty($args) ? [] : $args;
         $args,  // external arguments (defined at run time)
         $this->connection, // connection
         {{@$args}}, // annotation arguments
-        $this // mapper instance
+        $this, // mapper instance
+        {{@$prop->getClass()}}
     );
 @end

@@ -51,9 +51,9 @@ function _mkdir($dir)
  *  @Validate(FileUpload, Required => [Path])
  *  @DataType File
  */
-function __filter_upload(&$upload, $args, $conn, $params, $mapper)
+function __filter_upload(&$upload, $args, $conn, $params, $mapper, $class)
 {
-    $dir = $mapper->getRelativePath($params['Path']);
+    $dir = $mapper->getRelativePath($class, $params['Path']);
     _mkdir($dir);
 
     if (!is_array($upload)) {

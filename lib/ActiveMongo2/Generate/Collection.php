@@ -99,6 +99,7 @@ class Collection extends Base
     {
         return [
             'class' => $this->getClass(),
+            'dir'   => dirname($this->getPath()),
             'file'  => $this->getPath(),
             'name'  => $this->getName(),
             'zname' => $this->getSafeName(),

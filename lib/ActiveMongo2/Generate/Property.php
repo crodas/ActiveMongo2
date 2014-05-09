@@ -55,6 +55,11 @@ class Property extends Base
         }
     }
 
+    public function getCollection()
+    {
+        return $this->collection;
+    }
+
     public function __construct(Collection $col, Annotation $prop)
     {
         $this->collection = $col;
