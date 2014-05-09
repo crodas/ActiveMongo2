@@ -22,6 +22,14 @@ class Mapper
         spl_autoload_register(array($this, '__autoloader'));
     }
 
+    public function getRelativePath($dir)
+    {
+        if ($dir[0] == '/') {
+            return $dir;
+        }
+        return __DIR__ . "/" . $dir;
+    }
+
     protected function array_diff(Array $arr1, Array $arr2)
     {
         $diff = array();

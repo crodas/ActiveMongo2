@@ -156,6 +156,7 @@ class SimpleTest extends \phpunit_framework_testcase
     public function testReferenceOne()
     {
         $conn = getConnection();
+        $conn->getCollection('post')->drop();
         $user = new UserDocument;
         $user->username = "crodas";
 
