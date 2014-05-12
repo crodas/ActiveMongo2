@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "5afb67e781e969e7c9d9332e633dd35b",
+    "hash": "abbf0b2b5e1607af03474be1f67e1b20",
     "packages": [
         {
             "name": "crodas/class-info",
@@ -146,55 +146,22 @@
             "time": "2014-05-06 20:16:12"
         },
         {
-            "name": "crodas/path",
-            "version": "v0.1.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/crodas/Path.git",
-                "reference": "15ef24c4b2b81d8e5148406012af0a633126b3d5"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/crodas/Path/zipball/15ef24c4b2b81d8e5148406012af0a633126b3d5",
-                "reference": "15ef24c4b2b81d8e5148406012af0a633126b3d5",
-                "shasum": ""
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "crodas": "lib/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-4-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "César D. Rodas",
-                    "email": "crodas@php.net"
-                }
-            ],
-            "description": "Library to manipulate paths",
-            "time": "2013-10-23 16:48:11"
-        },
-        {
             "name": "crodas/service-provider",
-            "version": "v0.1.15",
+            "version": "v0.1.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/ServiceProvider.git",
-                "reference": "54bb69289d1ca9596b93781a607f4a1c8ec41904"
+                "reference": "6dd4653f354efabeee980672bd295b4e131e60f3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/ServiceProvider/zipball/54bb69289d1ca9596b93781a607f4a1c8ec41904",
-                "reference": "54bb69289d1ca9596b93781a607f4a1c8ec41904",
+                "url": "https://api.github.com/repos/crodas/ServiceProvider/zipball/6dd4653f354efabeee980672bd295b4e131e60f3",
+                "reference": "6dd4653f354efabeee980672bd295b4e131e60f3",
                 "shasum": ""
             },
             "require": {
+                "crodas/file-util": "~0.1",
                 "crodas/notoj": "~0.1",
-                "crodas/path": "~0.1",
                 "crodas/simple-view-engine": "~0.1",
                 "crodas/watch-files": "~0.1",
                 "seld/jsonlint": "*",
@@ -217,7 +184,7 @@
                 }
             ],
             "description": "Little configuration manager and dependency injection",
-            "time": "2014-03-31 15:19:06"
+            "time": "2014-05-12 07:16:05"
         },
         {
             "name": "crodas/simple-view-engine",
@@ -259,24 +226,24 @@
         },
         {
             "name": "crodas/validator",
-            "version": "v0.1.1",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/Validator.git",
-                "reference": "c621358234ad37992979f9aec0e50a033457da18"
+                "reference": "c26c04e4484c0d50ff2a0fb94dd712baf83a3ad8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/Validator/zipball/c621358234ad37992979f9aec0e50a033457da18",
-                "reference": "c621358234ad37992979f9aec0e50a033457da18",
+                "url": "https://api.github.com/repos/crodas/Validator/zipball/c26c04e4484c0d50ff2a0fb94dd712baf83a3ad8",
+                "reference": "c26c04e4484c0d50ff2a0fb94dd712baf83a3ad8",
                 "shasum": ""
             },
             "require": {
-                "crodas/cli": "*",
+                "crodas/cli": "~0.1",
+                "crodas/file-util": ">=0.1.7",
                 "crodas/notoj": "~0.1",
-                "crodas/path": "*",
-                "crodas/simple-view-engine": "*",
-                "crodas/watch-files": "*"
+                "crodas/simple-view-engine": "~0.1",
+                "crodas/watch-files": "~0.1"
             },
             "type": "library",
             "autoload": {
@@ -295,24 +262,24 @@
                 }
             ],
             "description": "Validation library",
-            "time": "2014-04-06 16:19:14"
+            "time": "2014-05-12 06:39:45"
         },
         {
             "name": "crodas/watch-files",
-            "version": "v0.1.4",
+            "version": "v0.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/WatchFiles.git",
-                "reference": "b045dc0ea74791e815c2f7a0b114474131865892"
+                "reference": "9ac4b327fcd0610f147816e97ae592612855cd26"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/WatchFiles/zipball/b045dc0ea74791e815c2f7a0b114474131865892",
-                "reference": "b045dc0ea74791e815c2f7a0b114474131865892",
+                "url": "https://api.github.com/repos/crodas/WatchFiles/zipball/9ac4b327fcd0610f147816e97ae592612855cd26",
+                "reference": "9ac4b327fcd0610f147816e97ae592612855cd26",
                 "shasum": ""
             },
             "require": {
-                "crodas/path": "*"
+                "crodas/file-util": ">=0.1.7"
             },
             "type": "library",
             "autoload": {
@@ -331,7 +298,7 @@
                 }
             ],
             "description": "Watch files and directories for changes",
-            "time": "2013-11-02 05:36:42"
+            "time": "2014-05-12 06:38:45"
         },
         {
             "name": "seld/jsonlint",
