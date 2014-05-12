@@ -93,7 +93,7 @@ function __filter_upload(&$upload, $args, $conn, $params, $mapper, $class)
 
     $upload = array(
         'realpath'  => realpath($realpath),
-        'relpath'   => $path . $value,
+        'relpath'   => $path . '/' . substr($value, 4),
         'type'      => $upload['type'],
         'name'      => basename($upload['name']), 
         'stored'    => true,
