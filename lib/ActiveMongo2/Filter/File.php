@@ -63,12 +63,8 @@ function __filter_upload(&$upload, $args, $conn, $params, $mapper, $class)
         $upload = $_FILES[$upload];
     }
 
-    if (!empty($upload['stored'])) {
+    if (!empty($upload['stored']) || empty($upload['tmp_name']) || empty($upload['name'])) {
         return true;
-    }
-
-    if (empty($upload['tmp_name']) || empty($upload['name'])) {
-        throw new RuntimeException("Invalid \$_FILES object");
     }
 
     if (!empty($params['Validate']) && !preg_match("@{$params['Validate']}@", $upload['type'])) {
