@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "5fd4b27a02be614d774e94a8f73f5202",
+    "hash": "5afb67e781e969e7c9d9332e633dd35b",
     "packages": [
         {
             "name": "crodas/class-info",
@@ -74,6 +74,39 @@
             ],
             "description": "Simple and silly abstraction on top of symfony/console",
             "time": "2013-12-30 05:06:25"
+        },
+        {
+            "name": "crodas/file-util",
+            "version": "v0.1.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/crodas/FileUtils.git",
+                "reference": "7252d879e1cb8d9752d2715badf8f6a76c3e240a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/crodas/FileUtils/zipball/7252d879e1cb8d9752d2715badf8f6a76c3e240a",
+                "reference": "7252d879e1cb8d9752d2715badf8f6a76c3e240a",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "crodas": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-4-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "César D. Rodas",
+                    "email": "crodas@php.net"
+                }
+            ],
+            "description": "Useful libraries to manipulate files",
+            "time": "2014-05-12 05:54:40"
         },
         {
             "name": "crodas/notoj",

@@ -6,7 +6,7 @@
         "crodas/notoj": ">=0.1.15",
         "crodas/simple-view-engine": "~0.1",
         "crodas/watch-files": "~0.1",
-        "crodas/path": "~0.1",
+        "crodas/file-util": ">=0.1.7",
         "crodas/cli": "~0.1",
         "crodas/validator": ">=0.1.1"
     },
