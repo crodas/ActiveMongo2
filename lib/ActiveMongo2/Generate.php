@@ -39,8 +39,8 @@ namespace ActiveMongo2;
 use Notoj;
 use WatchFiles\Watch;
 use crodas\SimpleView\FixCode;
-use crodas\File;
-use crodas\Path;
+use crodas\FileUtil\File;
+use crodas\FileUtil\Path;
 
 class Generate
 {
