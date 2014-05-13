@@ -47,6 +47,16 @@ class FluentQuery implements \IteratorAggregate
     protected $update;
     protected $field;
 
+    protected $map = array(
+        '>' => '$gt',
+        '>=' => '$gte',
+        '=' => '$eq',
+        '==' => '$eq',
+        '!=' => '$ne',
+        '<' => '$lt',
+        '<=' => '$lte',
+    );
+
     protected $operations = array(
         'withChild' => array(
             'addNor' => '$nor',
@@ -132,6 +142,14 @@ class FluentQuery implements \IteratorAggregate
             throw new \Exception("You cannot call to end()");
         }
         return $this->parent->finalizeChild($this);
+    }
+
+    public function where($name, $op, $value)
+    {
+        $this->field($name);
+        $this->genericQuery($this->map[$op], $value);
+        if ($name == 'password') throw new \RuntimeException;
+        return $this;
     }
 
     public function getQuery()
