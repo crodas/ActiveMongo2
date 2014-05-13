@@ -41,10 +41,12 @@ use ArrayObject;
 class Collection extends ArrayObject
 {
     protected $data;
+    protected $instance;
 
-    public function __construct(Array $data)
+    public function __construct(Array $data, $instance)
     {
-        $this->data = $data;
+        $this->data     = $data;
+        $this->instance = $instance;
         parent::__construct($data);
     }
 
@@ -66,6 +68,13 @@ class Collection extends ArrayObject
             }
         }
 
+        if (empty($properties) && $search == 'Id') {
+            return array(new Property([
+                'property' => '_id',
+                'type'     => '_id',
+            ], $this->instance));
+        }
+
         return $properties;
     } 
 
@@ -77,6 +86,13 @@ class Collection extends ArrayObject
                 $properties[] = $prop;
                 break;
             }
+        }
+
+        if (empty($properties) && $search == '_id') {
+            return array(new Property([
+                'property' => '_id',
+                'type'     => '_id',
+            ], $this->instance));
         }
 
         return $properties;

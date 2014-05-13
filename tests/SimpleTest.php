@@ -454,4 +454,18 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($reflection->property('_id')->get($tmp), $tmp->userid);
     }
 
+
+    public function testNoId()
+    {
+        $conn = getConnection();
+        $reflection = $conn->getReflection('NoId');
+
+        $foo = new NoID;
+        $foo->name = "foobar";
+        $conn->save($foo);
+
+        $id1 = $reflection->property('_id')->get($foo);
+        $id2 = $reflection->property('@Id')->get($foo);
+        $this->assertEquals($id1, $id2);
+    }
 }

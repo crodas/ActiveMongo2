@@ -218,7 +218,7 @@ class Mapper
             $class = $this->mapper[$name]['class'];
         }
 
-        return new \ActiveMongo2\Reflection\Collection($this->{"reflect_" . sha1($class)}());
+        return new \ActiveMongo2\Reflection\Collection($this->{"reflect_" . sha1($class)}(), $this);
     }
 
     public function getReference($object, Array $extra = array())
@@ -466,6 +466,11 @@ class Mapper
             @end
             break;
         @end
+        case '_id': 
+            //fallback to get the object ID when it is not part of the object (rare case)
+            if (!empty($object->{{$instance}}) && $object->{{$instance}} instanceof ActiveMongo2Mapped) {
+                return $object->{{$instance}}->getOriginal()['_id'];
+            }
         default:
             throw new \RuntimeException("Missing property {$name}");
         }
