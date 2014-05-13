@@ -117,7 +117,7 @@ class Mapper
                     $query = ['_id' => [
                         '$in' => [$query . '', 0+$query],
                     ]];
-                } else if (preg_match('/^[0-9a-f]$/i', $query)) {
+                } else if (preg_match('/^[0-9a-f]{24}$/i', $query)) {
                     $query = ['_id' => [
                         '$in' => [$query, new \MongoId($query)],
                     ]];
