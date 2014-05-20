@@ -8,13 +8,14 @@ namespace ActiveMongo2\Tests\Document;
  *  @Sluggable("titulo", "uri")
  *  @Autoincrement
  *  @Timeable
+ *  @Autocomplete
  */
 abstract class BaseDocument
 {
     /** @Id */
     public $id;
 
-    /** @Required @String @Field("titulo") */
+    /** @Required @String @Field("titulo") @Autocomplete */
     public $title;
 
     /** @String @Unique */

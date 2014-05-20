@@ -129,11 +129,17 @@ class Mapper
 
         switch ($table) {
         @foreach($collections as $collection)
-            @if ($collection->is('SingleCollection') && $collection->getParent()) {
             case {{@$collection->getClass()}}:
-                $query[{{@$collection->getDiscriminator()}}] = {{@$collection->getClass()}};
+                @if ($collection->is('SingleCollection') && $collection->getParent()) {
+                    $query[{{@$collection->getDiscriminator()}}] = {{@$collection->getClass()}};
+                @end
+                @foreach ($collection->getMethodsByAnnotation('onQuery') as $method)
+                    {{$method->toCode($collection, '$query')}}
+                @end
+                @foreach ($collection->getPlugins('onQuery') as $plugin)
+                    {{$plugin->toCode($collection, '$query')}}
+                @end
             break;
-            @end
         @end
         }
     }
@@ -472,7 +478,11 @@ class Mapper
                 return $object->{{$instance}}->getOriginal()['_id'];
             }
         default:
-            throw new \RuntimeException("Missing property {$name}");
+            @if ($collection->getParent()) 
+                return $this->get_property_{{sha1($collection->getParent())}}($object, $name);
+            @else
+                throw new \RuntimeException("Missing property {$name}");
+            @end
         }
 
         return $return;
@@ -756,9 +766,14 @@ class Mapper
         @end
 
         @foreach ($collection->getProperties() as $prop)
-            @if ($prop->isPublic())
+            @if ($prop->isPublic() && !$prop->isCustom())
                 /* Public property {{$prop->getPHPName()}} -> {{$prop->getName()}} */
                 if ($object->{{$prop->getPHPName()}} !== NULL) {
+                    {{ $prop->getPHPVariable()}} = $object->{{ $prop->getPHPName() }};
+                }
+            @elif ($prop->isCustom())
+                /* public and custom property {{$prop->getPHPName()}} -> {{$prop->getName()}} */
+                if (!empty($object->{{$prop->getPHPName()}})) {
                     {{ $prop->getPHPVariable()}} = $object->{{ $prop->getPHPName() }};
                 }
             @else
@@ -863,7 +878,7 @@ class Mapper
                     if (\{{$valns}}\validate({{@$collection->getClass() . "::" . $prop->getPHPName()}}, $_date) === false) {
                         throw new \RuntimeException("Validation failed for {{$prop.''}}");
                     }
-                @else
+                @elif (!$prop->isCustom())
                     if (\{{$valns}}\validate({{@$collection->getClass() . "::" . $prop->getPHPName()}}, {{$prop->getPHPVariable()}}) === false) {
                         throw new \RuntimeException("Validation failed for {{$prop.''}}");
                     }

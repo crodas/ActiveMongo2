@@ -154,6 +154,11 @@ class Property extends Base
         return $this->getPHPName();
     }
 
+    public function isCustom()
+    {
+        return $this->annotation['custom'] === true;
+    }
+
     public function getName($prefix = false)
     {
         $property = $this->GetRawName();
