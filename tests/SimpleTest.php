@@ -473,6 +473,6 @@ class SimpleTest extends \phpunit_framework_testcase
     {
         $conn = getConnection();
         $this->assertEquals($conn->post->count(['$autocomplete' => 'cesar']), 0);
-        $this->assertEquals($conn->post->count(['$autocomplete' => 'foob']), 1);
+        $this->assertEquals($conn->post->count(['$autocomplete' => 'FOO']), 1);
     }
 }

@@ -87,7 +87,7 @@ class Autocomplete
             return;
         }
         
-        $query['__index_autocomplete'] = $query['$autocomplete'];
+        $query['__index_autocomplete'] = mb_strtolower($query['$autocomplete']);
         unset($query['$autocomplete']);
     }
 }
