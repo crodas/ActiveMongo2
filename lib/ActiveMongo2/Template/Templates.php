@@ -254,15 +254,25 @@ namespace {
             echo "        );\n    }\n\n    public function __autoloader(\$class)\n    {\n        \$class = strtolower(\$class);\n        if (!empty(\$this->class_mapper[\$class])) {\n            self::\$loaded[\$this->class_mapper[\$class]['file']] = true;\n            require __DIR__ . \$this->class_mapper[\$class]['file'];\n\n            return true;\n        }\n        return false;\n    }\n\n    public function getCollectionObject(\$col, \$db)\n    {\n        if (!is_scalar(\$col) || empty(\$this->mapper[\$col])) {\n            \$data = \$this->mapClass(\$col);     \n        } else {\n            \$data = \$this->mapper[\$col];\n        }\n\n        if (empty(self::\$loaded[\$data['file']])) {\n            if (!class_exists(\$data['class'], false)) {\n                require __DIR__ .  \$data['file'];\n            }\n            self::\$loaded[\$data['file']] = true;\n        }\n\n        if (!empty(\$data['is_gridfs'])) {\n            \$col = \$db->getGridFs(\$data['name']);\n        } else {\n            \$col = \$db->selectCollection(\$data['name']);\n        }\n\n        return [\$col, \$data['class']];\n    }\n\n    public function mapCollection(\$col)\n    {\n        if (empty(\$this->mapper[\$col])) {\n            throw new \\RuntimeException(\"Cannot map {\$col} collection to its class\");\n        }\n\n        \$data = \$this->mapper[\$col];\n\n        if (empty(self::\$loaded[\$data['file']])) {\n            if (!class_exists(\$data['class'], false)) {\n                require __DIR__ .  \$data['file'];\n            }\n            self::\$loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    public function onQuery(\$table, &\$query)\n    {\n        if (!is_array(\$query)) {\n            if (\$query instanceof \\MongoId) {\n                \$query = ['_id' => \$query];\n            } else if (is_scalar(\$query)) {\n                if (is_numeric(\$query)) {\n                    \$query = ['_id' => [\n                        '\$in' => [\$query . '', 0+\$query],\n                    ]];\n                } else if (preg_match('/^[0-9a-f]{24}\$/i', \$query)) {\n                    \$query = ['_id' => [\n                        '\$in' => [\$query, new \\MongoId(\$query)],\n                    ]];\n                } else {\n                    \$query = ['_id' => \$query];\n                }\n            }\n        }\n\n        switch (\$table) {\n";
             foreach($collections as $collection) {
                 $this->context['collection'] = $collection;
+                echo "            case ";
+                var_export($collection->getClass());
+                echo ":\n";
                 if ($collection->is('SingleCollection') && $collection->getParent()) {
-                    echo "            case ";
-                    var_export($collection->getClass());
-                    echo ":\n                \$query[";
+                    echo "                    \$query[";
                     var_export($collection->getDiscriminator());
                     echo "] = ";
                     var_export($collection->getClass());
-                    echo ";\n            break;\n";
+                    echo ";\n";
                 }
+                foreach($collection->getMethodsByAnnotation('onQuery') as $method) {
+                    $this->context['method'] = $method;
+                    echo "                    " . ($method->toCode($collection, '$query')) . "\n";
+                }
+                foreach($collection->getPlugins('onQuery') as $plugin) {
+                    $this->context['plugin'] = $plugin;
+                    echo "                    " . ($plugin->toCode($collection, '$query')) . "\n";
+                }
+                echo "            break;\n";
             }
             echo "        }\n    }\n\n    public function mapClass(\$class)\n    {\n        if (is_object(\$class)) {\n            \$class = \$this->get_class(\$class);\n        }\n\n        \$class = strtolower(\$class);\n        if (empty(\$this->class_mapper[\$class])) {\n";
             foreach($collections as $collection) {
@@ -384,7 +394,14 @@ namespace {
                     }
                     echo "            break;\n";
                 }
-                echo "        case '_id': \n            //fallback to get the object ID when it is not part of the object (rare case)\n            if (!empty(\$object->" . ($instance) . ") && \$object->" . ($instance) . " instanceof ActiveMongo2Mapped) {\n                return \$object->" . ($instance) . "->getOriginal()['_id'];\n            }\n        default:\n            throw new \\RuntimeException(\"Missing property {\$name}\");\n        }\n\n        return \$return;\n    }\n\n    /**\n     *  Get update object " . ($collection->getClass()) . " \n     */\n    protected function update_" . (sha1($collection->getClass())) . "(Array &\$current, Array \$old, \$embed = false)\n    {\n        if (!\$embed && !empty(\$current['_id']) && \$current['_id'] != \$old['_id']) {\n            throw new \\RuntimeException(\"document ids cannot be updated\");\n        }\n\n";
+                echo "        case '_id': \n            //fallback to get the object ID when it is not part of the object (rare case)\n            if (!empty(\$object->" . ($instance) . ") && \$object->" . ($instance) . " instanceof ActiveMongo2Mapped) {\n                return \$object->" . ($instance) . "->getOriginal()['_id'];\n            }\n        default:\n";
+                if ($collection->getParent()) {
+                    echo "                return \$this->get_property_" . (sha1($collection->getParent())) . "(\$object, \$name);\n";
+                }
+                else {
+                    echo "                throw new \\RuntimeException(\"Missing property {\$name}\");\n";
+                }
+                echo "        }\n\n        return \$return;\n    }\n\n    /**\n     *  Get update object " . ($collection->getClass()) . " \n     */\n    protected function update_" . (sha1($collection->getClass())) . "(Array &\$current, Array \$old, \$embed = false)\n    {\n        if (!\$embed && !empty(\$current['_id']) && \$current['_id'] != \$old['_id']) {\n            throw new \\RuntimeException(\"document ids cannot be updated\");\n        }\n\n";
                 if (!$collection->getParent()) {
                     echo "            \$change = array();\n";
                 }
@@ -604,14 +621,18 @@ namespace {
                 echo "\n";
                 foreach($collection->getProperties() as $prop) {
                     $this->context['prop'] = $prop;
-                    if ($prop->isPublic()) {
+                    if ($prop->isPublic() && !$prop->isCustom()) {
                         echo "                /* Public property " . ($prop->getPHPName()) . " -> " . ($prop->getName()) . " */\n                if (\$object->" . ($prop->getPHPName()) . " !== NULL) {\n                    " . ($prop->getPHPVariable()) . " = \$object->" . ($prop->getPHPName()) . ";\n                }\n";
+                    }
+                    else if ($prop->isCustom()) {
+                        echo "                /* public and custom property " . ($prop->getPHPName()) . " -> " . ($prop->getName()) . " */\n                if (!empty(\$object->" . ($prop->getPHPName()) . ")) {\n                    " . ($prop->getPHPVariable()) . " = \$object->" . ($prop->getPHPName()) . ";\n                }\n";
                     }
                     else {
                         echo "                \$property = new \\ReflectionProperty(\$object, ";
                         var_export($prop->getPHPName());
                         echo ");\n                \$property->setAccessible(true);\n                " . ($prop->getPHPVariable()) . " = \$property->getValue(\$object);\n";
                     }
+
                 }
                 echo "\n";
                 foreach($collection->getProperties() as $prop) {
@@ -692,11 +713,12 @@ namespace {
                         var_export($collection->getClass() . "::" . $prop->getPHPName());
                         echo ", \$_date) === false) {\n                        throw new \\RuntimeException(\"Validation failed for " . ($prop.'') . "\");\n                    }\n";
                     }
-                    else {
+                    else if (!$prop->isCustom()) {
                         echo "                    if (\\" . ($valns) . "\\validate(";
                         var_export($collection->getClass() . "::" . $prop->getPHPName());
                         echo ", " . ($prop->getPHPVariable()) . ") === false) {\n                        throw new \\RuntimeException(\"Validation failed for " . ($prop.'') . "\");\n                    }\n";
                     }
+
                     echo "            }\n";
                 }
                 echo "\n        return \$doc;\n    }\n\n    protected function update_property_" . (sha1($collection->getClass())) . "(\\" . ($collection->getClass()) . " \$document, \$property, \$value)\n    {\n";

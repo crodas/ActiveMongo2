@@ -468,4 +468,11 @@ class SimpleTest extends \phpunit_framework_testcase
         $id2 = $reflection->property('@Id')->get($foo);
         $this->assertEquals($id1, $id2);
     }
+
+    public function testAutocomplete()
+    {
+        $conn = getConnection();
+        $this->assertEquals($conn->post->count(['$autocomplete' => 'cesar']), 0);
+        $this->assertEquals($conn->post->count(['$autocomplete' => 'foob']), 1);
+    }
 }

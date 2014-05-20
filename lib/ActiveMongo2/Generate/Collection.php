@@ -36,6 +36,7 @@
 */
 namespace ActiveMongo2\Generate;
 
+use Notoj\Notoj;
 use Notoj\Annotation;
 use Notoj\Annotation\AnnClass;
 use ActiveMongo2\Generate;
@@ -44,6 +45,7 @@ class Collection extends Base
 {
     protected $collections;
     protected $validator;
+    protected $properties = array();
 
     public function getPlugins($type)
     {
@@ -59,6 +61,26 @@ class Collection extends Base
         return $plugins;
     }
 
+    public function onMapping()
+    {
+        foreach ($this->getPlugins('onMapping') as $plugin) {
+            $ann = $plugin->getAnnotation();
+            if ($plugin->isMethod()) {
+                $class  = $plugin->getClass();
+                $method = $plugin->getMethod();
+                if (!class_exists($class)) {
+                    require $ann['file'];
+                }
+                if ($plugin->isStatic())  {
+                    $class::$method($this);
+                } else {
+                    $obj = new $class;
+                    $class->$method($this);
+                }
+            }
+        }
+    }
+
     public function __construct(AnnClass $annotation, Collections $collections)
     {
         $this->annotation  = $annotation;
@@ -72,8 +94,7 @@ class Collection extends Base
             $parent = $parent->getParent();
         }
 
-
-
+        $this->onMapping();
     }
 
     public function getTypes()
@@ -83,11 +104,22 @@ class Collection extends Base
 
     public function getProperties()
     {
-        $properties = array();
+        $properties = $this->properties;
         foreach ($this->annotation->getProperties() as $prop) {
             $properties[] = (new Property($this, $prop))->setParent($this);
         }
         return $properties;
+    }
+
+    public function defineProperty($annotation, $name)
+    {
+        $ann = Notoj::parseDocComment($annotation);
+        $ann->setMetadata(array(
+            'visibility'    => ['public'],
+            'property'      => $name,
+            'custom'        => true,
+        ));
+        $this->properties[] = (new Property($this, $ann))->setParent($this);
     }
 
     public function __toString()
