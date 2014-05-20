@@ -87,7 +87,9 @@ class Autocomplete
             return;
         }
         
-        $query['__index_autocomplete'] = mb_strtolower($query['$autocomplete']);
+        $text  = mb_strtolower($query['$autocomplete']);
+        $words = preg_split('/\W+/', $text);
+        $query['__index_autocomplete'] = ['$all' => $words];
         unset($query['$autocomplete']);
     }
 }
