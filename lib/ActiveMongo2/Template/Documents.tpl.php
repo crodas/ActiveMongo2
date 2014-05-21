@@ -401,7 +401,11 @@ class Mapper
 
         @foreach($collections->getIndexes() as $id => $index)
         try {
-            $col = $db->createCollection({{@$index['prop']->getParent()->getName()}}); 
+            @if (!empty($index['col'])) 
+                $col = $db->createCollection({{@$index['col']->getName()}}); 
+            @else
+                $col = $db->createCollection({{@$index['prop']->getParent()->getName()}}); 
+            @end
             @if ($is_new)
             $return = $col->createIndex(
                 {{@$index['field']}},

@@ -110,15 +110,46 @@ class Collections extends ArrayObject
         return $this;
     }
 
-    public function getIndexes()
+    protected function getIndexOrder($prop, $i = 0)
+    {
+        $order = strtolower(current((array)$prop[$i]['args'])) == 'desc' ? -1 : 1;
+        if ($prop[1]->getAnnotation()->has('Geo')) {
+            $order = '2dsphere';
+        }
+
+        return $order;
+    }
+
+    public function getIndexesFromCollections()
     {
         $indexes = array();
+        foreach ($this as $col) {
+            foreach ($col->getAnnotation()->get('Index,Unique') as $prop) {
+                $index = array('field' => array(), 'col' => $col, 'extra' => array());
+                foreach ($prop['args'] as $name => $order) {
+                    if (is_numeric($name)) {
+                        $name  = $order;
+                        $order = 1;
+                    }
+                    $index['field'][$name] = $order;
+                }
+                if ($col->getAnnotation()->has('Unique')) {
+                    $index['extra'] = array("unique" => true);
+                }
+
+                $indexes[] = $index;
+            }
+        }
+
+        return $indexes;
+    }
+
+    public function getIndexes()
+    {
+        $indexes = $this->getIndexesFromCollections();
 
         foreach ($this->getAllPropertiesWithAnnotation('Unique,Index') as $prop) {
-            $order = strtolower(current((array)$prop[0]['args'])) == 'desc' ? -1 : 1;
-            if ($prop[1]->getAnnotation()->has('Geo')) {
-                $order = '2dsphere';
-            }
+            $order = $this->getIndexOrder($prop);
             $index = array();
             $name  = $prop[1]->getParent()->getName() . "_" . $prop[1]->getName() . '_' .  $order;
 
