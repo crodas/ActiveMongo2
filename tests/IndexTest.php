@@ -28,4 +28,15 @@ class IndexTest extends \phpunit_framework_testcase
         $post->uri = "something that I say";
         $conn->save($post);
     }
+
+    public function testCompoundIndex()
+    {
+        $indexes = getConnection()->post->rawCollection()->getIndexInfo();
+        foreach($indexes as $index) {
+            if (array_diff($index['key'], ['title' => 1, 'uri' => 1])) {
+                return $this->assertTrue(true);
+            }
+        }
+        $this->AssertTrue(false);
+    }
 }

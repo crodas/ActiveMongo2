@@ -319,9 +319,17 @@ namespace {
             foreach($collections->getIndexes() as $id => $index) {
                 $this->context['id'] = $id;
                 $this->context['index'] = $index;
-                echo "        try {\n            \$col = \$db->createCollection(";
-                var_export($index['prop']->getParent()->getName());
-                echo "); \n";
+                echo "        try {\n";
+                if (!empty($index['col'])) {
+                    echo "                \$col = \$db->createCollection(";
+                    var_export($index['col']->getName());
+                    echo "); \n";
+                }
+                else {
+                    echo "                \$col = \$db->createCollection(";
+                    var_export($index['prop']->getParent()->getName());
+                    echo "); \n";
+                }
                 if ($is_new) {
                     echo "            \$return = \$col->createIndex(\n                ";
                     var_export($index['field']);

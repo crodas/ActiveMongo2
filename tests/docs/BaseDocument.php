@@ -9,6 +9,7 @@ namespace ActiveMongo2\Tests\Document;
  *  @Autoincrement
  *  @Timeable
  *  @Autocomplete
+ *  @Index(title => 1, uri)
  */
 abstract class BaseDocument
 {
