@@ -79,7 +79,7 @@ class Generate
         $this->fixPath($collections);
 
         $target    = $config->getLoader();
-        $namespace = sha1($target);
+        $namespace = $config->getNamespace();
         $valns     = $collections->getValidatorNS();
 
         $args = compact('docs', 'namespace','mapper', 'indexes', 'self', 'collections', 'valns');

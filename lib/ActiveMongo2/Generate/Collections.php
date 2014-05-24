@@ -131,7 +131,7 @@ class Collections extends ArrayObject
                         $name  = $order;
                         $order = 1;
                     }
-                    $index['field'][$name] = $order;
+                    $index['field'][$name] = is_numeric($order) ? $order+0 : $order;
                 }
                 if ($col->getAnnotation()->has('Unique')) {
                     $index['extra'] = array("unique" => true);
