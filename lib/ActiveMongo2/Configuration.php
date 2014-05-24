@@ -48,6 +48,7 @@ class Configuration
     protected $cache;
     protected $default = array('w' => 1);
     protected $failOnMissRef = true;
+    protected $ns;
 
     public function __construct($loader)
     {
@@ -90,6 +91,17 @@ class Configuration
         return $this->path;
     }
 
+    public function setNamespace($ns)
+    {
+        $this->ns = $ns;
+        return $this;
+    }
+
+    public function getNamespace()
+    {
+        return $this->ns ?: "\\ActiveMongo2\\Generate\\t" . sha1($this->loader);
+    }
+
     public function getLoader()
     {
         return $this->loader;
@@ -121,7 +133,7 @@ class Configuration
     public function initialize(Connection $conn)
     {
         $this->generateIfNeeded();
-        $class = "\\ActiveMongo2\\Generated" . sha1($this->GetLoader()) . "\\Mapper";
+        $class = $this->getNamespace() . "\\Mapper";
         if (!class_exists($class, false)) {
             require $this->getLoader();
         }

@@ -1,6 +1,6 @@
 <?php
 
-namespace ActiveMongo2\Generated{{$namespace}};
+namespace {{trim($namespace, '\\')}};
 
 use MongoClient;
 use ActiveMongo2\Connection;
