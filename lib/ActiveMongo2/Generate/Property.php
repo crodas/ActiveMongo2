@@ -45,6 +45,8 @@ class Property extends Base
     protected $type = null;
     protected $rawName;
     protected $isId;
+    protected $callbackCache = array();
+
 
     protected function getTypeFromAnnotation($annotation)
     {
@@ -101,6 +103,10 @@ class Property extends Base
 
     public function getCallback($filter)
     {
+        if (!empty($this->callbackCache[$filter])) {
+            return $this->callbackCache[$filter];
+        }
+
         $types = array();
         foreach ($this->collection->getAnnotationByName($filter) as $name => $type) {
             if ($this->annotation->has($name)) {
@@ -108,7 +114,7 @@ class Property extends Base
                 $type->name = $name;
             }
         }
-        return $types;
+        return $this->callbackCache[$filter] = $types;
     }
 
     public function __toString()
