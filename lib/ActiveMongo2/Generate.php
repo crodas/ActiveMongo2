@@ -88,7 +88,11 @@ class Generate
 
         $code .= $collections->getValidatorCode();
 
-        File::write($target, FixCode::fix($code));
+        if (strlen($code) >= 1024*1024) {
+            File::write($target, $code);
+        } else {
+            File::write($target, FixCode::fix($code));
+        }
         $this->writeFileWatch($watcher, $collections);
     }
     
