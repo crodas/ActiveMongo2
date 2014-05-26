@@ -44,6 +44,7 @@ class Property extends Base
     protected $collection;
     protected $type = null;
     protected $rawName;
+    protected $isId;
 
     protected function getTypeFromAnnotation($annotation)
     {
@@ -75,11 +76,12 @@ class Property extends Base
         foreach ($this->getCallback('DefaultValue') as $val) {
             $this->getTypeFromAnnotation($val->annotation);
         }
+        $this->isId = $this->annotation->has('Id');
     }
 
     public function isId()
     {
-        return $this->annotation->has('Id');
+        return $this->isId;
     }
 
     public function getPHPName()
