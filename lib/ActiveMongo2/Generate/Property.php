@@ -43,6 +43,7 @@ class Property extends Base
 {
     protected $collection;
     protected $type = null;
+    protected $rawName;
 
     protected function getTypeFromAnnotation($annotation)
     {
@@ -144,14 +145,18 @@ class Property extends Base
 
     public function getRawName() 
     {
-        $field = $this->annotation->getOne('Field');
-        if ($this->isId()) {
-            return '_id';
-        } else if (!empty($field)) {
-            return current($field);
+        if (!empty($this->rawName)) {
+            return $this->rawName;
         }
 
-        return $this->getPHPName();
+        $field = $this->annotation->getOne('Field');
+        if ($this->isId()) {
+            return $this->rawName = '_id';
+        } else if (!empty($field)) {
+            return $this->rawName = current($field);
+        }
+
+        return $this->rawName = $this->getPHPName();
     }
 
     public function isCustom()
