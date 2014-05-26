@@ -207,6 +207,11 @@ class Collections extends ArrayObject
 
     public function getAllReferences()
     {
+        static $refs;
+        if (!empty($refs)) {
+            return $refs;
+        }
+
         $refCache = $this->getReferenceCache();
         $references = array(
             'Reference' => false,

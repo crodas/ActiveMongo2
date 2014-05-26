@@ -46,6 +46,7 @@ class Collection extends Base
     protected $collections;
     protected $validator;
     protected $properties = array();
+    protected $_name;
 
     public function getPlugins($type)
     {
@@ -94,6 +95,10 @@ class Collection extends Base
             $parent = $parent->getParent();
         }
 
+        foreach ($this->annotation->getProperties() as $prop) {
+            $this->properties[] = (new Property($this, $prop))->setParent($this);
+        }
+
         $this->onMapping();
     }
 
@@ -104,11 +109,7 @@ class Collection extends Base
 
     public function getProperties()
     {
-        $properties = $this->properties;
-        foreach ($this->annotation->getProperties() as $prop) {
-            $properties[] = (new Property($this, $prop))->setParent($this);
-        }
-        return $properties;
+        return $this->properties;
     }
 
     public function defineProperty($annotation, $name)
@@ -224,6 +225,9 @@ class Collection extends Base
 
     public function getName()
     {
+        if (!empty($this->_name)) {
+            return $this->_name;
+        }
         $args = $this->getAnnotationArgs();
         if ($args === FALSE) {
             $name = NULL;
@@ -237,7 +241,7 @@ class Collection extends Base
             $name  = strtolower(end($parts)); 
         }
 
-        return $name;
+        return $this->_name = $name;
     }
 
     public function getAnnotationByName($name)
