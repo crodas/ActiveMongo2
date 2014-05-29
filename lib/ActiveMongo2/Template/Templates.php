@@ -384,7 +384,35 @@ namespace {
                     }
                     echo "            break;\n";
                 }
-                echo "        default:\n            throw new \\RuntimeException(\"Missing property {\$name}\");\n        }\n\n        return true;\n    }\n\n\n    protected function get_property_" . (sha1($collection->getClass())) . "(\$object, \$name)\n    {\n        switch (\$name) {\n";
+                echo "        default:\n            throw new \\RuntimeException(\"Missing property {\$name}\");\n        }\n\n        return true;\n    }\n\n    /**\n     *  Populate from \$_POST for collection " . ($collection->GetClass()) . "\n     */\n    protected function populate_from_post_" . (sha1($collection->getClass())) . "(\$object, Array \$data)\n    {\n";
+                if ($collection->GetName()) {
+                    echo "        if (array_key_exists(";
+                    var_export($collection->GetName());
+                    echo ", \$data)) {\n            \$data = \$data[";
+                    var_export($collection->getName());
+                    echo "];\n        }\n";
+                }
+                echo "        \n";
+                if ($collection->GetParent()) {
+                    echo "        // populate parent data first\n        \$this->populate_from_post_" . (sha1($collection->GetParent()->getClass())) . "(\$object, \$data);\n";
+                }
+                echo "\n";
+                foreach($collection->getProperties() as $prop) {
+                    $this->context['prop'] = $prop;
+                    echo "        if (array_key_exists(";
+                    var_export($prop->getName());
+                    echo ", \$data)) {\n            \$object->" . ($prop->getPHPName()) . " = \$data[";
+                    var_export($prop->getName());
+                    echo "];\n        }\n";
+                    if ($prop->getName() != $prop->GetPHPName()) {
+                        echo "            if (array_key_exists(";
+                        var_export($prop->getPHPName());
+                        echo ", \$data)) {\n                \$object->" . ($prop->getPHPName()) . " = \$data[";
+                        var_export($prop->getName());
+                        echo "];\n            }\n";
+                    }
+                }
+                echo "    }\n\n\n    protected function get_property_" . (sha1($collection->getClass())) . "(\$object, \$name)\n    {\n        switch (\$name) {\n";
                 foreach($collection->getProperties() as $prop) {
                     $this->context['prop'] = $prop;
                     echo "        case ";

@@ -460,6 +460,34 @@ class Mapper
         return true;
     }
 
+    /**
+     *  Populate from $_POST for collection {{$collection->GetClass()}}
+     */
+    protected function populate_from_post_{{sha1($collection->getClass())}}($object, Array $data)
+    {
+        @if ($collection->GetName())
+        if (array_key_exists({{@$collection->GetName()}}, $data)) {
+            $data = $data[{{@$collection->getName()}}];
+        }
+        @end
+        
+        @if ($collection->GetParent())
+        // populate parent data first
+        $this->populate_from_post_{{sha1($collection->GetParent()->getClass())}}($object, $data);
+        @end
+
+        @foreach ($collection->getProperties() as $prop)
+        if (array_key_exists({{@$prop->getName()}}, $data)) {
+            $object->{{$prop->getPHPName()}} = $data[{{@$prop->getName()}}];
+        }
+            @if ($prop->getName() != $prop->GetPHPName())
+            if (array_key_exists({{@$prop->getPHPName()}}, $data)) {
+                $object->{{$prop->getPHPName()}} = $data[{{@$prop->getName()}}];
+            }
+            @end
+        @end
+    }
+
 
     protected function get_property_{{sha1($collection->getClass())}}($object, $name)
     {
