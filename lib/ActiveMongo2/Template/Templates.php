@@ -399,40 +399,44 @@ namespace {
                 echo "\n";
                 foreach($collection->getProperties() as $prop) {
                     $this->context['prop'] = $prop;
-                    echo "        if (array_key_exists(";
+                    if ($prop->isId() || $prop->getAnnotation()->has('ReferenceMany,EmbedMany')) {
+                        echo "                // we cannot handle " . ($prop->GetName()) . " at the moment\n";
+                        continue;
+                    }
+                    echo "\n        if (array_key_exists(";
                     var_export($prop->getName());
-                    echo ", \$data)) {\n";
-                    if ($prop->isPublic()) {
-                        echo "                \$object->" . ($prop->getPHPName()) . " = \$data[";
+                    echo ", \$data)) {\n            \$value = \$data[";
+                    var_export($prop->getName());
+                    echo "];\n";
+                    if ($xcol = $prop->getReferenceCollection()) {
+                        echo "                if (!is_array(\$value)) {\n                    throw new \\RuntimeException(\"";
                         var_export($prop->getName());
-                        echo "];\n";
+                        echo " must be an array\");\n                }\n                if (";
+                        var_export($prop->getAnnotation()->has('Reflect,ReflectioOne'));
+                        echo " && !empty(\$value['_id'])) {\n                    \$value = \$this->connection->getCollection(";
+                        var_export($xcol);
+                        echo ")\n                        ->findOne(\$value['_id']);\n                } else {\n";
+                        $xclass = $collections->ByName()[$xcol]['class'];
+                        $this->context['xclass'] = $xclass;
+                        if ($prop->isPublic()) {
+                            echo "                        \$oldValue = \$object->" . ($prop->getPHPName()) . ";\n";
+                        }
+                        else {
+                            echo "                        \$property = new \\ReflectionProperty(\$object, ";
+                            var_export($prop->getPHPName());
+                            echo ");\n                        \$property->setAccessible(true);\n                        \$oldValue = \$property->getValue(\$object);\n";
+                        }
+                        echo "                    \$docValue =  \$oldValue ?: new " . ($xclass) . ";\n                    \$this->populate_from_post_" . (sha1($xclass)) . "(\$docValue, \$value);\n                    \$value = \$docValue;\n                }\n";
+                    }
+                    if ($prop->isPublic()) {
+                        echo "                \$object->" . ($prop->getPHPName()) . " = \$value; \n";
                     }
                     else {
                         echo "                \$property = new \\ReflectionProperty(\$object, ";
                         var_export($prop->getPHPName());
-                        echo ");\n                \$property->setAccessible(true);\n                \$property->setValue(\$data[";
-                        var_export($prop->getName());
-                        echo "]);\n";
+                        echo ");\n                \$property->setAccessible(true);\n                \$property->setValue(\$object, \$value);\n";
                     }
                     echo "        }\n";
-                    if ($prop->getName() != $prop->GetPHPName()) {
-                        echo "            if (array_key_exists(";
-                        var_export($prop->getPHPName());
-                        echo ", \$data)) {\n";
-                        if ($prop->isPublic()) {
-                            echo "                    \$object->" . ($prop->getPHPName()) . " = \$data[";
-                            var_export($prop->getName());
-                            echo "];\n";
-                        }
-                        else {
-                            echo "                    \$property = new \\ReflectionProperty(\$object, ";
-                            var_export($prop->getPHPName());
-                            echo ");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$data[";
-                            var_export($prop->getName());
-                            echo "]);\n";
-                        }
-                        echo "            }\n";
-                    }
                 }
                 echo "    }\n\n\n    protected function get_property_" . (sha1($collection->getClass())) . "(\$object, \$name)\n    {\n        switch (\$name) {\n";
                 foreach($collection->getProperties() as $prop) {
