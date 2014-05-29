@@ -401,15 +401,37 @@ namespace {
                     $this->context['prop'] = $prop;
                     echo "        if (array_key_exists(";
                     var_export($prop->getName());
-                    echo ", \$data)) {\n            \$object->" . ($prop->getPHPName()) . " = \$data[";
-                    var_export($prop->getName());
-                    echo "];\n        }\n";
+                    echo ", \$data)) {\n";
+                    if ($prop->isPublic()) {
+                        echo "                \$object->" . ($prop->getPHPName()) . " = \$data[";
+                        var_export($prop->getName());
+                        echo "];\n";
+                    }
+                    else {
+                        echo "                \$property = new \\ReflectionProperty(\$object, ";
+                        var_export($prop->getPHPName());
+                        echo ");\n                \$property->setAccessible(true);\n                \$property->setValue(\$data[";
+                        var_export($prop->getName());
+                        echo "]);\n";
+                    }
+                    echo "        }\n";
                     if ($prop->getName() != $prop->GetPHPName()) {
                         echo "            if (array_key_exists(";
                         var_export($prop->getPHPName());
-                        echo ", \$data)) {\n                \$object->" . ($prop->getPHPName()) . " = \$data[";
-                        var_export($prop->getName());
-                        echo "];\n            }\n";
+                        echo ", \$data)) {\n";
+                        if ($prop->isPublic()) {
+                            echo "                    \$object->" . ($prop->getPHPName()) . " = \$data[";
+                            var_export($prop->getName());
+                            echo "];\n";
+                        }
+                        else {
+                            echo "                    \$property = new \\ReflectionProperty(\$object, ";
+                            var_export($prop->getPHPName());
+                            echo ");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$data[";
+                            var_export($prop->getName());
+                            echo "]);\n";
+                        }
+                        echo "            }\n";
                     }
                 }
                 echo "    }\n\n\n    protected function get_property_" . (sha1($collection->getClass())) . "(\$object, \$name)\n    {\n        switch (\$name) {\n";

@@ -478,11 +478,23 @@ class Mapper
 
         @foreach ($collection->getProperties() as $prop)
         if (array_key_exists({{@$prop->getName()}}, $data)) {
-            $object->{{$prop->getPHPName()}} = $data[{{@$prop->getName()}}];
+            @if ($prop->isPublic())
+                $object->{{$prop->getPHPName()}} = $data[{{@$prop->getName()}}];
+            @else
+                $property = new \ReflectionProperty($object, {{ @$prop->getPHPName() }});
+                $property->setAccessible(true);
+                $property->setValue($data[{{@$prop->getName()}}]);
+            @end
         }
             @if ($prop->getName() != $prop->GetPHPName())
             if (array_key_exists({{@$prop->getPHPName()}}, $data)) {
-                $object->{{$prop->getPHPName()}} = $data[{{@$prop->getName()}}];
+                @if ($prop->isPublic())
+                    $object->{{$prop->getPHPName()}} = $data[{{@$prop->getName()}}];
+                @else
+                    $property = new \ReflectionProperty($object, {{ @$prop->getPHPName() }});
+                    $property->setAccessible(true);
+                    $property->setValue($data[{{@$prop->getName()}}]);
+                @end
             }
             @end
         @end
