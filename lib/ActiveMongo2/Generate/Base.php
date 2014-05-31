@@ -44,11 +44,20 @@ abstract class Base
     protected $annotation;
     protected $file;
     protected $parent;
+    protected $isCache = array();
 
     public function is($name, $recursive = true)
     {
-        return $this->annotation->has($name) ||
-            ($recursive && $this->getParent() && $this->getParent()->is($name));
+        if (!$recursive) {
+            return $this->annotation->has($name);
+        }
+
+        if (!array_key_exists($name, $this->isCache)) {
+            $this->isCache[$name] =  $this->annotation->has($name) ||
+                ($this->getParent() && $this->getParent()->is($name, $recursive));
+        }
+
+        return $this->isCache[$name];
     }
 
 

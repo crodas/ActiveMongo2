@@ -70,6 +70,12 @@ class Connection
         }
     }
 
+    public function populateFromArray($object, Array $data)
+    {
+        $this->mapper->populateFromArray($object, $data);
+        return $object;
+    }
+
     public function setCacheStorage(Cache\Storage $storage)
     {
         $this->cache->setStorage($storage);

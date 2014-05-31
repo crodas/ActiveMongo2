@@ -237,6 +237,17 @@ class Mapper
         return $this->{"get_reference_" . sha1($class)}($object, $extra);
     }
 
+    public function populateFromArray($object, Array $data)
+    {
+        $class = strtolower($this->get_class($object));
+        if (empty($this->class_mapper[$class])) {
+            throw new \RuntimeException("Cannot map class {$class} to its document");
+        }
+
+        return $this->{"populate_from_array_" . sha1($class)}($object, $data);
+    }
+
+
     public function getDocument($object)
     {
         if ($object instanceof \ActiveMongo2\Reference) {
@@ -458,6 +469,67 @@ class Mapper
         }
 
         return true;
+    }
+
+    /**
+     *  Populate from $_POST for collection {{$collection->GetClass()}}
+     */
+    protected function populate_from_array_{{sha1($collection->getClass())}}($object, Array $data)
+    {
+        @if ($collection->GetName())
+        if (array_key_exists({{@$collection->GetName()}}, $data)) {
+            $data = $data[{{@$collection->getName()}}];
+        }
+        @end
+        
+        @if ($collection->GetParent())
+        // populate parent data first
+        $this->populate_from_array_{{sha1($collection->GetParent()->getClass())}}($object, $data);
+        @end
+
+        @foreach ($collection->getProperties() as $prop)
+            @if ($prop->isId() || $prop->getAnnotation()->has('ReferenceMany,EmbedMany'))
+                // we cannot handle {{$prop->GetName()}} at the moment
+                @continue
+            @end
+
+            @foreach(array_unique([$prop->getName(), $prop->getPHPName()]) as $var)
+
+            if (array_key_exists({{@$var}}, $data)) {
+                $value = $data[{{@$var}}];
+                @if ($xcol = $prop->getReferenceCollection())
+                    if (!is_array($value)) {
+                        throw new \RuntimeException("{{@$prop->getName()}} must be an array");
+                    }
+                    if ({{@$prop->getType() == 'Reference'}} && !empty($value['_id'])) {
+                        $value = $this->connection->getCollection({{@$xcol}})
+                            ->findOne($value['_id']);
+                    } else {
+                        @set($xclass, $collections->ByName()[$xcol]['class'])
+                        @if ($prop->isPublic())
+                            $oldValue = $object->{{$prop->getPHPName()}};
+                        @else
+                            $property = new \ReflectionProperty($object, {{@$var}});
+                            $property->setAccessible(true);
+                            $oldValue = $property->getValue($object);
+                        @end
+                        $docValue =  $oldValue ?: new \{{$xclass}};
+                        $this->populate_from_array_{{sha1($xclass)}}($docValue, $value);
+                        $value = $docValue;
+                    }
+                @end
+                @if ($prop->isPublic())
+                    $object->{{$prop->getPHPName()}} = $value; 
+                @else
+                    $property = new \ReflectionProperty($object, {{@$prop->getPHPName()}});
+                    $property->setAccessible(true);
+                    $property->setValue($object, $value);
+                @end
+    
+                
+            }
+            @end
+        @end
     }
 
 
