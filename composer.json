@@ -3,7 +3,7 @@
     "description": "Mongo abstraction",
     "require": {
         "crodas/service-provider": ">=0.1.12",
-        "crodas/notoj": ">=0.1.15",
+        "crodas/notoj": ">=0.1.16",
         "crodas/simple-view-engine": "~0.1",
         "crodas/watch-files": "~0.1",
         "crodas/file-util": ">=0.1.7",
@@ -11,7 +11,7 @@
         "crodas/validator": ">=0.1.2"
     },
     "license": "BSD-4-Clause",
-    "version": "v0.1.26",
+    "version": "v0.1.27",
     "authors": [
         {
             "name": "César D. Rodas",

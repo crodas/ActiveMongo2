@@ -498,26 +498,29 @@ class Mapper
             if (array_key_exists({{@$var}}, $data)) {
                 $value = $data[{{@$var}}];
                 @if ($xcol = $prop->getReferenceCollection())
-                    if (!is_array($value)) {
-                        throw new \RuntimeException("{{@$prop->getName()}} must be an array");
-                    }
-                    if ({{@$prop->getType() == 'Reference'}} && !empty($value['_id'])) {
-                        $value = $this->connection->getCollection({{@$xcol}})
-                            ->findOne($value['_id']);
-                    } else {
-                        @set($xclass, $collections->ByName()[$xcol]['class'])
-                        @if ($prop->isPublic())
-                            $oldValue = $object->{{$prop->getPHPName()}};
-                        @else
-                            $property = new \ReflectionProperty($object, {{@$var}});
-                            $property->setAccessible(true);
-                            $oldValue = $property->getValue($object);
-                        @end
-                        $docValue =  $oldValue ?: new \{{$xclass}};
-                        $this->populate_from_array_{{sha1($xclass)}}($docValue, $value);
-                        $value = $docValue;
-                    }
-                @end
+                    @set($xclass, $collections->ByName()[$xcol]['class'])
+                    @if ($xclass)
+                        if (!is_array($value)) {
+                            throw new \RuntimeException("{{@$prop->getName()}} must be an array");
+                        }
+                        if ({{@$prop->getType() == 'Reference'}} && !empty($value['_id'])) {
+                            $value = $this->connection->getCollection({{@$xcol}})
+                                ->findOne($value['_id']);
+                        } else {
+                            @if ($prop->isPublic())
+                                $oldValue = $object->{{$prop->getPHPName()}};
+                            @else
+                                $property = new \ReflectionProperty($object, {{@$var}});
+                                $property->setAccessible(true);
+                                $oldValue = $property->getValue($object);
+                            @end
+                            $docValue =  $oldValue ?: new \{{$xclass}};
+                            $this->populate_from_array_{{sha1($xclass)}}($docValue, $value);
+                            $value = $docValue;
+                        }
+                    @end
+                @end 
+
                 @if ($prop->isPublic())
                     $object->{{$prop->getPHPName()}} = $value; 
                 @else
@@ -526,7 +529,6 @@ class Mapper
                     $property->setValue($object, $value);
                 @end
     
-                
             }
             @end
         @end
@@ -642,7 +644,7 @@ class Mapper
                                 }
                             }
                         }
-                    @elif ($prop->getAnnotation()->has('ReferenceMany') || $prop->getAnnotation()->has('Array'))
+                    @elif ($prop->getAnnotation()->has('ReferenceMany,Array'))
                         // add things to the array
                         $toRemove = array_diff_key($old[{{@$prop.''}}], {{$prop->getPHPVariable('$current')}});
 
@@ -694,7 +696,7 @@ class Mapper
             }
 
             @set($ann, $prop->getAnnotation())
-            @if ($ann->has('Array') || $ann->has('ReferenceMany') || $ann->has('EmbedMany'))
+            @if ($ann->has('Array,ReferenceMany,EmbedMany'))
                 @if ($ann->has('Limit'))
                 if ($has_changed && !empty($change['$push'][{{@$prop.''}}])) {
                     $change['$push'][{{@$prop.''}}]['$slice'] = {{@0+current($prop->getAnnotation()->getOne('Limit'))}};

@@ -412,25 +412,28 @@ namespace {
                         var_export($var);
                         echo "];\n";
                         if ($xcol = $prop->getReferenceCollection()) {
-                            echo "                    if (!is_array(\$value)) {\n                        throw new \\RuntimeException(\"";
-                            var_export($prop->getName());
-                            echo " must be an array\");\n                    }\n                    if (";
-                            var_export($prop->getType() == 'Reference');
-                            echo " && !empty(\$value['_id'])) {\n                        \$value = \$this->connection->getCollection(";
-                            var_export($xcol);
-                            echo ")\n                            ->findOne(\$value['_id']);\n                    } else {\n";
                             $xclass = $collections->ByName()[$xcol]['class'];
                             $this->context['xclass'] = $xclass;
-                            if ($prop->isPublic()) {
-                                echo "                            \$oldValue = \$object->" . ($prop->getPHPName()) . ";\n";
+                            if ($xclass) {
+                                echo "                        if (!is_array(\$value)) {\n                            throw new \\RuntimeException(\"";
+                                var_export($prop->getName());
+                                echo " must be an array\");\n                        }\n                        if (";
+                                var_export($prop->getType() == 'Reference');
+                                echo " && !empty(\$value['_id'])) {\n                            \$value = \$this->connection->getCollection(";
+                                var_export($xcol);
+                                echo ")\n                                ->findOne(\$value['_id']);\n                        } else {\n";
+                                if ($prop->isPublic()) {
+                                    echo "                                \$oldValue = \$object->" . ($prop->getPHPName()) . ";\n";
+                                }
+                                else {
+                                    echo "                                \$property = new \\ReflectionProperty(\$object, ";
+                                    var_export($var);
+                                    echo ");\n                                \$property->setAccessible(true);\n                                \$oldValue = \$property->getValue(\$object);\n";
+                                }
+                                echo "                            \$docValue =  \$oldValue ?: new \\" . ($xclass) . ";\n                            \$this->populate_from_array_" . (sha1($xclass)) . "(\$docValue, \$value);\n                            \$value = \$docValue;\n                        }\n";
                             }
-                            else {
-                                echo "                            \$property = new \\ReflectionProperty(\$object, ";
-                                var_export($var);
-                                echo ");\n                            \$property->setAccessible(true);\n                            \$oldValue = \$property->getValue(\$object);\n";
-                            }
-                            echo "                        \$docValue =  \$oldValue ?: new \\" . ($xclass) . ";\n                        \$this->populate_from_array_" . (sha1($xclass)) . "(\$docValue, \$value);\n                        \$value = \$docValue;\n                    }\n";
                         }
+                        echo "\n";
                         if ($prop->isPublic()) {
                             echo "                    \$object->" . ($prop->getPHPName()) . " = \$value; \n";
                         }
@@ -439,7 +442,7 @@ namespace {
                             var_export($prop->getPHPName());
                             echo ");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$object, \$value);\n";
                         }
-                        echo "    \n                \n            }\n";
+                        echo "    \n            }\n";
                     }
                 }
                 echo "    }\n\n\n    protected function get_property_" . (sha1($collection->getClass())) . "(\$object, \$name)\n    {\n        switch (\$name) {\n";
@@ -537,7 +540,7 @@ namespace {
                         var_export($prop.'');
                         echo "][] = \$value;\n                                }\n                            }\n                        }\n";
                     }
-                    else if ($prop->getAnnotation()->has('ReferenceMany') || $prop->getAnnotation()->has('Array')) {
+                    else if ($prop->getAnnotation()->has('ReferenceMany,Array')) {
                         echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old[";
                         var_export($prop.'');
                         echo "], " . ($prop->getPHPVariable('$current')) . ");\n\n                        if ((count(\$toRemove) > 0 && \$this->array_unique(\$old[";
@@ -586,7 +589,7 @@ namespace {
                     echo "                }\n            }\n\n";
                     $ann = $prop->getAnnotation();
                     $this->context['ann'] = $ann;
-                    if ($ann->has('Array') || $ann->has('ReferenceMany') || $ann->has('EmbedMany')) {
+                    if ($ann->has('Array,ReferenceMany,EmbedMany')) {
                         if ($ann->has('Limit')) {
                             echo "                if (\$has_changed && !empty(\$change['\$push'][";
                             var_export($prop.'');
