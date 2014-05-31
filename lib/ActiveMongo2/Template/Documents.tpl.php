@@ -497,8 +497,8 @@ class Mapper
 
             if (array_key_exists({{@$var}}, $data)) {
                 $value = $data[{{@$var}}];
-                @if ($xcol = $prop->getReferenceCollection())
-                    @set($xclass, $collections->ByName()[$xcol]['class'])
+                @if ($xcol = $prop->getReferenceCollection()))
+                    @set($xclass, $collections->ByName()[strtolower($xcol]['class'])
                     @if ($xclass)
                         if (!is_array($value)) {
                             throw new \RuntimeException("{{@$prop->getName()}} must be an array");
