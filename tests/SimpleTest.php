@@ -475,4 +475,45 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($conn->post->count(['$autocomplete' => 'cesar']), 0);
         $this->assertEquals($conn->post->count(['$autocomplete' => 'FOO']), 1);
     }
+
+    public function testByArray()
+    {
+        $conn = getConnection();
+        // test create
+        $user = new UserDocument;
+        $data = array(
+            "username" => "crodas-" . rand(0, 0xfffff),
+            "pass" =>  "foobar",
+        );
+        $conn->populateFromArray($user, $data);
+        $this->assertEquals($user->username, $data['username']);
+        $this->assertEquals($user->pass, $data['pass']);
+        $conn->save($user);
+
+        // test update
+        $data = array(
+            "username" => "crodas-" . rand(0, 0xfffff),
+        );
+        $conn->populateFromArray($user, $data);
+        $this->assertEquals($user->username, $data['username']);
+        $conn->save($user);
+
+        $data = array(
+            "title" => "foobar " . uniqid(true),
+            "author" => array("_id" => (string)$user->userid),
+            "author_ref" => array("_id" => (string)$user->userid),
+            "author_id" =>  $user->userid,
+        );
+
+        $post = new PostDocument;
+        $conn->populateFromArray($post, $data);
+        $this->assertEquals($post->title, $data['title']);
+        $conn->save($post);
+
+        $this->assertTrue(!empty($post->author));
+        $this->assertTrue(!empty($post->author_ref));
+
+        $this->assertEquals($post->author->username, $user->username);
+        $this->assertEquals($post->author->username, $post->author_ref->username);
+    }
 }
