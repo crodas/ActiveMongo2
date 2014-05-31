@@ -249,6 +249,11 @@ class Collection extends Base
         return $this->collections->getAnnotationByName($name);
     }
 
+    public function getCollections()
+    {
+        return $this->collections;
+    }
+
     public function getParent()
     {
         $parent = $this->annotation->getParent();

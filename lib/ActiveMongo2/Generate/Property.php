@@ -143,7 +143,15 @@ class Property extends Base
             return false;
         }
 
-        return current($ann['args']);
+        $ref = strtolower(current($ann['args']));
+
+        foreach ($this->parent->getCollections() as $col) {
+            if ($ref == $col->getName() || $ref == $col->getClass()) {
+                return $col->getName();
+            }
+        }
+
+        return false;
     }
 
     public function getType()
