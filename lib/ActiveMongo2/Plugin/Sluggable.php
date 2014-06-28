@@ -111,12 +111,10 @@ class Sluggable
 
         $document = &$event_args[0];
         if (!empty($document[$args[1]])) {
-            /* If the slug already exists, and it is different than
-               empty, then use just exit gracefully */
-            return;
+            $slug = self::sluggify($document[$args[1]]);
+        } else{
+            $slug = self::sluggify(empty($document[$args[0]]) ? 'n-a' : $document[$args[0]]);
         }
-
-        $slug = self::sluggify(empty($document[$args[0]]) ? 'n-a' : $document[$args[0]]);
         $col  = $conn->getCollection($obj);
 
         while ( $col->count(array($args[1] => $slug)) != 0) {
