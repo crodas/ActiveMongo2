@@ -40,8 +40,7 @@ class SluggableTest extends \phpunit_framework_testcase
         $post2->readers[] = $user;
         $conn->save($post2);
 
-        $this->assertTrue(strlen($post2->uri) > strlen($post1->uri));
-        $this->assertEquals(strncmp($post1->uri, $post2->uri, strlen($post1->uri)), 0);
+        $this->assertTrue(substr($post2->uri, 0, 2) > substr($post1->uri, 0, 2));
     }
 
     public function testNoSlug()
