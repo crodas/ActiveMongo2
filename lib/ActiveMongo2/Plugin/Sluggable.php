@@ -39,6 +39,7 @@ namespace ActiveMongo2\Plugin;
 
 /**
  *  @Plugin(Sluggable)
+ *  @Last
  */
 class Sluggable
 {
