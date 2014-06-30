@@ -48,6 +48,14 @@ class Collection extends Base
     protected $properties = array();
     protected $_name;
 
+    protected function addWeight($p, $method) {
+        if ($p->getAnnotation()->has('Last')) {
+            $method->pos = -1 * $method->pos * 100;
+        } else if ($p->getAnnotation()->has('First')) {
+            $method->pos = $method->pos * 100;
+        }
+    }
+
     public function getPlugins($type)
     {
         $plugins = array();
@@ -57,11 +65,7 @@ class Collection extends Base
                 foreach ($p->getMethodsByAnnotation($type) as $method) {
                     $method->name = $name;
                     $method->pos = ++$index;
-                    if ($p->getAnnotation()->has('Last')) {
-                        $method->pos = -1 * $index * 100;
-                    } else if ($p->getAnnotation()->has('First')) {
-                        $method->pos = $index * 100;
-                    }
+                    $this->addWeight($p, $method);
                     $plugins[] = $method;
                 }
             } 
