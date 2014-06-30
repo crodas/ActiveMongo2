@@ -5,7 +5,7 @@ namespace ActiveMongo2\Tests\Document;
 /** 
  *  @Persist(collection="post")
  *  @SingleCollection
- *  @Sluggable("titulo", "uri")
+ *  @Sluggable(["_id", "titulo"], "uri")
  *  @Autoincrement
  *  @Timeable
  *  @Autocomplete

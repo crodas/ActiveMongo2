@@ -81,10 +81,10 @@ class Sluggable
     /**
      *  @preUpdate
      */
-    public static function updateSlugUrl($obj, Array $event_args, $conn, $args)
+    public static function updateSlugUrl($obj, Array $event_args, $conn, $args, $mapper)
     {
         self::check($args);
-        $source = $args[0];
+        $source = self::text($mapper->getDocument($obj), $args[0]) ?: 'n-a';
         $target = $args[1];
 
         $document = &$event_args[0];
@@ -100,6 +100,23 @@ class Sluggable
 
             $document['$set'][$target] = $slug;
         }
+
+    } 
+    
+    public static function text(Array $document, $field)
+    {
+        if (is_array($field)) {
+            $text = [];
+            foreach ($field as $f) {
+                if (!empty($document[$f])) {
+                    $text[] = $document[$f];
+                }
+            }
+
+            return implode('-', $text);
+        } 
+        
+        return !empty($document[$field]) ? $document[$field] : '';
     }
 
     /**
@@ -111,12 +128,10 @@ class Sluggable
 
         $document = &$event_args[0];
         if (!empty($document[$args[1]])) {
-            /* If the slug already exists, and it is different than
-               empty, then use just exit gracefully */
-            return;
+            $slug = self::sluggify($document[$args[1]]);
+        } else{
+            $slug = self::sluggify(self::text($document, $args[0]) ?: 'n-a');
         }
-
-        $slug = self::sluggify(empty($document[$args[0]]) ? 'n-a' : $document[$args[0]]);
         $col  = $conn->getCollection($obj);
 
         while ( $col->count(array($args[1] => $slug)) != 0) {

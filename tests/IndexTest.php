@@ -4,9 +4,6 @@ use ActiveMongo2\Tests\Document\PostNoTitleDocument;
 
 class IndexTest extends \phpunit_framework_testcase
 {
-    /** 
-     * @expectedException MongoException
-     */
     public function testUniqueIndex()
     {
         $conn = getConnection();
@@ -23,10 +20,12 @@ class IndexTest extends \phpunit_framework_testcase
         $post = new PostNoTitleDocument;
         $post->uri = "something that I say";
         $conn->save($post);
+        $this->assertEquals($post->uri, 'something-that-i-say');
 
         $post = new PostNoTitleDocument;
         $post->uri = "something that I say";
         $conn->save($post);
+        $this->assertNotEquals($post->uri, 'something-that-i-say');
     }
 
     public function testCompoundIndex()
