@@ -90,8 +90,8 @@ class Sluggable
         $document = &$event_args[0];
         if (!empty($document['$set']) && !empty($document['$set'][$target])) {
             // slug has been updated, rebuild it!
-            $source = $obj->target;
-            $obj->target = null;
+            $source = $obj->$target;
+            $obj->$target = null;
         }
 
         if (empty($obj->$target)) {

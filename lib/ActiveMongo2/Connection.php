@@ -266,7 +266,11 @@ class Connection
             );
         }
 
-        $this->setObjectDocument($obj, $document);
+        if (empty($update['$set'])) {
+            $update['$set'] = array();
+        }
+
+        $this->setObjectDocument($obj, array_merge($document, $update['$set']));
 
         $trigger_events && $this->mapper->trigger('postUpdate', $obj, array($update, $this,$oldDoc['_id']));
         $trigger_events && $this->mapper->trigger('postSave', $obj, array($update, $this));
