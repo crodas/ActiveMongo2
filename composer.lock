@@ -148,16 +148,16 @@
         },
         {
             "name": "crodas/service-provider",
-            "version": "v0.1.21",
+            "version": "v0.1.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/ServiceProvider.git",
-                "reference": "b9b06db8d056ac5df538ea4f5674faca635b215b"
+                "reference": "861439acda5c8b5c1b7e42229baab7d8ea3417f2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/ServiceProvider/zipball/b9b06db8d056ac5df538ea4f5674faca635b215b",
-                "reference": "b9b06db8d056ac5df538ea4f5674faca635b215b",
+                "url": "https://api.github.com/repos/crodas/ServiceProvider/zipball/861439acda5c8b5c1b7e42229baab7d8ea3417f2",
+                "reference": "861439acda5c8b5c1b7e42229baab7d8ea3417f2",
                 "shasum": ""
             },
             "require": {
@@ -185,7 +185,7 @@
                 }
             ],
             "description": "Little configuration manager and dependency injection",
-            "time": "2014-05-24 20:21:59"
+            "time": "2014-08-15 03:50:30"
         },
         {
             "name": "crodas/simple-view-engine",

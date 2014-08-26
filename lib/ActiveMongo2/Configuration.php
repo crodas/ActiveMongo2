@@ -103,14 +103,14 @@ class Configuration
 
     public function setNamespace($ns)
     {
-        $this->ns = $ns;
+        self::$paths[$this->loaded]['ns'] = $ns;
         return $this;
     }
 
     public function getNamespace()
     {
         $info = self::isLoaded($this->loader);
-        return $this->ns ?: $info['ns'];
+        return $info['ns'];
     }
 
     public function getLoader()
