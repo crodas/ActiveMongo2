@@ -851,7 +851,11 @@ namespace {
                 }
                 echo "\n";
             }
-            echo "}\n\nclass ActiveMongo2Mapped\n{\n    protected \$class;\n    protected \$data;\n\n    public function __construct(\$name, Array \$data)\n    {\n        \$this->class = \$name;\n        \$this->data  = \$data;\n    }\n\n    public function getClass()\n    {\n        return \$this->class;\n    }\n\n    public function getOriginal()\n    {\n        return \$this->data;\n    }\n\n    public function " . ($instance) . "_setOriginal(Array \$data)\n    {\n        \$this->data = \$data;\n    }\n}\n";
+            echo "}\n\nclass ActiveMongo2Mapped\n{\n    protected \$class;\n    protected \$data;\n\n    public function __construct(\$name, Array \$data)\n    {\n        \$this->class = \$name;\n        \$this->data  = \$data;\n    }\n\n    public function getClass()\n    {\n        return \$this->class;\n    }\n\n    public function getOriginal()\n    {\n        return \$this->data;\n    }\n\n    public function " . ($instance) . "_setOriginal(Array \$data)\n    {\n        \$this->data = \$data;\n    }\n}\n\n<!--validator-" . ($rnd) . "-->\n\nreturn array(\n    \"ns\" => ";
+            var_export(trim($namespace, '\\'));
+            echo ",\n    \"validator\" => ";
+            var_export($valns);
+            echo ",\n);\n";
 
             if ($return) {
                 return ob_get_clean();

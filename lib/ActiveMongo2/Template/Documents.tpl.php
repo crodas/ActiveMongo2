@@ -1058,3 +1058,10 @@ class ActiveMongo2Mapped
         $this->data = $data;
     }
 }
+
+<!--validator-{{$rnd}}-->
+
+return array(
+    "ns" => {{@trim($namespace, '\\')}},
+    "validator" => {{@$valns}},
+);

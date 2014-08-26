@@ -79,14 +79,15 @@ class Generate
         $this->fixPath($collections);
 
         $target    = $config->getLoader();
-        $namespace = $config->getNamespace();
+        $namespace = "ActiveMongo2\\Namspace" . uniqid(true); 
+        $rnd       = uniqid();
         $valns     = $collections->getValidatorNS();
 
-        $args = compact('docs', 'namespace','mapper', 'indexes', 'self', 'collections', 'valns');
+        $args = compact('docs', 'namespace','mapper', 'indexes', 'self', 'collections', 'valns', 'rnd');
         $code = Template\Templates::get('documents')
             ->render($args, true);
 
-        $code .= $collections->getValidatorCode();
+        $code = str_replace('<!--validator-'.$rnd.'-->', $collections->getValidatorCode(), $code);
 
         if (strlen($code) >= 1024*1024) {
             File::write($target, $code);
