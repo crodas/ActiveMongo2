@@ -39,6 +39,7 @@ namespace ActiveMongo2\Plugin;
 
 /**
  *  @Plugin(Sluggable)
+ *  @Last
  */
 class Sluggable
 {
@@ -88,10 +89,16 @@ class Sluggable
         $target = $args[1];
 
         $document = &$event_args[0];
+        if (!empty($document['$set']) && !empty($document['$set'][$target])) {
+            // slug has been updated, rebuild it!
+            $source = $obj->$target;
+            $obj->$target = null;
+        }
+
         if (empty($obj->$target)) {
             // Rarely use case
             // @Sluggable has been added and old documents are being update
-            $slug = self::sluggify($obj->$source ?: 'n-a');
+            $slug = self::sluggify($source ?: 'n-a');
             $col  = $conn->getCollection($obj);
 
             while ( $col->count(array($target => $slug)) != 0) {

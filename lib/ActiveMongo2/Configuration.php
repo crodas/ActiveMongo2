@@ -49,6 +49,16 @@ class Configuration
     protected $default = array('w' => 1);
     protected $failOnMissRef = true;
     protected $ns;
+    static protected $paths = [];
+
+    protected static function isLoaded($path)
+    {
+        if (empty(self::$paths[$path])) {
+            self::$paths[$path] = require $path;
+        }
+
+        return self::$paths[$path];
+    }
 
     public function __construct($loader)
     {
@@ -93,13 +103,14 @@ class Configuration
 
     public function setNamespace($ns)
     {
-        $this->ns = $ns;
+        self::$paths[$this->loaded]['ns'] = $ns;
         return $this;
     }
 
     public function getNamespace()
     {
-        return $this->ns ?: "\\ActiveMongo2\\Generate\\t" . sha1($this->loader);
+        $info = self::isLoaded($this->loader);
+        return $info['ns'];
     }
 
     public function getLoader()
@@ -133,10 +144,8 @@ class Configuration
     public function initialize(Connection $conn)
     {
         $this->generateIfNeeded();
-        $class = $this->getNamespace() . "\\Mapper";
-        if (!class_exists($class, false)) {
-            require $this->getLoader();
-        }
+        $info = self::isLoaded($this->loader);
+        $class = "{$info['ns']}\\Mapper";
         return new $class($conn);
     }
 

@@ -48,17 +48,33 @@ class Collection extends Base
     protected $properties = array();
     protected $_name;
 
+    protected function addWeight($p, $method) {
+        if ($p->getAnnotation()->has('Last')) {
+            $method->pos = -1 * $method->pos * 100;
+        } else if ($p->getAnnotation()->has('First')) {
+            $method->pos = $method->pos * 100;
+        }
+    }
+
     public function getPlugins($type)
     {
         $plugins = array();
+        $index   = 0;
         foreach ($this->collections->getAnnotationByName('Plugin') as $name => $p) {
             if ($this->annotation->has($name)) {
                 foreach ($p->getMethodsByAnnotation($type) as $method) {
                     $method->name = $name;
+                    $method->pos = ++$index;
+                    $this->addWeight($p, $method);
                     $plugins[] = $method;
                 }
             } 
-        }
+        } 
+
+        usort($plugins, function($a, $b) {
+            return $b->pos - $a->pos;
+        });
+
         return $plugins;
     }
 

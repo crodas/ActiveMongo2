@@ -186,7 +186,7 @@ class SimpleTest extends \phpunit_framework_testcase
 
         // test that no request has been made
         $this->AssertTrue(is_array($savedPost->author->getReference()));
-        $this->assertEquals($savedPost->uri, "7-foobar-post");
+        $this->assertEquals("7-foobar-post", $savedPost->uri);
 
         $user->username = "foobar";
         $conn->save($user);

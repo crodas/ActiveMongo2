@@ -41,6 +41,7 @@ use Notoj\Annotation;
 /** 
  * @Persist(collection="_autoincrement") 
  * @Plugin("Autoincrement")
+ * @First
  */
 class Autoincrement
 {
