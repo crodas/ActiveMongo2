@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "8c1628e89b8aab9550e9c658cc726595",
+    "hash": "f9fa94ebed57a3f62327bb9533165bff",
     "packages": [
         {
             "name": "crodas/class-info",
@@ -78,16 +78,16 @@
         },
         {
             "name": "crodas/file-util",
-            "version": "v0.1.9",
+            "version": "v0.1.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/FileUtils.git",
-                "reference": "d4f22b23550782337d55c16949302668a7e66de3"
+                "reference": "4e9adee9619743583c1f455039b9479bd0db4557"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/FileUtils/zipball/d4f22b23550782337d55c16949302668a7e66de3",
-                "reference": "d4f22b23550782337d55c16949302668a7e66de3",
+                "url": "https://api.github.com/repos/crodas/FileUtils/zipball/4e9adee9619743583c1f455039b9479bd0db4557",
+                "reference": "4e9adee9619743583c1f455039b9479bd0db4557",
                 "shasum": ""
             },
             "type": "library",
@@ -107,20 +107,20 @@
                 }
             ],
             "description": "Useful libraries to manipulate files",
-            "time": "2014-09-05 16:28:04"
+            "time": "2014-09-05 17:54:09"
         },
         {
             "name": "crodas/notoj",
-            "version": "v0.1.18",
+            "version": "v0.1.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/Notoj.git",
-                "reference": "7021b16e11dc9452a925d62e43b6402cfc0ff560"
+                "reference": "2a771b4548e2292b82da76b82167ba6455795c41"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/Notoj/zipball/7021b16e11dc9452a925d62e43b6402cfc0ff560",
-                "reference": "7021b16e11dc9452a925d62e43b6402cfc0ff560",
+                "url": "https://api.github.com/repos/crodas/Notoj/zipball/2a771b4548e2292b82da76b82167ba6455795c41",
+                "reference": "2a771b4548e2292b82da76b82167ba6455795c41",
                 "shasum": ""
             },
             "require": {
@@ -145,7 +145,7 @@
                 }
             ],
             "description": "Annotation parser. Uses reflection and provides cache out of the box.",
-            "time": "2014-09-05 16:57:31"
+            "time": "2014-09-05 17:13:01"
         },
         {
             "name": "crodas/service-provider",
@@ -509,9 +509,9 @@
 
     ],
     "prefer-stable": false,
-    "platform": [
-
-    ],
+    "platform": {
+        "php": ">=5.4.0"
+    },
     "platform-dev": [
 
     ]

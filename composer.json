@@ -2,6 +2,7 @@
     "name": "crodas/activemongo2",
     "description": "Mongo abstraction",
     "require": {
+        "php": ">=5.4.0",
         "crodas/service-provider": ">=0.1.12",
         "crodas/notoj": ">=0.1.18",
         "crodas/simple-view-engine": "~0.1",
