@@ -3,7 +3,7 @@
     "description": "Mongo abstraction",
     "require": {
         "crodas/service-provider": ">=0.1.12",
-        "crodas/notoj": ">=0.1.16",
+        "crodas/notoj": ">=0.1.18",
         "crodas/simple-view-engine": "~0.1",
         "crodas/watch-files": "~0.1",
         "crodas/file-util": ">=0.1.7",
