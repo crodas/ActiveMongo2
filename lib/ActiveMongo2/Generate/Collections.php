@@ -299,9 +299,9 @@ class Collections extends ArrayObject
 
     }
 
-    public function getValidatorCode()
+    public function getValidator()
     {
-        return substr($this->validator->getCode(), 5);
+        return $this->validator;
     }
 
     public function getValidatorNS()

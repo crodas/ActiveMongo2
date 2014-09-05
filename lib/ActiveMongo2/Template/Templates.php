@@ -780,7 +780,7 @@ namespace {
                     if ($prop->getAnnotation()->has('Date')) {
                         echo "                    \$_date = \\date_create('" . "@" . "' . " . ($prop->getPHPVariable()) . "->sec);\n                    if (v\\validate_" . (sha1($collection->getClass() . "::" . $prop->getPHPName())) . "(\$_date) === false) {\n                        throw new \\RuntimeException(\"Validation failed for " . ($prop.'') . "\");\n                    }\n";
                     }
-                    else if (!$prop->isCustom()) {
+                    else if (!$prop->isCustom() && $validator->hasRules($collection->getClass() . "::" . $prop->getPHPName())) {
                         echo "                    if (v\\validate_" . (sha1($collection->getClass() . "::" . $prop->getPHPName())) . "(" . ($prop->getPHPVariable()) . ") === false) {\n                        throw new \\RuntimeException(\"Validation failed for " . ($prop.'') . "\");\n                    }\n";
                     }
 
@@ -847,7 +847,7 @@ namespace {
                 }
                 echo "\n";
             }
-            echo "}\n\nclass ActiveMongo2Mapped\n{\n    protected \$class;\n    protected \$data;\n\n    public function __construct(\$name, Array \$data)\n    {\n        \$this->class = \$name;\n        \$this->data  = \$data;\n    }\n\n    public function getClass()\n    {\n        return \$this->class;\n    }\n\n    public function getOriginal()\n    {\n        return \$this->data;\n    }\n\n    public function " . ($instance) . "_setOriginal(Array \$data)\n    {\n        \$this->data = \$data;\n    }\n}\n\n<!--validator-" . ($rnd) . "-->\n\nreturn array(\n    \"ns\" => ";
+            echo "}\n\nclass ActiveMongo2Mapped\n{\n    protected \$class;\n    protected \$data;\n\n    public function __construct(\$name, Array \$data)\n    {\n        \$this->class = \$name;\n        \$this->data  = \$data;\n    }\n\n    public function getClass()\n    {\n        return \$this->class;\n    }\n\n    public function getOriginal()\n    {\n        return \$this->data;\n    }\n\n    public function " . ($instance) . "_setOriginal(Array \$data)\n    {\n        \$this->data = \$data;\n    }\n}\n\n" . (substr($validator->getCode(), 5)) . "\n\nreturn array(\n    \"ns\" => ";
             var_export(trim($namespace, '\\'));
             echo ",\n    \"validator\" => ";
             var_export($valns);

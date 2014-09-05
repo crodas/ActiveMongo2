@@ -957,7 +957,7 @@ class Mapper
                     if (v\validate_{{sha1($collection->getClass() . "::" . $prop->getPHPName())}}($_date) === false) {
                         throw new \RuntimeException("Validation failed for {{$prop.''}}");
                     }
-                @elif (!$prop->isCustom())
+                @elif (!$prop->isCustom() && $validator->hasRules($collection->getClass() . "::" . $prop->getPHPName()))
                     if (v\validate_{{sha1($collection->getClass() . "::" . $prop->getPHPName())}}({{$prop->getPHPVariable()}}) === false) {
                         throw new \RuntimeException("Validation failed for {{$prop.''}}");
                     }
@@ -1060,7 +1060,7 @@ class ActiveMongo2Mapped
     }
 }
 
-<!--validator-{{$rnd}}-->
+{{ substr($validator->getCode(), 5) }}
 
 return array(
     "ns" => {{@trim($namespace, '\\')}},

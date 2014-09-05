@@ -4,8 +4,48 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f9fa94ebed57a3f62327bb9533165bff",
+    "hash": "2a2930119bf2a6d674d9d81da78683e0",
     "packages": [
+        {
+            "name": "crodas/asset",
+            "version": "v0.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/crodas/SimpleAssetManager.git",
+                "reference": "a81661cc5739fa15c0ed7b6809b392b955c26401"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/crodas/SimpleAssetManager/zipball/a81661cc5739fa15c0ed7b6809b392b955c26401",
+                "reference": "a81661cc5739fa15c0ed7b6809b392b955c26401",
+                "shasum": ""
+            },
+            "require": {
+                "crodas/file-util": ">=0.1.7",
+                "crodas/service-provider": ">=0.1.17",
+                "leafo/lessphp": "*",
+                "leafo/scssphp": "*",
+                "patchwork/jsqueeze": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "lib/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-4-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "César D. Rodas",
+                    "email": "crodas@php.net"
+                }
+            ],
+            "description": "Very simple asset manager",
+            "time": "2014-09-05 21:19:35"
+        },
         {
             "name": "crodas/class-info",
             "version": "v0.1.9",
@@ -190,19 +230,21 @@
         },
         {
             "name": "crodas/simple-view-engine",
-            "version": "v0.1.18",
+            "version": "v0.1.29",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/SimpleView.git",
-                "reference": "db90b47cf78a7298529cdeb58767c6ad6081a135"
+                "reference": "a8cc8c69185b1c0160ea70960f33d9dcca9b56cf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/SimpleView/zipball/db90b47cf78a7298529cdeb58767c6ad6081a135",
-                "reference": "db90b47cf78a7298529cdeb58767c6ad6081a135",
+                "url": "https://api.github.com/repos/crodas/SimpleView/zipball/a8cc8c69185b1c0160ea70960f33d9dcca9b56cf",
+                "reference": "a8cc8c69185b1c0160ea70960f33d9dcca9b56cf",
                 "shasum": ""
             },
             "require": {
+                "crodas/asset": "~0.1",
+                "crodas/service-provider": "~0.1",
                 "crodas/watch-files": "*",
                 "symfony/console": "*",
                 "symfony/finder": "*"
@@ -224,27 +266,27 @@
                 }
             ],
             "description": "Simple View engine designed to generate code. Based on Laravel's 4 Blade.",
-            "time": "2014-04-05 17:42:25"
+            "time": "2014-09-05 21:20:49"
         },
         {
             "name": "crodas/validator",
-            "version": "v0.1.2",
+            "version": "v0.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/Validator.git",
-                "reference": "c26c04e4484c0d50ff2a0fb94dd712baf83a3ad8"
+                "reference": "dcfc300b5eb678f3bfd0e7a630997c8644574c03"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/Validator/zipball/c26c04e4484c0d50ff2a0fb94dd712baf83a3ad8",
-                "reference": "c26c04e4484c0d50ff2a0fb94dd712baf83a3ad8",
+                "url": "https://api.github.com/repos/crodas/Validator/zipball/dcfc300b5eb678f3bfd0e7a630997c8644574c03",
+                "reference": "dcfc300b5eb678f3bfd0e7a630997c8644574c03",
                 "shasum": ""
             },
             "require": {
                 "crodas/cli": "~0.1",
                 "crodas/file-util": ">=0.1.7",
                 "crodas/notoj": "~0.1",
-                "crodas/simple-view-engine": "~0.1",
+                "crodas/simple-view-engine": ">=0.1.28",
                 "crodas/watch-files": "~0.1"
             },
             "type": "library",
@@ -264,7 +306,7 @@
                 }
             ],
             "description": "Validation library",
-            "time": "2014-05-12 06:39:45"
+            "time": "2014-09-05 21:40:47"
         },
         {
             "name": "crodas/watch-files",
@@ -301,6 +343,145 @@
             ],
             "description": "Watch files and directories for changes",
             "time": "2014-05-12 06:38:45"
+        },
+        {
+            "name": "leafo/lessphp",
+            "version": "v0.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/leafo/lessphp.git",
+                "reference": "51f3f06f0fe78a722dabfd14578444bdd078d9de"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/leafo/lessphp/zipball/51f3f06f0fe78a722dabfd14578444bdd078d9de",
+                "reference": "51f3f06f0fe78a722dabfd14578444bdd078d9de",
+                "shasum": ""
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.3-dev"
+                }
+            },
+            "autoload": {
+                "classmap": [
+                    "lessc.inc.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT",
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Leaf Corcoran",
+                    "email": "leafot@gmail.com",
+                    "homepage": "http://leafo.net"
+                }
+            ],
+            "description": "lessphp is a compiler for LESS written in PHP.",
+            "homepage": "http://leafo.net/lessphp/",
+            "time": "2013-08-09 17:09:19"
+        },
+        {
+            "name": "leafo/scssphp",
+            "version": "v0.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/leafo/scssphp.git",
+                "reference": "8c08da585537e97efd528c7d278463d2b9396371"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/leafo/scssphp/zipball/8c08da585537e97efd528c7d278463d2b9396371",
+                "reference": "8c08da585537e97efd528c7d278463d2b9396371",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "3.7.*"
+            },
+            "bin": [
+                "bin/pscss"
+            ],
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "classmap.php"
+                ],
+                "psr-4": {
+                    "Leafo\\ScssPhp\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT",
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Leaf Corcoran",
+                    "email": "leafot@gmail.com",
+                    "homepage": "http://leafo.net"
+                }
+            ],
+            "description": "scssphp is a compiler for SCSS written in PHP.",
+            "homepage": "http://leafo.net/scssphp/",
+            "keywords": [
+                "css",
+                "less",
+                "sass",
+                "scss",
+                "stylesheet"
+            ],
+            "time": "2014-08-12 22:41:53"
+        },
+        {
+            "name": "patchwork/jsqueeze",
+            "version": "v1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nicolas-grekas/JSqueeze.git",
+                "reference": "95f014738f93b5e0cf855da3745e5f617c41bec6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nicolas-grekas/JSqueeze/zipball/95f014738f93b5e0cf855da3745e5f617c41bec6",
+                "reference": "95f014738f93b5e0cf855da3745e5f617c41bec6",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.1.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "JSqueeze": "class/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "(Apache-2.0 or GPL-2.0)"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Efficient JavaScript minification in PHP",
+            "homepage": "https://github.com/nicolas-grekas/JSqueeze",
+            "keywords": [
+                "compression",
+                "javascript",
+                "minification"
+            ],
+            "time": "2014-08-05 07:46:33"
         },
         {
             "name": "seld/jsonlint",
