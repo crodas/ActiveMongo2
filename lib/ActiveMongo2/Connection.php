@@ -235,7 +235,7 @@ class Connection
 
     protected function create($obj, $document, $col, $trigger_events)
     {
-         $this->mapper->trigger($trigger_events, 'preCreate', $obj, array(&$document, $this));
+        $this->mapper->trigger($trigger_events, 'preCreate', $obj, array(&$document, $this));
 
         $document['_id'] = empty($document['_id']) ?  new MongoId : $document['_id'];
 
@@ -243,20 +243,19 @@ class Connection
 
         $ret = $col->save($document, compact('w'));
 
-         $this->mapper->trigger($trigger_events, 'postCreate', $obj, array($document, $this));
-         $this->mapper->trigger($trigger_events, 'postSave', $obj, array($document, $this));
+        $this->mapper->trigger($trigger_events, 'postCreate', $obj, array($document, $this));
+        $this->mapper->trigger($trigger_events, 'postSave', $obj, array($document, $this));
 
         return $this;
     }
 
-    protected function update($obj, $document, $col, $oldDoc, $trigger_events, $w) {
-        $update = $this->mapper->update($obj, $document, $oldDoc);
-
-        if (empty($update)) {
+    protected function update($obj, $document, $col, $oldDoc, $trigger_events, $w)
+    {
+        if (!($update = $this->mapper->update($obj, $document, $oldDoc))) {
             return $this;
         }
 
-         $this->mapper->trigger($trigger_events, 'preUpdate', $obj, array(&$update, $this));
+        $this->mapper->trigger($trigger_events, 'preUpdate', $obj, array(&$update, $this));
 
         foreach ($update as $op => $value) {
             $col->update(
@@ -266,14 +265,13 @@ class Connection
             );
         }
 
-        if (empty($update['$set'])) {
-            $update['$set'] = array();
+        if (!empty($update['$set'])) {
+            $document = array_merge($document, $update['$set']);
         }
 
-        $this->setObjectDocument($obj, array_merge($document, $update['$set']));
-
-         $this->mapper->trigger($trigger_events, 'postUpdate', $obj, array($update, $this,$oldDoc['_id']));
-         $this->mapper->trigger($trigger_events, 'postSave', $obj, array($update, $this));
+        $this->setObjectDocument($obj, $document);
+        $this->mapper->trigger($trigger_events, 'postUpdate', $obj, array($update, $this,$oldDoc['_id']));
+        $this->mapper->trigger($trigger_events, 'postSave', $obj, array($update, $this));
 
         return $this;
     }
