@@ -99,13 +99,7 @@ class Sluggable
             // Rarely use case
             // @Sluggable has been added and old documents are being update
             $slug = self::sluggify($source ?: 'n-a');
-            $col  = $conn->getCollection($obj);
-
-            while ( $col->count(array($target => $slug)) != 0) {
-                $slug .= '-' . uniqid(true);
-            }
-
-            $document['$set'][$target] = $slug;
+            $document['$set'][$target] = self::checkSlug($conn, $obj, $target, $slug);
         }
 
     } 
@@ -126,6 +120,16 @@ class Sluggable
         return !empty($document[$field]) ? $document[$field] : '';
     }
 
+    protected function checkSlug($conn, $obj, $cname, $slug)
+    {
+        $col  = $conn->getCollection($obj);
+        while ( $col->count(array($cname => $slug)) != 0) {
+            $slug .= '-' . uniqid(true);
+        }
+
+        return $slug;
+    }
+
     /**
      *  @preCreate
      */
@@ -139,12 +143,7 @@ class Sluggable
         } else{
             $slug = self::sluggify(self::text($document, $args[0]) ?: 'n-a');
         }
-        $col  = $conn->getCollection($obj);
 
-        while ( $col->count(array($args[1] => $slug)) != 0) {
-            $slug .= '-' . uniqid(true);
-        }
-
-        $document[$args[1]] = $slug;
+        $document[$args[1]] = self::checkSlug($conn, $obj, $args[1], $slug);
     }
 }
