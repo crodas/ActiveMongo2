@@ -322,8 +322,9 @@ class Mapper
         return $this->{"populate_" . sha1($class)}($object, $data);
     }
 
-    public function trigger($event, $object, Array $args = array())
+    public function trigger($w, $event, $object, Array $args = array())
     {
+        if (!$w) return;
         if ($object instanceof \ActiveMongo2\Reference) {
             $class = strtolower($object->getClass());
         } else {

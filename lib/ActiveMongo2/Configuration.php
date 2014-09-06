@@ -81,9 +81,9 @@ class Configuration
         return $this;
     }
 
-    public function getWriteConcern()
+    public function getWriteConcern($w)
     {
-        return $this->default['w'];
+        return $w ?: $this->default['w'];
     }
 
     public function setCacheStorage(Cache\Storage $storage)

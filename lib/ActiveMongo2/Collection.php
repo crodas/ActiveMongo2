@@ -49,6 +49,7 @@ class Collection implements IteratorAggregate
 
     protected static $defaultOpts = array(
         'multiple' => true,
+        'w'        => 0,
     );
 
     public function __construct(Connection $conn, $mapper, MongoCollection $col, $cache, $config, $name)
@@ -90,19 +91,15 @@ class Collection implements IteratorAggregate
     {
         $this->mapper->onQuery($this->zclass, $filter);
         $this->analizeUpdate($update);
-        if (empty($opts['w'])) {
-            $opts['w'] = $this->config->getWriteConcern();
-        }
         $opts = array_merge(self::$defaultOpts, $opts);
+        $opts['w'] = $this->config->getWriteConcern($opts['w']);
         return $this->zcol->update($filter, $update, $opts);
     }
 
     public function remove($filter, $opts = array())
     {
-        if (empty($opts['w'])) {
-            $opts['w'] = $this->config->getWriteConcern();
-        }
         $opts = array_merge(self::$defaultOpts, $opts);
+        $opts['w'] = $this->config->getWriteConcern($opts['w']);
         $this->mapper->onQuery($this->zclass, $filter);
         return $this->zcol->remove($filter, $opts);
     }

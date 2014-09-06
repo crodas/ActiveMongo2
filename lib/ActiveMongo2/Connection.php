@@ -143,7 +143,7 @@ class Connection
     {
         $doc = new $class;
         $this->setObjectDocument($doc, $document);
-        $this->mapper->trigger('onHydratation', $doc);
+        $this->mapper->trigger(true, 'onHydratation', $doc);
 
         return $doc;
     }
@@ -153,9 +153,9 @@ class Connection
         $this->mapper->populate($object, $document);
     }
 
-    public function delete($obj, $w = null)
+    public function delete($obj, $w = null, $trigger_events = true)
     {
-        if ($w === null) $w = $this->config->getWriteConcern();
+        $w = $this->config->getWriteConcern($w);
         $col = $this->getMongoCollection($obj);
 
         $document = $this->mapper->getDocument($obj);
@@ -164,11 +164,11 @@ class Connection
             throw new \RuntimeException("Cannot delete without an id");
         }
 
-        $this->mapper->trigger('preDelete', $obj, array($document));
+        $this->mapper->trigger($trigger_events, 'preDelete', $obj, array($document));
 
         $col->remove(array('_id' => $document['_id']), compact('w'));
 
-        $this->mapper->trigger('postDelete', $obj, array($document));
+        $this->mapper->trigger($trigger_events, 'postDelete', $obj, array($document));
     }
 
     public function worker($daemon = true)
@@ -211,7 +211,7 @@ class Connection
             throw new \RuntimeException("Update on @GridFS is not yet implemented");
         }
 
-        $this->mapper->trigger('preCreate', $obj, array(&$document, $this));
+        $this->mapper->trigger(true, 'preCreate', $obj, array(&$document, $this));
         $document['_id'] = empty($document['_id']) ?  new MongoId : $document['_id'];
 
         return new StoreFile($col, $document, $this, $obj);
@@ -235,7 +235,7 @@ class Connection
 
     protected function create($obj, $document, $col, $trigger_events)
     {
-        $trigger_events && $this->mapper->trigger('preCreate', $obj, array(&$document, $this));
+         $this->mapper->trigger($trigger_events, 'preCreate', $obj, array(&$document, $this));
 
         $document['_id'] = empty($document['_id']) ?  new MongoId : $document['_id'];
 
@@ -243,8 +243,8 @@ class Connection
 
         $ret = $col->save($document, compact('w'));
 
-        $trigger_events && $this->mapper->trigger('postCreate', $obj, array($document, $this));
-        $trigger_events && $this->mapper->trigger('postSave', $obj, array($document, $this));
+         $this->mapper->trigger($trigger_events, 'postCreate', $obj, array($document, $this));
+         $this->mapper->trigger($trigger_events, 'postSave', $obj, array($document, $this));
 
         return $this;
     }
@@ -256,7 +256,7 @@ class Connection
             return $this;
         }
 
-        $trigger_events && $this->mapper->trigger('preUpdate', $obj, array(&$update, $this));
+         $this->mapper->trigger($trigger_events, 'preUpdate', $obj, array(&$update, $this));
 
         foreach ($update as $op => $value) {
             $col->update(
@@ -272,8 +272,8 @@ class Connection
 
         $this->setObjectDocument($obj, array_merge($document, $update['$set']));
 
-        $trigger_events && $this->mapper->trigger('postUpdate', $obj, array($update, $this,$oldDoc['_id']));
-        $trigger_events && $this->mapper->trigger('postSave', $obj, array($update, $this));
+         $this->mapper->trigger($trigger_events, 'postUpdate', $obj, array($update, $this,$oldDoc['_id']));
+         $this->mapper->trigger($trigger_events, 'postSave', $obj, array($update, $this));
 
         return $this;
     }
@@ -294,9 +294,9 @@ class Connection
             return $this;
         }
 
-        $w = $w ?: $this->config->getWriteConcern();
+        $w = $this->config->getWriteConcern($w);
 
-        $trigger_events && $this->mapper->trigger('preSave', $obj, array(&$update, $this));
+        $this->mapper->trigger($trigger_events, 'preSave', $obj, array(&$update, $this));
 
         $col = $this->getMongoCollection($obj);
         if ($col instanceof \MongoGridFS) {
