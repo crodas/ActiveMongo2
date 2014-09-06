@@ -85,7 +85,7 @@ class Sluggable
     public static function updateSlugUrl($obj, Array $event_args, $conn, $args, $mapper)
     {
         self::check($args);
-        $source = self::text($mapper->getDocument($obj), $args[0]) ?: 'n-a';
+        $source = self::text($mapper->getDocument($obj), $args[0]);
         $target = $args[1];
 
         $document = &$event_args[0];
