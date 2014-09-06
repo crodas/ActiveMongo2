@@ -49,13 +49,10 @@ class Autocomplete
         $schema->defineProperty('/** @Array @Index */', '__index_autocomplete');
     }
 
-    /**
-     *  @preSave
-     */
-    public static function onUpdate($obj, $args, $conn, $ann, $mapper)
+    public static function getWords($mapper, $obj)
     {
+        $text       = [];
         $reflection = $mapper->getReflection(get_class($obj));
-        $text = [];
         foreach ($reflection->properties('@Autocomplete') as $property) {
             $text[] = $property->get($obj);
         }
@@ -67,6 +64,16 @@ class Autocomplete
         } else {
             $words  = [$text];
         }
+        return $words;
+    }
+
+
+    /**
+     *  @preSave
+     */
+    public static function onUpdate($obj, $args, $conn, $ann, $mapper)
+    {
+        $words  = self::getWords($mapper, $obj);
         $ngrams = [];
         foreach ($words as $word) {
             $len  = mb_strlen($word);
