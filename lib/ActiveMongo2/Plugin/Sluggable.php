@@ -109,12 +109,10 @@ class Sluggable
         if (is_array($field)) {
             $text = [];
             foreach ($field as $f) {
-                if (!empty($document[$f])) {
-                    $text[] = $document[$f];
-                }
+                $text[] = $document[$f];
             }
 
-            return implode('-', $text);
+            return implode('-', array_filter($text));
         } 
         
         return !empty($document[$field]) ? $document[$field] : '';
