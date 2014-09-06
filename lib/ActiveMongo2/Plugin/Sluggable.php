@@ -98,7 +98,7 @@ class Sluggable
         if (empty($obj->$target)) {
             // Rarely use case
             // @Sluggable has been added and old documents are being update
-            $slug = self::sluggify($source ?: 'n-a');
+            $slug = self::sluggify($source);
             $document['$set'][$target] = self::checkSlug($conn, $obj, $target, $slug);
         }
 
