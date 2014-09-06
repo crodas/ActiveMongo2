@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "2a2930119bf2a6d674d9d81da78683e0",
+    "hash": "c2815b6e717690e934ccf2eec8ce69d6",
     "packages": [
         {
             "name": "crodas/asset",
@@ -118,16 +118,16 @@
         },
         {
             "name": "crodas/file-util",
-            "version": "v0.1.10",
+            "version": "v0.1.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/FileUtils.git",
-                "reference": "4e9adee9619743583c1f455039b9479bd0db4557"
+                "reference": "6947538188c2cf397812100c1e0b5908ba386ab0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/FileUtils/zipball/4e9adee9619743583c1f455039b9479bd0db4557",
-                "reference": "4e9adee9619743583c1f455039b9479bd0db4557",
+                "url": "https://api.github.com/repos/crodas/FileUtils/zipball/6947538188c2cf397812100c1e0b5908ba386ab0",
+                "reference": "6947538188c2cf397812100c1e0b5908ba386ab0",
                 "shasum": ""
             },
             "type": "library",
@@ -147,7 +147,7 @@
                 }
             ],
             "description": "Useful libraries to manipulate files",
-            "time": "2014-09-05 17:54:09"
+            "time": "2014-09-06 00:35:23"
         },
         {
             "name": "crodas/notoj",
