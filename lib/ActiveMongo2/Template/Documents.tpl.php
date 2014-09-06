@@ -12,8 +12,8 @@ use Notoj;
 
 class Mapper
 {
-    protected $mapper = {{ var_export($collections->byName(), true) }};
-    protected $class_mapper = {{ var_export($collections->byClass(), true) }};
+    protected $mapper = {{ var_export(@$collections->byName(), true) }};
+    protected $class_mapper = {{ var_export(@$collections->byClass(), true) }};
     protected static $loaded = array();
     protected $connection;
 
@@ -420,28 +420,28 @@ class Mapper
             @end
             @if ($is_new)
             $return = $col->createIndex(
-                {{@$index['field']}},
-                {{@$index['extra']}}
+                {{@.$index['field']}},
+                {{@.$index['extra']}}
             );
             @else
             $return = $col->ensureIndex(
-                {{@$index['field']}},
-                {{@$index['extra']}}
+                {{@.$index['field']}},
+                {{@.$index['extra']}}
             );
             @end
         } catch (\Exception $e) {
             // delete index and try to rebuild it
-            $col->deleteIndex({{@$index['field']}});
+            $col->deleteIndex({{@.$index['field']}});
 
             @if ($is_new)
             $col->createIndex(
-                {{@$index['field']}},
-                {{@$index['extra']}}
+                {{@.$index['field']}},
+                {{@.$index['extra']}}
             );
             @else
             $col->ensureIndex(
-                {{@$index['field']}},
-                {{@$index['extra']}}
+                {{@.$index['field']}},
+                {{@.$index['extra']}}
             );
             @end
         }

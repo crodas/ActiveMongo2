@@ -114,6 +114,20 @@ class FluentQuery implements \IteratorAggregate
         $this->col = $col;
     }
 
+    protected function finalizeExpr($child)
+    {
+        if ($child->exprValue) {
+            $op = $child->operator;
+            if ($op == '$pull') {
+                $this->genericUpdate($op, $child->query['$expr']);
+            } else {
+                $this->genericQuery($op, $child->query['$expr']);
+            }
+            return true;
+        }
+        return false;
+    }
+
     protected function finalizeChild($child)
     {
         if ($child->finalized) {
@@ -121,15 +135,9 @@ class FluentQuery implements \IteratorAggregate
         }
         $child->finalized = true;
         $op = $child->operator;
-        if ($child->exprValue) {
-            if ($op == '$pull') {
-                $this->genericUpdate($op, $child->query['$expr']);
-            } else {
-                $this->genericQuery($op, $child->query['$expr']);
-            }
+        if ($this->finalizeExpr($child)) {
             return $this;
-        }
-        if (empty($this->query[$op])) {
+        } else if (empty($this->query[$op])) {
             $this->query[$op] = array();
         }
         $this->query[$op][] = $child->query;

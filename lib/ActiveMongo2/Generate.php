@@ -84,6 +84,8 @@ class Generate
         $valns     = $collections->getValidatorNS();
         $validator = $collections->getValidator();
 
+        class_exists("crodas\FileUtil\File"); // preload class
+
         $args = compact('docs', 'namespace','mapper', 'indexes', 'self', 'collections', 'valns', 'rnd', 'validator');
         $code = Template\Templates::get('documents')
             ->render($args, true);
