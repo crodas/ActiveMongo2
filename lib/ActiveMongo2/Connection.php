@@ -198,11 +198,9 @@ class Connection
 
     public function file($obj)
     {
-        $col = $this->getMongoCollection($obj);
+        $col = $this->getMongoCollection($obj, 'MongoCollection', '@GridFS Annotation is missing');
         if ($obj instanceof DocumentProxy) {
             throw new \RuntimeException("Cannot update a reference");
-        } else if (!$col instanceof \MongoGridFS) {
-            throw new \RuntimeException("@GridFS Annotation missing");
         }
         $document = $this->mapper->validate($obj);
         $oldDoc   = $this->mapper->getRawDocument($obj, false);
@@ -225,10 +223,14 @@ class Connection
         return $this->mapper->getReflection($name);
     }
 
-    protected function getMongoCollection($obj)
+    protected function getMongoCollection($obj, $class = null, $error = null)
     {
         $class = $this->mapper->get_class($obj);
         list($col, $class) = $this->mapper->getCollectionObject($class, $this->db);
+
+        if ($col instanceof $class) {
+            throw new \RuntimeException($error);
+        }
 
         return $col;
     }
@@ -296,10 +298,7 @@ class Connection
 
         $this->mapper->trigger($trigger_events, 'preSave', $obj, array(&$update, $this));
 
-        $col = $this->getMongoCollection($obj);
-        if ($col instanceof \MongoGridFS) {
-            throw new \RuntimeException("@GridFS must be saved with file");
-        }
+        $col = $this->getMongoCollection($obj, 'MongoGridFs', '@GridFS must be saved with file');
 
         $oldDoc = $this->mapper->getRawDocument($obj, false);
         $objId  = $this->mapper->get_class($obj) . '::' . ($oldDoc ? $oldDoc['_id'] : spl_object_hash($obj));
