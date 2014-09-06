@@ -120,7 +120,7 @@ class Sluggable
         return !empty($document[$field]) ? $document[$field] : '';
     }
 
-    protected function checkSlug($conn, $obj, $cname, $slug)
+    protected static function checkSlug($conn, $obj, $cname, $slug)
     {
         $col  = $conn->getCollection($obj);
         while ( $col->count(array($cname => $slug)) != 0) {
