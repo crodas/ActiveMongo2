@@ -40,6 +40,7 @@ namespace ActiveMongo2\Cursor;
 use ArrayIterator;
 use MongoCollection;
 use ActiveMongo2\Connection;
+use ActiveMongo2\Collection;
 
 class Cache extends ArrayIterator
 {
@@ -48,9 +49,10 @@ class Cache extends ArrayIterator
     protected $mapper;
     protected $conn;
     protected $col;
+    protected $zcol;
 
 
-    public function __construct(Array $resultset, Connection $conn, MongoCollection $col, $mapper)
+    public function __construct(Array $resultset, Connection $conn, Collection $zcol, MongoCollection $col, $mapper)
     {
         $this->conn   = $conn;
         $this->col    = $col;

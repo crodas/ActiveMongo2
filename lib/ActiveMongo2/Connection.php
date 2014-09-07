@@ -70,12 +70,6 @@ class Connection
         }
     }
 
-    public function populateFromArray($object, Array $data)
-    {
-        $this->mapper->populateFromArray($object, $data);
-        return $object;
-    }
-
     public function setCacheStorage(Cache\Storage $storage)
     {
         $this->cache->setStorage($storage);
@@ -132,20 +126,6 @@ class Connection
         $this->collections[$class] = new Collection($this, $this->mapper, $col, $cache, $this->config, $class);
 
         return $this->collections[$class];
-    }
-
-    public function registerDocument($class, $document)
-    {
-        $doc = new $class;
-        $this->setObjectDocument($doc, $document);
-        $this->mapper->trigger(true, 'onHydratation', $doc);
-
-        return $doc;
-    }
-
-    protected function setObjectDocument($object, $document)
-    {
-        $this->mapper->populate($object, $document);
     }
 
     public function delete($obj, $w = null, $trigger_events = true)
@@ -207,7 +187,7 @@ class Connection
         $this->mapper->trigger(true, 'preCreate', $obj, array(&$document, $this));
         $document['_id'] = empty($document['_id']) ?  new MongoId : $document['_id'];
 
-        return new StoreFile($col, $document, $this, $obj);
+        return new StoreFile($col, $document, $this, $obj, $this->mapper);
     }
 
     public function getReflection($name)
@@ -236,7 +216,7 @@ class Connection
 
         $document['_id'] = empty($document['_id']) ?  new MongoId : $document['_id'];
 
-        $this->setObjectDocument($obj, $document);
+        $this->mapper->populate($obj, $document);
 
         $ret = $col->save($document, compact('w'));
 
@@ -266,7 +246,7 @@ class Connection
             $document = array_merge($document, $update['$set']);
         }
 
-        $this->setObjectDocument($obj, $document);
+        $this->mapper->populate($obj, $document);
         $this->mapper->trigger($trigger_events, 'postUpdate', $obj, array($update, $this,$oldDoc['_id']));
         $this->mapper->trigger($trigger_events, 'postSave', $obj, array($update, $this));
 

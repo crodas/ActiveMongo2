@@ -45,7 +45,7 @@ function _populate_embed_one(&$value, $args, $conn, $mapper)
 {
     if (is_array($value) && $value)  {
         $class = $value['__embed_class'];
-        $value = $conn->registerDocument($class, $value);
+        $value = $conn->getCollection($class)->registerDocument($value);
     }
 }
 

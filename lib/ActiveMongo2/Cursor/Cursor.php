@@ -39,6 +39,7 @@ namespace ActiveMongo2\Cursor;
 use MongoCollection;
 use MongoCursor;
 use ActiveMongo2\Connection;
+use ActiveMongo2\Collection;
 
 class Cursor extends MongoCursor
 {
@@ -47,11 +48,13 @@ class Cursor extends MongoCursor
     protected $mapper;
     protected $conn;
     protected $col;
+    protected $zcol;
 
-    public function __construct(Array $query, Array $fields, Connection $conn, MongoCollection $col, $mapper)
+    public function __construct(Array $query, Array $fields, Connection $conn, Collection $zcol, MongoCollection $col, $mapper)
     {
         $this->conn   = $conn;
         $this->col    = $col;
+        $this->zcol   = $zcol;
         $this->mapper = $mapper;
         parent::__construct($conn->getConnection(), (string)$col, $query, $fields);
     }

@@ -562,7 +562,7 @@ class SimpleTest extends \phpunit_framework_testcase
             "username" => "crodas-" . rand(0, 0xfffff),
             "pass" =>  "foobar",
         );
-        $conn->populateFromArray($user, $data);
+        $conn->getCollection($user)->populateFromArray($user, $data);
         $this->assertEquals($user->username, $data['username']);
         $this->assertEquals($user->pass, $data['pass']);
         $conn->save($user);
@@ -571,7 +571,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $data = array(
             "username" => "crodas-" . rand(0, 0xfffff),
         );
-        $conn->populateFromArray($user, $data);
+        $conn->getCollection($user)->populateFromArray($user, $data);
         $this->assertEquals($user->username, $data['username']);
         $conn->save($user);
 
@@ -583,7 +583,7 @@ class SimpleTest extends \phpunit_framework_testcase
         );
 
         $post = new PostDocument;
-        $conn->populateFromArray($post, $data);
+        $conn->getCollection($post)->populateFromArray($post, $data);
         $this->assertEquals($post->title, $data['title']);
         $conn->save($post);
 
