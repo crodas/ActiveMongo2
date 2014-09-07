@@ -146,29 +146,9 @@ class Connection
         $this->mapper->trigger($trigger_events, 'postDelete', $obj, array($document));
     }
 
-    public function worker($daemon = true)
+    public function worker($forever = true)
     {
-        $worker = new Worker($this);
-        $done   = 0;
-        do {
-            $done += $worker->main();
-            usleep(200000);
-        } while ($daemon);
-        return $done;
-    }
-
-    public function getReference($object, $cache = [])
-    {
-        return $this->mapper->getReference($object, array_flip($cache));
-    }
-
-    public function is($collection, $object)
-    {
-        $class = $this->mapper->mapCollection($collection)['class'];
-        if ($object instanceof Reference) {
-            return $class == $object->getClass();
-        }
-        return $object instanceof $class;
+        return Worker::run($forever, $this);
     }
 
     public function file($obj)

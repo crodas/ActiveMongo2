@@ -123,7 +123,7 @@ function _validate_reference_one(&$value, Array $rargs, $conn, $args, $mapper)
     }
 
     $check = !empty($args) ? current($args) : null;
-    if ($check && !$document instanceof $check && !$conn->is(current($args), $document)) {
+    if ($check && !$document instanceof $check && !$conn->getCollection(current($args))->is($document)) {
         throw new \RuntimeException("Invalid value");
     }
     

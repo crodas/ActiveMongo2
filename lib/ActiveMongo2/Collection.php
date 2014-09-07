@@ -203,6 +203,21 @@ class Collection implements IteratorAggregate
         return $document;
     }
 
+    public function is($object)
+    {
+        if ($object instanceof Reference) {
+            return $this->zclass == $object->getClass();
+        }
+        return $object instanceof $this->zclass;
+    }
+
+
+    public function getReference($object, $cache = [])
+    {
+        return $this->mapper->getReference($object, array_flip($cache));
+    }
+
+
     public function resultCache(Array $object)
     {
         return new Cursor\Cache($object, $this->zconn, $this, $this->zcol, $this->mapper);

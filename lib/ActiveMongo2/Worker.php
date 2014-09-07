@@ -96,4 +96,15 @@ class Worker
         } while(true);
         return $done;
     }
+
+    public static function run($forever, $conn)
+    {
+        $done = 0;
+        $worker = new self($conn);
+        do {
+            $done += $worker->main();
+            usleep(200000);
+        } while ($forever);
+        return $done;
+    }
 }
