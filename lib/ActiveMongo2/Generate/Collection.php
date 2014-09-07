@@ -208,7 +208,14 @@ class Collection extends Base
                 return $args[$name];
             }
         }
-        return NULL;
+        
+        if ($this->is('GridFs')) {
+            return "fs";
+        }
+
+        $parts = explode("\\", $this->getClass());
+        $name  = strtolower(end($parts)); 
+        return $name;
     }
 
     public function getForwardReferences()
@@ -244,20 +251,14 @@ class Collection extends Base
         if (!empty($this->_name)) {
             return $this->_name;
         }
+
         $args = $this->getAnnotationArgs();
         if ($args === FALSE) {
-            $name = NULL;
-        } else if (($pname = $this->getNameFromParent())
-            || ($pname = $this->getNameFromAnnotation($args, [0, 'collection']))) {
-            $name = $pname;
-        } else if ($this->is('GridFs')) {
-            $name = "fs";
-        } else {
-            $parts = explode("\\", $this->getClass());
-            $name  = strtolower(end($parts)); 
-        }
-
-        return $this->_name = $name;
+            return NULL;
+        } 
+        
+        return $this->name = $this->getNameFromParent()
+            ?: $this->getNameFromAnnotation($args, [0, 'collection']);
     }
 
     public function getAnnotationByName($name)
