@@ -278,7 +278,7 @@ class Connection
         return $this;
     }
 
-    protected function handleSaveProxy($obj)
+    protected function handleSaveProxy(&$obj)
     {
         if ($obj instanceof DocumentProxy) {
             $obj = $obj->getObject();
