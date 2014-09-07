@@ -215,11 +215,7 @@ class Connection
         $this->mapper->trigger($trigger_events, 'preUpdate', $obj, array(&$update, $this));
 
         foreach ($update as $op => $value) {
-            $col->update(
-                array('_id' => $oldDoc['_id']), 
-                array($op => $value),
-                compact('w')
-            );
+            $col->update(array('_id' => $oldDoc['_id']),  array($op => $value), compact('w'));
         }
 
         if (!empty($update['$set'])) {
