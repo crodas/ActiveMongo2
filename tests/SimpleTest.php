@@ -164,6 +164,35 @@ class SimpleTest extends \phpunit_framework_testcase
         }
     }
 
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testBrokenReference()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda-s";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = $user;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers[] = $user;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+
+
+        $conn->delete($user);
+
+        $post = $conn->post->findOne(['_id' => $post->id]);
+        $post->author_ref->getObject(); // read object
+
+    }
+
+
     public function testReferenceSave()
     {
         $conn = getConnection();

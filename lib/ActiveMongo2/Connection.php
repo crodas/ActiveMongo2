@@ -116,11 +116,6 @@ class Connection
         return $cols;
     }
 
-    public function getDocumentClass($collection)
-    {
-        return $this->mapper->mapCollection($collection)['class'];
-    }
-
     public function getCollection($collection)
     {
         list($col, $class) = $this->mapper->getCollectionObject($collection, $this->db);
