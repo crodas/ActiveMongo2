@@ -170,6 +170,11 @@ class Connection
         return new StoreFile($col, $document, $this, $obj, $this->mapper);
     }
 
+    public function getMapper()
+    {
+        return $this->mapper;
+    }
+
     public function getReflection($name)
     {
         if (!is_string($name)) {
