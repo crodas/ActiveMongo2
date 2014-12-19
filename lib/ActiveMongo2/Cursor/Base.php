@@ -90,7 +90,7 @@ trait Base
         if ($this->col instanceof \MongoGridFs) {
             $current = new \MongoGridFsFile($this->col, $current);
         }
-        return $this->conn->registerDocument($class, $current);
+        return $this->zcol->registerDocument($current);
     }
 
     public function toArray()

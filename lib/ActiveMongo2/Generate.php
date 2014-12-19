@@ -82,12 +82,13 @@ class Generate
         $namespace = "ActiveMongo2\\Namspace" . uniqid(true); 
         $rnd       = uniqid();
         $valns     = $collections->getValidatorNS();
+        $validator = $collections->getValidator();
 
-        $args = compact('docs', 'namespace','mapper', 'indexes', 'self', 'collections', 'valns', 'rnd');
+        class_exists("crodas\FileUtil\File"); // preload class
+
+        $args = compact('docs', 'namespace','mapper', 'indexes', 'self', 'collections', 'valns', 'rnd', 'validator');
         $code = Template\Templates::get('documents')
             ->render($args, true);
-
-        $code = str_replace('<!--validator-'.$rnd.'-->', $collections->getValidatorCode(), $code);
 
         if (strlen($code) >= 1024*1024) {
             File::write($target, $code);

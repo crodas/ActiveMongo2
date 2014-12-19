@@ -49,6 +49,7 @@ class Collection implements IteratorAggregate
 
     protected static $defaultOpts = array(
         'multiple' => true,
+        'w'        => 0,
     );
 
     public function __construct(Connection $conn, $mapper, MongoCollection $col, $cache, $config, $name)
@@ -86,23 +87,37 @@ class Collection implements IteratorAggregate
         return new FluentQuery($this);
     }
 
+    public function populateFromArray($object, Array $data)
+    {
+        $this->mapper->populateFromArray($object, $data);
+        return $object;
+    }
+
+
+    public function registerDocument($document)
+    {
+        $class = $this->mapper->getObjectClass($this->zcol, $document);
+        $doc   = new $class;
+        $this->mapper->populate($doc, $document);
+        $this->mapper->trigger(true, 'onHydratation', $doc);
+
+        return $doc;
+    }
+
+
     public function update($filter, $update, $opts = array())
     {
         $this->mapper->onQuery($this->zclass, $filter);
         $this->analizeUpdate($update);
-        if (empty($opts['w'])) {
-            $opts['w'] = $this->config->getWriteConcern();
-        }
         $opts = array_merge(self::$defaultOpts, $opts);
+        $opts['w'] = $this->config->getWriteConcern($opts['w']);
         return $this->zcol->update($filter, $update, $opts);
     }
 
     public function remove($filter, $opts = array())
     {
-        if (empty($opts['w'])) {
-            $opts['w'] = $this->config->getWriteConcern();
-        }
         $opts = array_merge(self::$defaultOpts, $opts);
+        $opts['w'] = $this->config->getWriteConcern($opts['w']);
         $this->mapper->onQuery($this->zclass, $filter);
         return $this->zcol->remove($filter, $opts);
     }
@@ -145,7 +160,7 @@ class Collection implements IteratorAggregate
 
         $results = [];
         foreach ($document['result'] as $res) {
-            $results[] = $this->zconn->registerDocument($this->mapper->getObjectClass($this->zcol, $res), $res);
+            $results[] = $this->registerDocument($res);
         }
 
         return $results;
@@ -160,21 +175,20 @@ class Collection implements IteratorAggregate
             return NULL;
         }
 
-        return $this->zconn->registerDocument($this->mapper->getObjectClass($this->zcol, $response), $response);
+        return $this->registerDocument($response);
     }
 
     public function find($query = array(), $fields = array())
     {
         $this->mapper->onQuery($this->zclass, $query);
-        return new Cursor\Cursor($query, $fields, $this->zconn, $this->zcol, $this->mapper);
+        return new Cursor\Cursor($query, $fields, $this->zconn, $this, $this->zcol, $this->mapper);
     }
 
     public function getById($id)
     {
         $cache = $this->cache->get([$this->zcol, $id]);
         if (is_array($cache)) {
-            return $this->zconn->registerDocument(
-                $this->mapper->getObjectClass($this->zcol, $cache), 
+            return $this->registerDocument(
                 $cache
             );
         }
@@ -189,9 +203,24 @@ class Collection implements IteratorAggregate
         return $document;
     }
 
+    public function is($object)
+    {
+        if ($object instanceof Reference) {
+            return $this->zclass == $object->getClass();
+        }
+        return $object instanceof $this->zclass;
+    }
+
+
+    public function getReference($object, $cache = [])
+    {
+        return $this->mapper->getReference($object, array_flip($cache));
+    }
+
+
     public function resultCache(Array $object)
     {
-        return new Cursor\Cache($object, $this->zconn, $this->zcol, $this->mapper);
+        return new Cursor\Cache($object, $this->zconn, $this, $this->zcol, $this->mapper);
     }
 
     public function findOne($query = array(), $fields = array())
@@ -202,6 +231,6 @@ class Collection implements IteratorAggregate
             return $doc;
         }
 
-        return $this->zconn->registerDocument($this->mapper->getObjectClass($this->zcol, $doc), $doc);
+        return $this->registerDocument($doc);
     }
 }

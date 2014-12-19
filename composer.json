@@ -2,16 +2,17 @@
     "name": "crodas/activemongo2",
     "description": "Mongo abstraction",
     "require": {
+        "php": ">=5.4.0",
         "crodas/service-provider": ">=0.1.12",
-        "crodas/notoj": ">=0.1.16",
+        "crodas/notoj": ">=0.1.18",
         "crodas/simple-view-engine": "~0.1",
         "crodas/watch-files": "~0.1",
-        "crodas/file-util": ">=0.1.7",
+        "crodas/file-util": ">=0.1.14",
         "crodas/cli": "~0.1",
-        "crodas/validator": ">=0.1.2"
+        "crodas/validator": ">=0.1.5"
     },
     "license": "BSD-4-Clause",
-    "version": "v0.1.31",
+    "version": "v0.1.32",
     "authors": [
         {
             "name": "César D. Rodas",

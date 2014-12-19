@@ -85,7 +85,7 @@ class Sluggable
     public static function updateSlugUrl($obj, Array $event_args, $conn, $args, $mapper)
     {
         self::check($args);
-        $source = self::text($mapper->getDocument($obj), $args[0]) ?: 'n-a';
+        $source = self::text($mapper->getDocument($obj), $args[0]);
         $target = $args[1];
 
         $document = &$event_args[0];
@@ -98,14 +98,8 @@ class Sluggable
         if (empty($obj->$target)) {
             // Rarely use case
             // @Sluggable has been added and old documents are being update
-            $slug = self::sluggify($source ?: 'n-a');
-            $col  = $conn->getCollection($obj);
-
-            while ( $col->count(array($target => $slug)) != 0) {
-                $slug .= '-' . uniqid(true);
-            }
-
-            $document['$set'][$target] = $slug;
+            $slug = self::sluggify($source);
+            $document['$set'][$target] = self::checkSlug($conn, $obj, $target, $slug);
         }
 
     } 
@@ -115,15 +109,23 @@ class Sluggable
         if (is_array($field)) {
             $text = [];
             foreach ($field as $f) {
-                if (!empty($document[$f])) {
-                    $text[] = $document[$f];
-                }
+                $text[] = $document[$f];
             }
 
-            return implode('-', $text);
+            return implode('-', array_filter($text));
         } 
         
         return !empty($document[$field]) ? $document[$field] : '';
+    }
+
+    protected static function checkSlug($conn, $obj, $cname, $slug)
+    {
+        $col  = $conn->getCollection($obj);
+        while ( $col->count(array($cname => $slug)) != 0) {
+            $slug .= '-' . uniqid(true);
+        }
+
+        return $slug;
     }
 
     /**
@@ -139,12 +141,7 @@ class Sluggable
         } else{
             $slug = self::sluggify(self::text($document, $args[0]) ?: 'n-a');
         }
-        $col  = $conn->getCollection($obj);
 
-        while ( $col->count(array($args[1] => $slug)) != 0) {
-            $slug .= '-' . uniqid(true);
-        }
-
-        $document[$args[1]] = $slug;
+        $document[$args[1]] = self::checkSlug($conn, $obj, $args[1], $slug);
     }
 }

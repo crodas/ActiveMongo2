@@ -45,13 +45,15 @@ class StoreFile extends Connection
     protected $metadata;
     protected $object;
     protected $conn;
+    protected $mapper;
 
-    public function __construct(MongoGridFS $col, Array $document, $conn, &$object)
+    public function __construct(MongoGridFS $col, Array $document, $conn, &$object, $mapper)
     {
         $this->gridfs   = $col;
         $this->metadata = $document;
         $this->conn     = $conn;
         $this->object   = &$object;
+        $this->mapper   = $mapper;
     }
 
     public function storeFile($name)
@@ -61,14 +63,14 @@ class StoreFile extends Connection
         }
         $this->gridfs->storeFile($name, $this->metadata);
         $doc = $this->gridfs->findOne($this->metadata);
-        $this->conn->setObjectDocument($this->object, $doc);
+        $this->mapper->populate($this->object, $doc);
     }
 
     public function storeBytes($bytes)
     {
         $this->gridfs->storeBytes($bytes, $this->metadata);
         $doc = $this->gridfs->findOne($this->metadata);
-        $this->conn->setObjectDocument($this->object, $doc);
+        $this->mapper->populate($this->object, $doc);
     }
 
     public function storeUpload($name)
@@ -78,6 +80,6 @@ class StoreFile extends Connection
         }
         $this->gridfs->storeUpload($name, $this->metadata);
         $doc = $this->gridfs->findOne($this->metadata);
-        $this->conn->setObjectDocument($this->object, $doc);
+        $this->mapper->populate($this->object, $doc);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace {{trim($namespace, '\\')}};
 
+use {{$valns}} as v;
 use MongoClient;
 use ActiveMongo2\Connection;
 use Notoj\Annotation;
@@ -11,8 +12,8 @@ use Notoj;
 
 class Mapper
 {
-    protected $mapper = {{ var_export($collections->byName(), true) }};
-    protected $class_mapper = {{ var_export($collections->byClass(), true) }};
+    protected $mapper = {{ var_export(@$collections->byName(), true) }};
+    protected $class_mapper = {{ var_export(@$collections->byClass(), true) }};
     protected static $loaded = array();
     protected $connection;
 
@@ -321,8 +322,9 @@ class Mapper
         return $this->{"populate_" . sha1($class)}($object, $data);
     }
 
-    public function trigger($event, $object, Array $args = array())
+    public function trigger($w, $event, $object, Array $args = array())
     {
+        if (!$w) return;
         if ($object instanceof \ActiveMongo2\Reference) {
             $class = strtolower($object->getClass());
         } else {
@@ -419,28 +421,28 @@ class Mapper
             @end
             @if ($is_new)
             $return = $col->createIndex(
-                {{@$index['field']}},
-                {{@$index['extra']}}
+                {{@.$index['field']}},
+                {{@.$index['extra']}}
             );
             @else
             $return = $col->ensureIndex(
-                {{@$index['field']}},
-                {{@$index['extra']}}
+                {{@.$index['field']}},
+                {{@.$index['extra']}}
             );
             @end
         } catch (\Exception $e) {
             // delete index and try to rebuild it
-            $col->deleteIndex({{@$index['field']}});
+            $col->deleteIndex({{@.$index['field']}});
 
             @if ($is_new)
             $col->createIndex(
-                {{@$index['field']}},
-                {{@$index['extra']}}
+                {{@.$index['field']}},
+                {{@.$index['extra']}}
             );
             @else
             $col->ensureIndex(
-                {{@$index['field']}},
-                {{@$index['extra']}}
+                {{@.$index['field']}},
+                {{@.$index['extra']}}
             );
             @end
         }
@@ -953,11 +955,11 @@ class Mapper
 
                 @if ($prop->getAnnotation()->has('Date'))
                     $_date = \date_create('@' . {{$prop->getPHPVariable()}}->sec);
-                    if (\{{$valns}}\validate({{@$collection->getClass() . "::" . $prop->getPHPName()}}, $_date) === false) {
+                    if (v\validate_{{sha1($collection->getClass() . "::" . $prop->getPHPName())}}($_date) === false) {
                         throw new \RuntimeException("Validation failed for {{$prop.''}}");
                     }
-                @elif (!$prop->isCustom())
-                    if (\{{$valns}}\validate({{@$collection->getClass() . "::" . $prop->getPHPName()}}, {{$prop->getPHPVariable()}}) === false) {
+                @elif (!$prop->isCustom() && $validator->hasRules($collection->getClass() . "::" . $prop->getPHPName()))
+                    if (v\validate_{{sha1($collection->getClass() . "::" . $prop->getPHPName())}}({{$prop->getPHPVariable()}}) === false) {
                         throw new \RuntimeException("Validation failed for {{$prop.''}}");
                     }
                 @end
@@ -1059,7 +1061,7 @@ class ActiveMongo2Mapped
     }
 }
 
-<!--validator-{{$rnd}}-->
+{{ substr($validator->getCode(), 5) }}
 
 return array(
     "ns" => {{@trim($namespace, '\\')}},

@@ -70,12 +70,6 @@ class Connection
         }
     }
 
-    public function populateFromArray($object, Array $data)
-    {
-        $this->mapper->populateFromArray($object, $data);
-        return $object;
-    }
-
     public function setCacheStorage(Cache\Storage $storage)
     {
         $this->cache->setStorage($storage);
@@ -116,11 +110,6 @@ class Connection
         return $cols;
     }
 
-    public function getDocumentClass($collection)
-    {
-        return $this->mapper->mapCollection($collection)['class'];
-    }
-
     public function getCollection($collection)
     {
         list($col, $class) = $this->mapper->getCollectionObject($collection, $this->db);
@@ -139,23 +128,9 @@ class Connection
         return $this->collections[$class];
     }
 
-    public function registerDocument($class, $document)
+    public function delete($obj, $w = null, $trigger_events = true)
     {
-        $doc = new $class;
-        $this->setObjectDocument($doc, $document);
-        $this->mapper->trigger('onHydratation', $doc);
-
-        return $doc;
-    }
-
-    protected function setObjectDocument($object, $document)
-    {
-        $this->mapper->populate($object, $document);
-    }
-
-    public function delete($obj, $w = null)
-    {
-        if ($w === null) $w = $this->config->getWriteConcern();
+        $w = $this->config->getWriteConcern($w);
         $col = $this->getMongoCollection($obj);
 
         $document = $this->mapper->getDocument($obj);
@@ -164,45 +139,23 @@ class Connection
             throw new \RuntimeException("Cannot delete without an id");
         }
 
-        $this->mapper->trigger('preDelete', $obj, array($document));
+        $this->mapper->trigger($trigger_events, 'preDelete', $obj, array($document));
 
         $col->remove(array('_id' => $document['_id']), compact('w'));
 
-        $this->mapper->trigger('postDelete', $obj, array($document));
+        $this->mapper->trigger($trigger_events, 'postDelete', $obj, array($document));
     }
 
-    public function worker($daemon = true)
+    public function worker($forever = true)
     {
-        $worker = new Worker($this);
-        $done   = 0;
-        do {
-            $done += $worker->main();
-            usleep(200000);
-        } while ($daemon);
-        return $done;
-    }
-
-    public function getReference($object, $cache = [])
-    {
-        return $this->mapper->getReference($object, array_flip($cache));
-    }
-
-    public function is($collection, $object)
-    {
-        $class = $this->mapper->mapCollection($collection)['class'];
-        if ($object instanceof Reference) {
-            return $class == $object->getClass();
-        }
-        return $object instanceof $class;
+        return Worker::run($forever, $this);
     }
 
     public function file($obj)
     {
-        $col = $this->getMongoCollection($obj);
+        $col = $this->getMongoCollection($obj, 'MongoCollection', '@GridFS Annotation is missing');
         if ($obj instanceof DocumentProxy) {
             throw new \RuntimeException("Cannot update a reference");
-        } else if (!$col instanceof \MongoGridFS) {
-            throw new \RuntimeException("@GridFS Annotation missing");
         }
         $document = $this->mapper->validate($obj);
         $oldDoc   = $this->mapper->getRawDocument($obj, false);
@@ -211,10 +164,15 @@ class Connection
             throw new \RuntimeException("Update on @GridFS is not yet implemented");
         }
 
-        $this->mapper->trigger('preCreate', $obj, array(&$document, $this));
+        $this->mapper->trigger(true, 'preCreate', $obj, array(&$document, $this));
         $document['_id'] = empty($document['_id']) ?  new MongoId : $document['_id'];
 
-        return new StoreFile($col, $document, $this, $obj);
+        return new StoreFile($col, $document, $this, $obj, $this->mapper);
+    }
+
+    public function getMapper()
+    {
+        return $this->mapper;
     }
 
     public function getReflection($name)
@@ -225,60 +183,58 @@ class Connection
         return $this->mapper->getReflection($name);
     }
 
-    protected function getMongoCollection($obj)
+    protected function getMongoCollection($obj, $class = null, $error = null)
     {
         $class = $this->mapper->get_class($obj);
         list($col, $class) = $this->mapper->getCollectionObject($class, $this->db);
+
+        if ($col instanceof $class) {
+            throw new \RuntimeException($error);
+        }
 
         return $col;
     }
 
     protected function create($obj, $document, $col, $trigger_events)
     {
-        $trigger_events && $this->mapper->trigger('preCreate', $obj, array(&$document, $this));
+        $this->mapper->trigger($trigger_events, 'preCreate', $obj, array(&$document, $this));
 
         $document['_id'] = empty($document['_id']) ?  new MongoId : $document['_id'];
 
-        $this->setObjectDocument($obj, $document);
+        $this->mapper->populate($obj, $document);
 
         $ret = $col->save($document, compact('w'));
 
-        $trigger_events && $this->mapper->trigger('postCreate', $obj, array($document, $this));
-        $trigger_events && $this->mapper->trigger('postSave', $obj, array($document, $this));
+        $this->mapper->trigger($trigger_events, 'postCreate', $obj, array($document, $this));
+        $this->mapper->trigger($trigger_events, 'postSave', $obj, array($document, $this));
 
         return $this;
     }
 
-    protected function update($obj, $document, $col, $oldDoc, $trigger_events, $w) {
-        $update = $this->mapper->update($obj, $document, $oldDoc);
-
-        if (empty($update)) {
+    protected function update($obj, $document, $col, $oldDoc, $trigger_events, $w)
+    {
+        if (!($update = $this->mapper->update($obj, $document, $oldDoc))) {
             return $this;
         }
 
-        $trigger_events && $this->mapper->trigger('preUpdate', $obj, array(&$update, $this));
+        $this->mapper->trigger($trigger_events, 'preUpdate', $obj, array(&$update, $this));
 
         foreach ($update as $op => $value) {
-            $col->update(
-                array('_id' => $oldDoc['_id']), 
-                array($op => $value),
-                compact('w')
-            );
+            $col->update(array('_id' => $oldDoc['_id']),  array($op => $value), compact('w'));
         }
 
-        if (empty($update['$set'])) {
-            $update['$set'] = array();
+        if (!empty($update['$set'])) {
+            $document = array_merge($document, $update['$set']);
         }
 
-        $this->setObjectDocument($obj, array_merge($document, $update['$set']));
-
-        $trigger_events && $this->mapper->trigger('postUpdate', $obj, array($update, $this,$oldDoc['_id']));
-        $trigger_events && $this->mapper->trigger('postSave', $obj, array($update, $this));
+        $this->mapper->populate($obj, $document);
+        $this->mapper->trigger($trigger_events, 'postUpdate', $obj, array($update, $this,$oldDoc['_id']));
+        $this->mapper->trigger($trigger_events, 'postSave', $obj, array($update, $this));
 
         return $this;
     }
 
-    protected function handleSaveProxy($obj)
+    protected function handleSaveProxy(&$obj)
     {
         if ($obj instanceof DocumentProxy) {
             $obj = $obj->getObject();
@@ -294,14 +250,11 @@ class Connection
             return $this;
         }
 
-        $w = $w ?: $this->config->getWriteConcern();
+        $w = $this->config->getWriteConcern($w);
 
-        $trigger_events && $this->mapper->trigger('preSave', $obj, array(&$update, $this));
+        $this->mapper->trigger($trigger_events, 'preSave', $obj, array(&$update, $this));
 
-        $col = $this->getMongoCollection($obj);
-        if ($col instanceof \MongoGridFS) {
-            throw new \RuntimeException("@GridFS must be saved with file");
-        }
+        $col = $this->getMongoCollection($obj, 'MongoGridFs', '@GridFS must be saved with file');
 
         $oldDoc = $this->mapper->getRawDocument($obj, false);
         $objId  = $this->mapper->get_class($obj) . '::' . ($oldDoc ? $oldDoc['_id'] : spl_object_hash($obj));

@@ -14,6 +14,9 @@ class UserDocument
     /** @Id */
     public $userid;
 
+    /** @Reference(activemongo2\tests\document\files) */
+    public $object;
+
     /** @Reference(post) */
     public $some_post;
 

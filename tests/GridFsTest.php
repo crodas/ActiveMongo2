@@ -47,6 +47,38 @@ class GridFsTest extends \phpunit_framework_testcase
     }
 
     /** @expectedException RuntimeException */
+    public function testFileNoUpdateReference()
+    {
+        $conn = getConnection(true);
+        $file = new Files;
+        $file->id = "/foobarxxx";
+        $file->namexxx = "foobar";
+        $conn->file($file)->storeFile(__FILE__);
+
+
+        $user = new UserDocument;
+        $user->username = "crodas-avatar";
+        $user->object = $file;
+        $conn->save($user);
+
+        $conn->file($user->object)->storeFile(__FILE__);
+    }
+
+
+    /** @expectedException RuntimeException */
+    public function testFileNoUpdate()
+    {
+        $conn = getConnection(true);
+        $file = new Files;
+        $file->id = "/foobarx";
+        $file->namexxx = "foobar";
+        $conn->file($file)->storeFile(__FILE__);
+
+        $conn->file($file)->storeFile(__FILE__);
+    }
+
+
+    /** @expectedException RuntimeException */
     public function testFileStoreFailed()
     {
         $conn = getConnection(true);

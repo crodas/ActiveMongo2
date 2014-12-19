@@ -93,7 +93,10 @@ class SimpleTest extends \phpunit_framework_testcase
     }
 
 
-    /** @dependsOn testSimpleFind */
+    /** 
+     * @dependsOn testReferenceOne 
+     * @dependsOn testSimpleFind 
+     */
     public function testDrop()
     {
         $conn = getConnection();
@@ -105,6 +108,14 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertTrue($userCol->count() > 0);
         $userCol->drop();
         $this->assertTrue($userCol->count() == 0);
+
+        $user = new UserDocument;
+        $user->username = "crodas-" . rand(0, 0xfffff);
+        $conn->save($user);
+        $this->assertTrue($userCol->count() > 0);
+        $conn->dropDatabase();
+        $this->assertTrue($userCol->count() == 0);
+
     }
 
     /**
@@ -153,6 +164,65 @@ class SimpleTest extends \phpunit_framework_testcase
         }
     }
 
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testBrokenReference()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda-s";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = $user;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers[] = $user;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+
+
+        $conn->delete($user);
+
+        $post = $conn->post->findOne(['_id' => $post->id]);
+        $post->author_ref->getObject(); // read object
+
+    }
+
+
+    public function testReferenceSave()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "crodas";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = $user;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers[] = $user;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+
+        $conn->save($post->author_ref);
+
+        $post->author_ref->username = "david";
+        $conn->save($post->author_ref);
+
+        $user = $conn->getCollection('user')->findOne(['_id' => $user->userid]);
+        $this->assertEquals($user->username, "david");
+
+        $conn->dropDatabase();
+
+    }
+
+
     public function testReferenceOne()
     {
         $conn = getConnection();
@@ -186,7 +256,7 @@ class SimpleTest extends \phpunit_framework_testcase
 
         // test that no request has been made
         $this->AssertTrue(is_array($savedPost->author->getReference()));
-        $this->assertEquals("7-foobar-post", $savedPost->uri);
+        $this->assertEquals("1-foobar-post", $savedPost->uri);
 
         $user->username = "foobar";
         $conn->save($user);
@@ -395,12 +465,19 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($one->count(), $i);
     }
 
-    public function testREflectionByClassOrCollection()
+    public function testReflectionByClassOrCollection()
     {
         $conn = getConnection();
         $this->assertEquals(
             $conn->getReflection('post'),    
             $conn->getReflection('ActiveMongo2\Tests\Document\BaseDocument')
+        );
+
+        $post = new ActiveMongo2\Tests\Document\PostDocument;
+
+        $this->assertEquals(
+            $conn->getReflection($post),
+            $conn->getReflection(get_class($post))
         );
     }
 
@@ -485,7 +562,7 @@ class SimpleTest extends \phpunit_framework_testcase
             "username" => "crodas-" . rand(0, 0xfffff),
             "pass" =>  "foobar",
         );
-        $conn->populateFromArray($user, $data);
+        $conn->getCollection($user)->populateFromArray($user, $data);
         $this->assertEquals($user->username, $data['username']);
         $this->assertEquals($user->pass, $data['pass']);
         $conn->save($user);
@@ -494,7 +571,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $data = array(
             "username" => "crodas-" . rand(0, 0xfffff),
         );
-        $conn->populateFromArray($user, $data);
+        $conn->getCollection($user)->populateFromArray($user, $data);
         $this->assertEquals($user->username, $data['username']);
         $conn->save($user);
 
@@ -506,7 +583,7 @@ class SimpleTest extends \phpunit_framework_testcase
         );
 
         $post = new PostDocument;
-        $conn->populateFromArray($post, $data);
+        $conn->getCollection($post)->populateFromArray($post, $data);
         $this->assertEquals($post->title, $data['title']);
         $conn->save($post);
 
