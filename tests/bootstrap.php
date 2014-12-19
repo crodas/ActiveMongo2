@@ -12,7 +12,7 @@ function getConnection($cache = false)
 {
     static $first;
 
-    $conf = new \ActiveMongo2\Configuration(__DIR__ . "/tmp/foo.php");
+    $conf = new \ActiveMongo2\Configuration();
     $conf
         ->addModelPath(__DIR__ . '/docs')
         ->development();
