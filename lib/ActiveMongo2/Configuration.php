@@ -37,6 +37,7 @@
 namespace ActiveMongo2;
 
 use Notoj\Notoj;
+use crodas\FileUtil\File;
 use WatchFiles\Watch;
 
 class Configuration
@@ -60,9 +61,9 @@ class Configuration
         return self::$paths[$path];
     }
 
-    public function __construct($loader)
+    public function __construct($loader = '')
     {
-        $this->loader = $loader;
+        $this->loader = $loader ?: File::generateFilepath('activemongo2', getcwd());
         $this->cache  = new Cache\Cache;
     }
 
