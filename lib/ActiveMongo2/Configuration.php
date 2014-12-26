@@ -45,6 +45,7 @@ class Configuration
     protected $loader;
     protected $path;
     protected $devel = false;
+    protected $namespace = "";
     protected $generated = false;
     protected $cache;
     protected $default = array('w' => 1);
@@ -65,6 +66,12 @@ class Configuration
     {
         $this->loader = $loader ?: File::generateFilepath('activemongo2', getcwd());
         $this->cache  = new Cache\Cache;
+    }
+
+    public function setNamespace($ns)
+    {
+        $this->namespace = $ns;
+        return $this;
     }
 
     public function failOnMissingReference($fail = null)
@@ -102,18 +109,6 @@ class Configuration
         return $this->path;
     }
 
-    public function setNamespace($ns)
-    {
-        self::$paths[$this->loaded]['ns'] = $ns;
-        return $this;
-    }
-
-    public function getNamespace()
-    {
-        $info = self::isLoaded($this->loader);
-        return $info['ns'];
-    }
-
     public function getLoader()
     {
         return $this->loader;
@@ -147,7 +142,7 @@ class Configuration
         $this->generateIfNeeded();
         $info = self::isLoaded($this->loader);
         $class = "{$info['ns']}\\Mapper";
-        return new $class($conn);
+        return new $class($conn, $this->namespace);
     }
 
     public function isDevel()

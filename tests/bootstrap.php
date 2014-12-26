@@ -17,6 +17,10 @@ function getConnection($cache = false)
         ->addModelPath(__DIR__ . '/docs')
         ->development();
 
+    if (!empty($_SERVER["NAMESPACE"])) {
+        if (!$first) print "Using namespace {$_SERVER['NAMESPACE']}\n";
+        $conf->SetNamespace($_SERVER["NAMESPACE"]);
+    }
     if ($cache) {
         $conf->setCacheStorage(new \ActiveMongo2\Cache\Storage\Memory);
     }

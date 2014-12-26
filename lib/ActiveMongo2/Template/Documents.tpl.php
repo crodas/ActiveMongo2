@@ -16,10 +16,14 @@ class Mapper
     protected $class_mapper = {{ var_export(@$collections->byClass(), true) }};
     protected static $loaded = array();
     protected $connection;
+    protected $ns = "";
 
-    public function __construct(Connection $conn)
+    public function __construct(Connection $conn, $ns)
     {
         $this->connection = $conn;
+        if (!empty($ns)) {
+            $this->ns = "{$ns}.";
+        }
         spl_autoload_register(array($this, '__autoloader'));
     }
 
@@ -48,7 +52,7 @@ class Mapper
         return array(
         @foreach ($collections as $collection)
             @if ($collection->getName())
-                {{@$collection->getClass()}} => {{@$collection->getName()}},
+                {{@$collection->getClass()}} => $this->ns . {{@$collection->getName()}},
             @end
         @end
         );
@@ -79,6 +83,10 @@ class Mapper
                 require __DIR__ .  $data['file'];
             }
             self::$loaded[$data['file']] = true;
+        }
+
+        if ($this->ns) {
+            $data['name'] = $this->ns . $data['name'];
         }
 
         if (!empty($data['is_gridfs'])) {
@@ -358,6 +366,9 @@ class Mapper
         if ($col instanceof \MongoCollection) {
             $col = $col->getName();
         }
+        if (strncmp($this->ns, $col, $len = strlen($this->ns)) == 0) {
+            $col = substr($col, $len);
+        }
         $class = NULL;
         switch ($col) {
         @foreach ($collections as $collection)
@@ -415,9 +426,9 @@ class Mapper
         @foreach($collections->getIndexes() as $id => $index)
         try {
             @if (!empty($index['col'])) 
-                $col = $db->createCollection({{@$index['col']->getName()}}); 
+                $col = $db->createCollection($this->ns . {{@$index['col']->getName()}}); 
             @else
-                $col = $db->createCollection({{@$index['prop']->getParent()->getName()}}); 
+                $col = $db->createCollection($this->ns . {{@$index['prop']->getParent()->getName()}}); 
             @end
             @if ($is_new)
             $return = $col->createIndex(
