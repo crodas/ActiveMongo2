@@ -7,6 +7,7 @@ namespace ActiveMongo2\Tests\Document;
  * @Unupdatable("email")
  * @Universal(auto_increment=true,set_id=true)
  * @RefCache(username, email, visits)
+ *  @Connection("foobar")
  * @Elastica
  */
 class UserDocument

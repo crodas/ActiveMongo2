@@ -76,6 +76,9 @@ class Connection
         $this->conn[$name] = $conn;
         $this->db[$name]   = $conn->selectDB($dbname);
         $this->mapper->setDatabases($this->db);
+        if ($this->config->hasGenerated() || $this->config->isDevel())  {
+            $this->ensureIndex(true);
+        }
         return $this;
     }
 

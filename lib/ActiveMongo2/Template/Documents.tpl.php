@@ -439,6 +439,7 @@ class Mapper
         @set($is_new, version_compare(MongoClient::VERSION, '1.5.0', '>'))
 
         @foreach($collections->getIndexes() as $id => $index)
+            @set($next, uniqid(true))
             @if (!empty($index['col'])) 
                 @set($col, $index['col'])
             @else
@@ -447,7 +448,7 @@ class Mapper
 
             $conn = $this->class_connections[{{@$col->getClass()}}];
             if (empty($this->connections[$conn])) {
-                throw new \RuntimeException("Cannot find connection $conn");
+                goto skip_{{$next}};
             }
             $db = $this->connections[$conn];
 
@@ -481,6 +482,7 @@ class Mapper
             );
             @end
         }
+        skip_{{$next}}:
         @end
     }
 

@@ -8,8 +8,8 @@
 namespace {
 
 
-    $GLOBALS['file_54a0ccd90b9f4'] = array();
-    $GLOBALS['line_54a0ccd90b9f4'] = array();
+    $GLOBALS['file_54a0d5d246c8d'] = array();
+    $GLOBALS['line_54a0d5d246c8d'] = array();
 
     class base_template_df562f12800ad133cdbc6f040ca106a099504656
     {
@@ -60,9 +60,9 @@ namespace {
     }
 
     /** 
-     *  Template class generated from Reference/Update.tpl.php
+     *  Template class generated from Callback.tpl
      */
-    class class_f8c39509b1fb331e8b8ef22a135640af98725ce5 extends base_template_df562f12800ad133cdbc6f040ca106a099504656
+    class class_1895ec604b22a2e3f627b9d8d7ae6142d332247e extends base_template_df562f12800ad133cdbc6f040ca106a099504656
     {
 
         public function hasSection($name)
@@ -95,109 +95,121 @@ namespace {
 
         public function _render(Array $vars = array(), $return = false)
         {
-            global $file_54a0ccd90b9f4, $line_54a0ccd90b9f4;
+            global $file_54a0d5d246c8d, $line_54a0d5d246c8d;
             $this->context = $vars;
 
             extract($vars);
             if ($return) {
                 ob_start();
             }
-            $_54a0ccd90b9f4 = array_push($file_54a0ccd90b9f4, 'Reference/Update.tpl.php') - 1;
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1;
+            $_54a0d5d246c8d = array_push($file_54a0d5d246c8d, 'Callback.tpl') - 1;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1;
 
-            $deferred_done = false;
-            $this->context['deferred_done'] = $deferred_done;
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 2;
-            foreach($collection->getForwardReferences() as $ref) {
-
-                $this->context['ref'] = $ref;
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 3;
-                echo "    // update " . ($collection->getName()) . " references in  " . ($ref['property']->getParent()->getName()) . " \n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 4;
-                if ($ref['deferred']) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 5;
-                    if (!empty($deferred_done)) {
-                        continue;
-                    }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 8;
+            if (!$self->isEmbeddable()) {
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 2;
+                echo "    if (empty(self::\$loaded[";
+                var_export($self->getPath());
+                echo "])) {\n";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 3;
+                if ($self->isClass() || $self->isMethod()) {
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 4;
+                    echo "            if (!class_exists(";
+                    var_export($self->getClass());
+                    echo ", false)) {\n";
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 5;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 9;
-                echo "    \n    \$replicate = array();\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 11;
-                $deferred_done = true;
-                $this->context['deferred_done'] = $deferred_done;
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 12;
-                echo "    foreach (\$args[0] as \$operation => \$values) {\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 13;
-                foreach($ref['update'] as $field) {
-
-                    $this->context['field'] = $field;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 14;
-                    echo "            if (!empty(\$values[";
-                    var_export($field);
-                    echo "])) {\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 15;
-                    if ($ref['deferred']) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 16;
-                        echo "                    \$replicate[\$operation][";
-                        var_export($field);
-                        echo "]  = \$values[";
-                        var_export($field);
-                        echo "];\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 17;
+                else {
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 6;
+                    echo "            if (!function_exists(";
+                    var_export($self->getFunction());
+                    echo ")) {\n";
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 7;
+                }
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 8;
+                echo "            require __DIR__ . ";
+                var_export($self->getPath());
+                echo ";\n        }\n        self::\$loaded[";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 10;
+                var_export($self->getPath());
+                echo "] = true;\n    }\n";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 12;
+            }
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 13;
+            echo "\n\$args = empty(\$args) ? [] : \$args;\n\n";
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 16;
+            if ($self->isEmbeddable()) {
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 17;
+                echo "    " . ($self->toEmbedCode($var)) . "\n";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 18;
+            }
+            else if ($self->isMethod()) {
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 19;
+                if ($self->isPublic()) {
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 20;
+                    if ($self->isStatic()) {
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 21;
+                        echo "            \$return = \\" . ($self->getClass()) . "::" . ($self->getMethod()) . "(\n";
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 22;
                     }
-                    else if ($ref['multi']) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 18;
-                        echo "                    \$replicate[\$operation][";
-                        var_export($ref['property']->getName().'.$.'.$field);
-                        echo "] = \$values[";
-                        var_export($field);
-                        echo "];\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 19;
+                    else if ($prop->getClass() == $self->getClass()) {
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 23;
+                        echo "            \$return = \$document->" . ($self->getMethod()) . "(\n";
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 24;
                     }
                     else {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 20;
-                        echo "                    \$replicate[\$operation][";
-                        var_export($ref['property']->getName().'.'.$field);
-                        echo "] = \$values[";
-                        var_export($field);
-                        echo "];\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 21;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 25;
+                        echo "            // Improve me (should construct once and reuse it)\n            \$return = (new \\";
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 26;
+                        echo $self->getClass() . ")->" . ($self->getMethod()) . "(\n";
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 27;
                     }
 
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 22;
-                    echo "            }\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 23;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 28;
+                    echo "            " . ($var) . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 31;
+                    var_export($args);
+                    echo ", // annotation arguments\n            \$this, // mapper instance\n            ";
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 33;
+                    var_export($prop->getClass());
+                    echo "\n        );\n";
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 35;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 24;
-                echo "    }\n\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 26;
-                if ($ref['deferred']) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 27;
-                    echo "        if (!empty(\$replicate)) {\n            // queue the updates!\n            \$data = array(\n                'update'    => \$replicate,\n                'processed' => false,\n                'created'   => new \\DateTime,\n                'source_id' => ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 33;
-                    var_export($collection->getName().'::');
-                    echo "  . serialize(\$args[2]),\n                'type'      => array(\n                    'source'    => ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 35;
-                    var_export($collection->getName());
-                    echo ",\n                    'target'    => ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 36;
-                    var_export($ref['property']->getParent()->getName());
-                    echo ",\n                ),\n            );\n            \$args[1]\n                ->getDatabase()\n                ->deferred_queue\n                ->save(\$data, array('w' => 0));\n        }\n";
-                    continue;
+                else {
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 36;
+                    echo "        \$reflection = new \\ReflectionMethod(";
+                    var_export("\\". $self->getClass());
+                    echo ", ";
+                    var_export($self->getMethod());
+                    echo ");\n        \$reflection->setAccessible(true);\n        \$return = \$reflection->invoke(\n            ";
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 39;
+                    echo $var . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 42;
+                    var_export($args);
+                    echo ", // annotation arguments\n            \$this, // mapper instance\n            ";
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 44;
+                    var_export($prop->getClass());
+                    echo "\n        );\n";
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 46;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 46;
-                echo "\n    if (!empty(\$replicate)) {\n        // do the update\n        \$args[1]->getCollection(";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 49;
-                var_export($ref['property']->getParent()->getName());
-                echo ")\n            ->update([\n                '";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 51;
-                echo $ref['property']->getName() . ".\$id' => \$args[2]], \n                \$replicate, \n                ['w' => 0, 'multi' => true]\n        );\n    }\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 56;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 47;
             }
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 57;
+            else {
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 48;
+                echo "    \$return = \\" . ($self->getFunction()) . "(\n        ";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 49;
+                echo $var . ", // document variable \n        \$args,  // external arguments (defined at run time)\n        \$this->connection, // connection\n        ";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 52;
+                var_export($args);
+                echo ", // annotation arguments\n        \$this, // mapper instance\n        ";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 54;
+                var_export($prop->getClass());
+                echo "\n    );\n";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 56;
+            }
 
-            array_pop($file_54a0ccd90b9f4);
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 57;
+
+            array_pop($file_54a0d5d246c8d);
 
             if ($return) {
                 return ob_get_clean();
@@ -242,120 +254,267 @@ namespace {
 
         public function _render(Array $vars = array(), $return = false)
         {
-            global $file_54a0ccd90b9f4, $line_54a0ccd90b9f4;
+            global $file_54a0d5d246c8d, $line_54a0d5d246c8d;
             $this->context = $vars;
 
             extract($vars);
             if ($return) {
                 ob_start();
             }
-            $_54a0ccd90b9f4 = array_push($file_54a0ccd90b9f4, 'Reference/Deferred.tpl.php') - 1;
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1;
+            $_54a0d5d246c8d = array_push($file_54a0d5d246c8d, 'Reference/Deferred.tpl.php') - 1;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1;
 
             foreach($collection->getBackReferences() as $ref) {
 
                 $this->context['ref'] = $ref;
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 2;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 2;
                 if ($ref['deferred']) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 3;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 3;
                     if ($ev == "postCreate") {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 4;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 4;
                         echo "            \$check = !empty(\$args[0][";
                         var_export($ref['property']->getName());
                         echo "]);\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 5;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 5;
                     }
                     else {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 6;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 6;
                         echo "            \$check = !empty(\$args[0]['\$set'][";
                         var_export($ref['property']->getName());
                         echo "]);\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 7;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 7;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 8;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 8;
                     echo "        if (\$check) {\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 9;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 9;
                     if ($ref['multi']) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 10;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 10;
                         echo "                \$data = array();\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 11;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 11;
                         if ($ev == "postCreate") {
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 12;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 12;
                             echo "                    \$fields = \$args[0][";
                             var_export($ref['property']->getName());
                             echo "];\n";
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 13;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 13;
                         }
                         else {
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 14;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 14;
                             echo "                    \$fields = \$args[0]['\$set'][";
                             var_export($ref['property']->getName());
                             echo "];\n";
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 15;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 15;
                         }
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 16;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 16;
                         echo "                foreach (\$fields as \$id => \$row) {\n                    \$data[] = array(\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 18;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 18;
                         if ($ev == "postCreate") {
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 19;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 19;
                             echo "                        'source_id' => ";
                             var_export($ref['target']->getName() . '::');
                             echo " . serialize(\$row['\$id']),\n                        'id'        => \$args[0]['_id'],\n";
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 21;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 21;
                         }
                         else {
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 22;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 22;
                             echo "                        'source_id' => ";
                             var_export($ref['target']->getName() . '::');
                             echo " . serialize(\$row['\$id']),\n                        'id'        => \$args[2],\n";
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 24;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 24;
                         }
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 25;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 25;
                         echo "                        'property'  => ";
                         var_export($ref['property']->getName() . '.');
                         echo " . \$id,\n                    );\n                }\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 28;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 28;
                     }
                     else {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 29;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 29;
                         echo "                \$data = array(array(\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 30;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 30;
                         if ($ev == "postCreate") {
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 31;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 31;
                             echo "                    'source_id'     => ";
                             var_export($ref['target']->getName() . '::');
                             echo " . serialize(\$args[0][";
                             var_export($ref['property']->getName());
                             echo "]['\$id']),\n                    'id'            => \$args[0]['_id'],\n";
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 33;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 33;
                         }
                         else {
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 34;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 34;
                             echo "                    'source_id'     => ";
                             var_export($ref['target']->getName() . '::');
                             echo " . serialize(\$args[0]['\$set'][";
                             var_export($ref['property']->getName());
                             echo "]['\$id']),\n                    'id'            => \$args[2],\n";
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 36;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 36;
                         }
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 37;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 37;
                         echo "                    'property'      => ";
                         var_export($ref['property']->getName());
                         echo ",\n                ));\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 39;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 39;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 40;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 40;
                     echo "            foreach (\$data as \$row) {\n                \$row['collection'] = \$this->ns . ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 41;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 41;
                     var_export($ref['property']->getParent()->getName());
                     echo ";\n                \$row['_id'] = array(\n                    'source' => \$row['source_id'], \n                    'target_id' => \$row['id'], \n                    'target_col' => \$row['collection'], \n                    'target_prop' => \$row['property']\n                );\n                \$col->save(\$row, array('w' => 1));\n            }\n        }\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 51;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 51;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 52;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 52;
             }
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 53;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 53;
 
-            array_pop($file_54a0ccd90b9f4);
+            array_pop($file_54a0d5d246c8d);
+
+            if ($return) {
+                return ob_get_clean();
+            }
+
+        }
+    }
+
+    /** 
+     *  Template class generated from Reference/Update.tpl.php
+     */
+    class class_f8c39509b1fb331e8b8ef22a135640af98725ce5 extends base_template_df562f12800ad133cdbc6f040ca106a099504656
+    {
+
+        public function hasSection($name)
+        {
+
+            return false;
+        }
+
+
+        public function renderSection($name, Array $args = array(), $fail_on_missing = true)
+        {
+            if (!$this->hasSection($name)) {
+                if ($fail_on_missing) {
+                    throw new \RuntimeException("Cannot find section {$name}");
+                }
+                return "";
+            }
+
+        }
+
+        public function render(Array $vars = array(), $return = false)
+        {
+            try {
+                return $this->_render($vars, $return);
+            } catch (\Exception $e) {
+                if ($return) ob_get_clean();
+                throw new ActiveMongo2\Template\ExceptionWrapper($e, __FILE__);
+            }
+        }
+
+        public function _render(Array $vars = array(), $return = false)
+        {
+            global $file_54a0d5d246c8d, $line_54a0d5d246c8d;
+            $this->context = $vars;
+
+            extract($vars);
+            if ($return) {
+                ob_start();
+            }
+            $_54a0d5d246c8d = array_push($file_54a0d5d246c8d, 'Reference/Update.tpl.php') - 1;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1;
+
+            $deferred_done = false;
+            $this->context['deferred_done'] = $deferred_done;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 2;
+            foreach($collection->getForwardReferences() as $ref) {
+
+                $this->context['ref'] = $ref;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 3;
+                echo "    // update " . ($collection->getName()) . " references in  " . ($ref['property']->getParent()->getName()) . " \n";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 4;
+                if ($ref['deferred']) {
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 5;
+                    if (!empty($deferred_done)) {
+                        continue;
+                    }
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 8;
+                }
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 9;
+                echo "    \n    \$replicate = array();\n";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 11;
+                $deferred_done = true;
+                $this->context['deferred_done'] = $deferred_done;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 12;
+                echo "    foreach (\$args[0] as \$operation => \$values) {\n";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 13;
+                foreach($ref['update'] as $field) {
+
+                    $this->context['field'] = $field;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 14;
+                    echo "            if (!empty(\$values[";
+                    var_export($field);
+                    echo "])) {\n";
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 15;
+                    if ($ref['deferred']) {
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 16;
+                        echo "                    \$replicate[\$operation][";
+                        var_export($field);
+                        echo "]  = \$values[";
+                        var_export($field);
+                        echo "];\n";
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 17;
+                    }
+                    else if ($ref['multi']) {
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 18;
+                        echo "                    \$replicate[\$operation][";
+                        var_export($ref['property']->getName().'.$.'.$field);
+                        echo "] = \$values[";
+                        var_export($field);
+                        echo "];\n";
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 19;
+                    }
+                    else {
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 20;
+                        echo "                    \$replicate[\$operation][";
+                        var_export($ref['property']->getName().'.'.$field);
+                        echo "] = \$values[";
+                        var_export($field);
+                        echo "];\n";
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 21;
+                    }
+
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 22;
+                    echo "            }\n";
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 23;
+                }
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 24;
+                echo "    }\n\n";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 26;
+                if ($ref['deferred']) {
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 27;
+                    echo "        if (!empty(\$replicate)) {\n            // queue the updates!\n            \$data = array(\n                'update'    => \$replicate,\n                'processed' => false,\n                'created'   => new \\DateTime,\n                'source_id' => ";
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 33;
+                    var_export($collection->getName().'::');
+                    echo "  . serialize(\$args[2]),\n                'type'      => array(\n                    'source'    => ";
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 35;
+                    var_export($collection->getName());
+                    echo ",\n                    'target'    => ";
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 36;
+                    var_export($ref['property']->getParent()->getName());
+                    echo ",\n                ),\n            );\n            \$args[1]\n                ->getDatabase()\n                ->deferred_queue\n                ->save(\$data, array('w' => 0));\n        }\n";
+                    continue;
+                }
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 46;
+                echo "\n    if (!empty(\$replicate)) {\n        // do the update\n        \$args[1]->getCollection(";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 49;
+                var_export($ref['property']->getParent()->getName());
+                echo ")\n            ->update([\n                '";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 51;
+                echo $ref['property']->getName() . ".\$id' => \$args[2]], \n                \$replicate, \n                ['w' => 0, 'multi' => true]\n        );\n    }\n";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 56;
+            }
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 57;
+
+            array_pop($file_54a0d5d246c8d);
 
             if ($return) {
                 return ob_get_clean();
@@ -400,1335 +559,1183 @@ namespace {
 
         public function _render(Array $vars = array(), $return = false)
         {
-            global $file_54a0ccd90b9f4, $line_54a0ccd90b9f4;
+            global $file_54a0d5d246c8d, $line_54a0d5d246c8d;
             $this->context = $vars;
 
             extract($vars);
             if ($return) {
                 ob_start();
             }
-            $_54a0ccd90b9f4 = array_push($file_54a0ccd90b9f4, 'Documents.tpl.php') - 1;
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1;
+            $_54a0d5d246c8d = array_push($file_54a0d5d246c8d, 'Documents.tpl.php') - 1;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1;
 
             echo "<?php\n\nnamespace ";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 3;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 3;
             echo trim($namespace, '\\') . ";\n\nuse ";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 5;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 5;
             echo $valns . " as v;\nuse MongoClient;\nuse ActiveMongo2\\Connection;\nuse Notoj\\Annotation;\nuse Notoj;\n\n";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 11;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 11;
             $instance = '_' . uniqid(true);
             $this->context['instance'] = $instance;
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 12;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 12;
             echo "\nclass Mapper\n{\n    protected \$mapper = ";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 15;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 15;
             echo crodas\FileUtil\dump_array($collections->byName(), true) . ";\n    protected \$class_mapper = ";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 16;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 16;
             echo crodas\FileUtil\dump_array($collections->byClass(), true) . ";\n    protected static \$loaded = array();\n    protected \$connection;\n    protected \$connections;\n    protected \$class_connections = ";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 20;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 20;
             var_export($collections->byConnection());
             echo ";\n    protected \$ns = \"\";\n\n    public function __construct(Connection \$conn, \$ns)\n    {\n        \$this->connection = \$conn;\n        if (!empty(\$ns)) {\n            \$this->ns = \"{\$ns}.\";\n        }\n        spl_autoload_register(array(\$this, '__autoloader'));\n    }\n\n    public function setDatabases(Array \$conns)\n    {\n        \$this->connections = \$conns;\n        return \$this;\n    }\n\n    public function getRelativePath(\$object, \$dir)\n    {\n        if (\$dir[0] == '/') {\n            return \$dir;\n        }\n        \$info = \$this->mapClass(\$object);\n        return __DIR__ . \$info['dir'] . \"/\" . \$dir;\n    }\n\n    protected function array_diff(Array \$arr1, Array \$arr2)\n    {\n        \$diff = array();\n        foreach (\$arr1 as \$key => \$value) {\n            if (empty(\$arr2[\$key]) || \$arr2[\$key] !== \$arr1[\$key]) {\n                \$diff[\$key] = \$value;\n            }\n        }\n        return \$diff;\n    }\n\n    public function getCollections()\n    {\n        return array(\n";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 61;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 61;
             foreach($collections as $collection) {
 
                 $this->context['collection'] = $collection;
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 62;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 62;
                 if ($collection->getName()) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 63;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 63;
                     echo "                ";
                     var_export($collection->getClass());
                     echo " => \$this->ns . ";
                     var_export($collection->getName());
                     echo ",\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 64;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 64;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 65;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 65;
             }
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 66;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 66;
             echo "        );\n    }\n\n    public function __autoloader(\$class)\n    {\n        \$class = strtolower(\$class);\n        if (!empty(\$this->class_mapper[\$class])) {\n            self::\$loaded[\$this->class_mapper[\$class]['file']] = true;\n            require __DIR__ . \$this->class_mapper[\$class]['file'];\n\n            return true;\n        }\n        return false;\n    }\n\n    public function getCollectionObject(\$col)\n    {\n        if (!is_scalar(\$col) || empty(\$this->mapper[\$col])) {\n            \$data = \$this->mapClass(\$col);     \n        } else {\n            \$data = \$this->mapper[\$col];\n        }\n\n        if (empty(self::\$loaded[\$data['file']])) {\n            if (!class_exists(\$data['class'], false)) {\n                require __DIR__ .  \$data['file'];\n            }\n            self::\$loaded[\$data['file']] = true;\n        }\n\n        if (\$this->ns) {\n            \$data['name'] = \$this->ns . \$data['name'];\n        }\n\n        \$conn = \$this->class_connections[\$data['class']];\n\n        if (empty(\$this->connections[\$conn])) {\n            throw new \\RuntimeException(\"Cannot find connection \$conn\");\n        }\n\n        \$db = \$this->connections[\$conn];\n        if (!empty(\$data['is_gridfs'])) {\n            \$col = \$db->getGridFs(\$data['name']);\n        } else {\n            \$col = \$db->selectCollection(\$data['name']);\n        }\n\n        return [\$col, \$data['class']];\n    }\n\n    public function mapCollection(\$col)\n    {\n        if (empty(\$this->mapper[\$col])) {\n            throw new \\RuntimeException(\"Cannot map {\$col} collection to its class\");\n        }\n\n        \$data = \$this->mapper[\$col];\n\n        if (empty(self::\$loaded[\$data['file']])) {\n            if (!class_exists(\$data['class'], false)) {\n                require __DIR__ .  \$data['file'];\n            }\n            self::\$loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    public function onQuery(\$table, &\$query)\n    {\n        if (!is_array(\$query)) {\n            if (\$query instanceof \\MongoId) {\n                \$query = ['_id' => \$query];\n            } else if (is_scalar(\$query)) {\n                if (is_numeric(\$query)) {\n                    \$query = ['_id' => [\n                        '\$in' => [\$query . '', 0+\$query],\n                    ]];\n                } else if (preg_match('/^[0-9a-f]{24}\$/i', \$query)) {\n                    \$query = ['_id' => [\n                        '\$in' => [\$query, new \\MongoId(\$query)],\n                    ]];\n                } else {\n                    \$query = ['_id' => \$query];\n                }\n            }\n        }\n\n        switch (\$table) {\n";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 155;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 155;
             foreach($collections as $collection) {
 
                 $this->context['collection'] = $collection;
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 156;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 156;
                 echo "            case ";
                 var_export($collection->getClass());
                 echo ":\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 157;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 157;
                 if ($collection->is('SingleCollection') && $collection->getParent()) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 158;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 158;
                     echo "                    \$query[";
                     var_export($collection->getDiscriminator());
                     echo "] = ";
                     var_export($collection->getClass());
                     echo ";\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 159;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 159;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 160;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 160;
                 foreach($collection->getMethodsByAnnotation('onQuery') as $method) {
 
                     $this->context['method'] = $method;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 161;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 161;
                     echo "                    " . ($method->toCode($collection, '$query')) . "\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 162;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 162;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 163;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 163;
                 foreach($collection->getPlugins('onQuery') as $plugin) {
 
                     $this->context['plugin'] = $plugin;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 164;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 164;
                     echo "                    " . ($plugin->toCode($collection, '$query')) . "\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 165;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 165;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 166;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 166;
                 echo "            break;\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 167;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 167;
             }
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 168;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 168;
             echo "        }\n    }\n\n    public function mapClass(\$class)\n    {\n        if (is_object(\$class)) {\n            \$class = \$this->get_class(\$class);\n        }\n\n        \$class = strtolower(\$class);\n        if (empty(\$this->class_mapper[\$class])) {\n";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 179;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 179;
             foreach($collections as $collection) {
 
                 $this->context['collection'] = $collection;
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 180;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 180;
                 if ($collection->is('SingleCollection')) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 181;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 181;
                     echo "                if (\$class == ";
                     var_export($collection->getClass());
                     echo " ||  \$class == ";
                     var_export($collection->getName());
                     echo "){\n                    return ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 182;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 182;
                     var_export(['name' => $collection->getName(), 'dynamic' => true, 'prop' => $collection->getDiscriminator(), 'class' => NULL]);
                     echo ";\n                }\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 184;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 184;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 185;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 185;
             }
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 186;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 186;
             echo "            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        \$data = \$this->class_mapper[\$class];\n\n        if (empty(self::\$loaded[\$data['file']])) {\n            if (!class_exists(\$data['class'], false)) {\n                require __DIR__ . \$data['file'];\n            }\n            self::\$loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    protected function is_array(\$array)\n    {\n        if (is_array(\$array)) {\n            \$keys = array_keys(\$array);\n            \$expected = range(0, count(\$array)-1);\n            return count(array_diff(\$keys, \$expected)) == 0;\n        }\n        return false;\n    }\n\n    protected function array_unique(\$array, \$toRemove)\n    {\n        \$return = array();\n        \$count  = array();\n        foreach (\$array as \$key => \$value) {\n            \$val = serialize(\$value);\n            if (empty(\$count[\$val])) {\n                \$count[\$val] = 0;\n            }\n            \$count[\$val]++; \n        }\n        foreach (\$toRemove as \$value) {\n            \$val = serialize(\$value);\n            if (!empty(\$count[\$val]) && \$count[\$val] != 1) {\n                return true;\n            }\n        }\n        return false;\n    }\n\n    public function mapObject(\$object)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->class_mapper[\$class];\n    }\n\n    public function getReflection(\$name)\n    {\n        \$class = strtolower(\$name);\n        if (empty(\$this->class_mapper[\$class])) {\n            if (empty(\$this->mapper[\$name])) {\n                throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n            }\n            \$class = \$this->mapper[\$name]['class'];\n        }\n\n        return new \\ActiveMongo2\\Reflection\\Collection(\$this->{\"reflect_\" . sha1(\$class)}(), \$this);\n    }\n\n    public function getReference(\$object, Array \$extra = array())\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"get_reference_\" . sha1(\$class)}(\$object, \$extra);\n    }\n\n    public function populateFromArray(\$object, Array \$data)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"populate_from_array_\" . sha1(\$class)}(\$object, \$data);\n    }\n\n\n    public function getDocument(\$object)\n    {\n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$object = \$object->getObject();\n        }\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"get_array_\" . sha1(\$class)}(\$object);\n    }\n\n    public function validate(\$object)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"validate_\" . sha1(\$class)}(\$object);\n    }\n\n    public function set_property(\$object, \$name, \$value)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"set_property_\" . sha1(\$class)}(\$object, \$name, \$value);\n    }\n\n    public function get_property(\$object, \$name)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"get_property_\" . sha1(\$class)}(\$object, \$name);\n    }\n\n    public function update(\$object, Array &\$doc, Array \$old)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"update_\" . sha1(\$class)}(\$doc, \$old);\n    }\n\n    public function getRawDocument(\$object)\n    {\n        if (!empty(\$object->";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 330;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 330;
             echo $instance . ") && \$object->" . ($instance) . " instanceof ActiveMongo2Mapped) {\n            return \$object->";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 331;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 331;
             echo $instance . "->getOriginal();\n        }\n\n        return array();\n    }\n\n    public function populate(&\$object, \$data)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"populate_\" . sha1(\$class)}(\$object, \$data);\n    }\n\n    public function trigger(\$w, \$event, \$object, Array \$args = array())\n    {\n        if (!\$w) return;\n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = strtolower(\$object->getClass());\n        } else {\n            \$class = strtolower(\$this->get_class(\$object));\n        }\n        \$method = \"event_{\$event}_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$object, \$args);\n    }\n\n    public function getMapping(\$class)\n    {\n        if (is_object(\$class)) {\n            \$class = \$this->get_class(\$class);\n        }\n        \$func  = \"get_mapping_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$func))) {\n            throw new \\Exception(\"Cannot map \$class\");\n        }\n        return \$this->\$func();\n    }\n\n    public function getObjectClass(\$col, \$doc)\n    {\n        if (\$doc instanceof \\MongoGridFsFile) {\n            \$doc = \$doc->file;\n        }\n        if (\$col instanceof \\MongoCollection) {\n            \$col = \$col->getName();\n        }\n        if (strncmp(\$this->ns, \$col, \$len = strlen(\$this->ns)) == 0) {\n            \$col = substr(\$col, \$len);\n        }\n        \$class = NULL;\n        switch (\$col) {\n";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 389;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 389;
             foreach($collections as $collection) {
 
                 $this->context['collection'] = $collection;
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 390;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 390;
                 if ($collection->is('GridFs')) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 391;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 391;
                     echo "            case ";
                     var_export($collection->getName() . '.files');
                     echo ":\n            case ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 392;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 392;
                     var_export($collection->getName() . '.chunks');
                     echo ":\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 393;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 393;
                 }
                 else {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 394;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 394;
                     echo "            case ";
                     var_export($collection->getName());
                     echo ":\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 395;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 395;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 396;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 396;
                 if (!$collection->is('SingleCollection')) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 397;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 397;
                     echo "                    \$class = ";
                     var_export($collection->getClass());
                     echo ";\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 398;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 398;
                 }
                 else {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 399;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 399;
                     echo "                    if (!empty(" . ($collection->getDiscriminator(true)->getPHPVariable()) . ")) {\n                        \$class = ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 400;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 400;
                     echo $collection->getDiscriminator(true)->getPHPVariable() . ";\n                    }\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 402;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 402;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 403;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 403;
                 echo "                break;\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 404;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 404;
             }
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 405;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 405;
             echo "        }\n\n        if (empty(\$class)) {\n            throw new \\RuntimeException(\"Cannot get class for collection {\$col}\");\n        }\n\n        return \$class;\n    }\n\n    public function get_class(\$object)\n    { \n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = \$object->getClass();\n        } else {\n            \$class = strtolower(get_class(\$object));\n        }\n\n        return \$class;\n    }\n\n    public function updateProperty(\$document, \$key, \$value)\n    {\n        \$class  = strtolower(\$this->get_class(\$document));\n        \$method = \"update_property_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$document, \$key, \$value);\n    }\n\n    public function ensureIndex(\$background)\n    {\n\n";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 439;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 439;
             $is_new = version_compare(MongoClient::VERSION, '1.5.0', '>');
             $this->context['is_new'] = $is_new;
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 440;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 440;
             echo "\n";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 441;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 441;
             foreach($collections->getIndexes() as $id => $index) {
 
                 $this->context['id'] = $id;
                 $this->context['index'] = $index;
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 442;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 442;
+                $next = uniqid(true);
+                $this->context['next'] = $next;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 443;
                 if (!empty($index['col'])) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 443;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 444;
                     $col = $index['col'];
                     $this->context['col'] = $col;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 444;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 445;
                 }
                 else {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 445;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 446;
                     $col = $index['prop']->getParent();
                     $this->context['col'] = $col;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 446;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 447;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 447;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 448;
                 echo "\n            \$conn = \$this->class_connections[";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 448;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 449;
                 var_export($col->getClass());
-                echo "];\n            if (empty(\$this->connections[\$conn])) {\n                throw new \\RuntimeException(\"Cannot find connection \$conn\");\n            }\n            \$db = \$this->connections[\$conn];\n\n        try {\n            \$col = \$db->createCollection(\$this->ns . ";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 455;
+                echo "];\n            if (empty(\$this->connections[\$conn])) {\n                goto skip_";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 451;
+                echo $next . ";\n            }\n            \$db = \$this->connections[\$conn];\n\n        try {\n            \$col = \$db->createCollection(\$this->ns . ";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 456;
                 var_export($col->getName());
                 echo "); \n\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 457;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 458;
                 if ($is_new) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 458;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 459;
                     echo "            \$return = \$col->createIndex(\n                ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 459;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 460;
                     echo crodas\FileUtil\dump_array($index['field']);
                     echo ",\n                ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 460;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 461;
                     echo crodas\FileUtil\dump_array($index['extra']);
                     echo "\n            );\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 462;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 463;
                 }
                 else {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 463;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 464;
                     echo "            \$return = \$col->ensureIndex(\n                ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 464;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 465;
                     echo crodas\FileUtil\dump_array($index['field']);
                     echo ",\n                ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 465;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 466;
                     echo crodas\FileUtil\dump_array($index['extra']);
                     echo "\n            );\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 467;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 468;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 468;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 469;
                 echo "        } catch (\\Exception \$e) {\n            // delete index and try to rebuild it\n            \$col->deleteIndex(";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 470;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 471;
                 echo crodas\FileUtil\dump_array($index['field']);
                 echo ");\n\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 472;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 473;
                 if ($is_new) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 473;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 474;
                     echo "            \$col->createIndex(\n                ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 474;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 475;
                     echo crodas\FileUtil\dump_array($index['field']);
                     echo ",\n                ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 475;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 476;
                     echo crodas\FileUtil\dump_array($index['extra']);
                     echo "\n            );\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 477;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 478;
                 }
                 else {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 478;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 479;
                     echo "            \$col->ensureIndex(\n                ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 479;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 480;
                     echo crodas\FileUtil\dump_array($index['field']);
                     echo ",\n                ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 480;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 481;
                     echo crodas\FileUtil\dump_array($index['extra']);
                     echo "\n            );\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 482;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 483;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 483;
-                echo "        }\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 484;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 484;
+                echo "        }\n        skip_";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 485;
+                echo $next . ":\n";
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 486;
             }
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 485;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 487;
             echo "    }\n\n";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 487;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 489;
             foreach($collections as $collection) {
 
                 $this->context['collection'] = $collection;
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 488;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 490;
                 echo "\n    protected function set_property_";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 489;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 491;
                 echo sha1($collection->getClass()) . "(\$object, \$name, \$value)\n    {\n        switch (\$name) {\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 492;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 494;
                 foreach($collection->getProperties() as $prop) {
 
                     $this->context['prop'] = $prop;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 493;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 495;
                     echo "        case ";
                     var_export($prop->getPHPName());
                     echo ":\n        case ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 494;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 496;
                     var_export($prop->getName());
                     echo ":\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 495;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 497;
                     if ($prop->isPublic()) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 496;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 498;
                         echo "                \$object->" . ($prop->getPHPName()) . " = \$value;\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 497;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 499;
                     }
                     else {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 498;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 500;
                         echo "                \$property = new \\ReflectionProperty(\$object, ";
                         var_export($prop->getPHPName());
                         echo ");\n                \$property->setAccessible(true);\n                \$property->setValue(\$object, \$value);\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 501;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 503;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 502;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 504;
                     echo "            break;\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 503;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 505;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 504;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 506;
                 echo "        default:\n            throw new \\RuntimeException(\"Missing property {\$name}\");\n        }\n\n        return true;\n    }\n\n    /**\n     *  Populate from \$_POST for collection ";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 512;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 514;
                 echo $collection->GetClass() . "\n     */\n    protected function populate_from_array_";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 514;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 516;
                 echo sha1($collection->getClass()) . "(\$object, Array \$data)\n    {\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 516;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 518;
                 if ($collection->GetName()) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 517;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 519;
                     echo "        if (array_key_exists(";
                     var_export($collection->GetName());
                     echo ", \$data)) {\n            \$data = \$data[";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 518;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 520;
                     var_export($collection->getName());
                     echo "];\n        }\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 520;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 522;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 521;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 523;
                 echo "        \n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 522;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 524;
                 if ($collection->GetParent()) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 523;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 525;
                     echo "        // populate parent data first\n        \$this->populate_from_array_";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 524;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 526;
                     echo sha1($collection->GetParent()->getClass()) . "(\$object, \$data);\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 525;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 527;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 526;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 528;
                 echo "\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 527;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 529;
                 foreach($collection->getProperties() as $prop) {
 
                     $this->context['prop'] = $prop;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 528;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 530;
                     if ($prop->isId() || $prop->getAnnotation()->has('ReferenceMany,EmbedMany')) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 529;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 531;
                         echo "                // we cannot handle " . ($prop->GetName()) . " at the moment\n";
                         continue;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 532;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 534;
                     echo "\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 533;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 535;
                     foreach(array_unique([$prop->getName(), $prop->getPHPName()]) as $var) {
 
                         $this->context['var'] = $var;
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 534;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 536;
                         echo "\n            if (array_key_exists(";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 535;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 537;
                         var_export($var);
                         echo ", \$data)) {\n                \$value = \$data[";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 536;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 538;
                         var_export($var);
                         echo "];\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 537;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 539;
                         if ($xcol = $prop->getReferenceCollection()) {
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 538;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 540;
                             $xclass = $collections->ByName()[$xcol]['class'];
                             $this->context['xclass'] = $xclass;
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 539;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 541;
                             if ($xclass) {
-                                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 540;
+                                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 542;
                                 echo "                        if (!is_array(\$value)) {\n                            throw new \\RuntimeException(\"";
-                                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 541;
+                                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 543;
                                 var_export($prop->getName());
                                 echo " must be an array\");\n                        }\n                        if (";
-                                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 543;
+                                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 545;
                                 var_export($prop->getType() == 'Reference');
                                 echo " && !empty(\$value['_id'])) {\n                            \$value = \$this->connection->getCollection(";
-                                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 544;
+                                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 546;
                                 var_export($xcol);
                                 echo ")\n                                ->findOne(\$value['_id']);\n                        } else {\n";
-                                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 547;
+                                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 549;
                                 if ($prop->isPublic()) {
-                                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 548;
+                                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 550;
                                     echo "                                \$oldValue = \$object->" . ($prop->getPHPName()) . ";\n";
-                                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 549;
+                                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 551;
                                 }
                                 else {
-                                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 550;
+                                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 552;
                                     echo "                                \$property = new \\ReflectionProperty(\$object, ";
                                     var_export($var);
                                     echo ");\n                                \$property->setAccessible(true);\n                                \$oldValue = \$property->getValue(\$object);\n";
-                                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 553;
+                                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 555;
                                 }
-                                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 554;
+                                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 556;
                                 echo "                            \$docValue =  \$oldValue ?: new \\" . ($xclass) . ";\n                            \$this->populate_from_array_";
-                                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 555;
+                                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 557;
                                 echo sha1($xclass) . "(\$docValue, \$value);\n                            \$value = \$docValue;\n                        }\n";
-                                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 558;
+                                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 560;
                             }
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 559;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 561;
                         }
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 560;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 562;
                         echo "\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 561;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 563;
                         if ($prop->isPublic()) {
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 562;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 564;
                             echo "                    \$object->" . ($prop->getPHPName()) . " = \$value; \n";
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 563;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 565;
                         }
                         else {
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 564;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 566;
                             echo "                    \$property = new \\ReflectionProperty(\$object, ";
                             var_export($prop->getPHPName());
                             echo ");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$object, \$value);\n";
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 567;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 569;
                         }
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 568;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 570;
                         echo "    \n            }\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 570;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 572;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 571;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 573;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 572;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 574;
                 echo "    }\n\n\n    protected function get_property_";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 575;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 577;
                 echo sha1($collection->getClass()) . "(\$object, \$name)\n    {\n        switch (\$name) {\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 578;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 580;
                 foreach($collection->getProperties() as $prop) {
 
                     $this->context['prop'] = $prop;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 579;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 581;
                     echo "        case ";
                     var_export($prop->getPHPName());
                     echo ":\n        case ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 580;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 582;
                     var_export($prop->getName());
                     echo ":\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 581;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 583;
                     if ($prop->isPublic()) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 582;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 584;
                         echo "                \$return = \$object->" . ($prop->getPHPName()) . ";\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 583;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 585;
                     }
                     else {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 584;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 586;
                         echo "                \$property = new \\ReflectionProperty(\$object, ";
                         var_export($prop->getPHPName());
                         echo ");\n                \$property->setAccessible(true);\n                \$return = \$property->getValue(\$object);\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 587;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 589;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 588;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 590;
                     echo "            break;\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 589;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 591;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 590;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 592;
                 echo "        case '_id': \n            //fallback to get the object ID when it is not part of the object (rare case)\n            if (!empty(\$object->";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 592;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 594;
                 echo $instance . ") && \$object->" . ($instance) . " instanceof ActiveMongo2Mapped) {\n                return \$object->";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 593;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 595;
                 echo $instance . "->getOriginal()['_id'];\n            }\n        default:\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 596;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 598;
                 if ($collection->getParent()) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 597;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 599;
                     echo "                return \$this->get_property_" . (sha1($collection->getParent())) . "(\$object, \$name);\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 598;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 600;
                 }
                 else {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 599;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 601;
                     echo "                throw new \\RuntimeException(\"Missing property {\$name}\");\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 600;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 602;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 601;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 603;
                 echo "        }\n\n        return \$return;\n    }\n\n    /**\n     *  Get update object ";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 607;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 609;
                 echo $collection->getClass() . " \n     */\n    protected function update_";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 609;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 611;
                 echo sha1($collection->getClass()) . "(Array &\$current, Array \$old, \$embed = false)\n    {\n        if (!\$embed && !empty(\$current['_id']) && \$current['_id'] != \$old['_id']) {\n            throw new \\RuntimeException(\"document ids cannot be updated\");\n        }\n\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 615;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 617;
                 if (!$collection->getParent()) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 616;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 618;
                     echo "            \$change = array();\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 617;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 619;
                 }
                 else {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 618;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 620;
                     echo "            \$change = \$this->update_" . (sha1($collection->getParent())) . "(\$current, \$old, \$embed);\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 619;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 621;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 620;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 622;
                 echo "\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 621;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 623;
                 foreach($collection->getProperties() as $prop) {
 
                     $this->context['prop'] = $prop;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 622;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 624;
                     echo "            \$has_changed = false;\n            if (array_key_exists(";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 623;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 625;
                     var_export($prop.'');
                     echo ", " . ($prop->getPHPBaseVariable('$current')) . ")\n                || array_key_exists(";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 624;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 626;
                     var_export($prop.'');
                     echo ", \$old)) {\n                if (!array_key_exists(";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 625;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 627;
                     var_export($prop.'');
                     echo ", " . ($prop->getPHPBaseVariable('$current')) . ")) {\n                    \$change['\$unset'][";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 626;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 628;
                     var_export($prop.'');
                     echo "] = 1;\n                } else if (!array_key_exists(";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 627;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 629;
                     var_export($prop.'');
                     echo ", \$old)) {\n                    \$change['\$set'][";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 628;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 630;
                     var_export($prop.'');
                     echo "] = " . ($prop->getPHPVariable('$current')) . ";\n                    \$has_changed = true;\n                } else if (";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 630;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 632;
                     echo $prop->getPHPVariable('$current') . " !== \$old[";
                     var_export($prop.'');
                     echo "]) {\n                    \$has_changed = true;\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 632;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 634;
                     if ($prop->getAnnotation()->has('Inc')) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 633;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 635;
                         echo "                        if (empty(\$old[";
                         var_export($prop.'');
                         echo "])) {\n                            \$prev = 0;\n                        } else {\n                            \$prev = \$old[";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 636;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 638;
                         var_export($prop.'');
                         echo "];\n                        }\n                        \$change['\$inc'][";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 638;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 640;
                         var_export($prop.'');
                         echo "] = " . ($prop->GetPHPVariable('$current')) . " - \$prev;\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 639;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 641;
                     }
                     else if ($prop->getAnnotation()->has('Embed')) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 640;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 642;
                         echo "                        if (" . ($prop->getPHPVariable('$current')) . "['__embed_class'] != \$old[";
                         var_export($prop.'');
                         echo "]['__embed_class']) {\n                            \$change['\$set'][";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 641;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 643;
                         var_export($prop.'.');
                         echo " . \$index] = " . ($prop->GetPHPVariable('$current')) . ";\n                        } else {\n                            \$update = 'update_' . sha1(";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 643;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 645;
                         echo $prop->getPHPVariable('$current') . "['__embed_class']);\n                            \$diff = \$this->\$update(";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 644;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 646;
                         echo $prop->getPHPVariable('$current') . ", \$old[";
                         var_export($prop.'');
                         echo "], true);\n                            foreach (\$diff as \$op => \$value) {\n                                foreach (\$value as \$p => \$val) {\n                                    \$change[\$op][";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 647;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 649;
                         var_export($prop.'.');
                         echo " . \$p] = \$val;\n                                }\n                            }\n                        }\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 651;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 653;
                     }
                     else if ($prop->getAnnotation()->has('EmbedMany')) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 652;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 654;
                         echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old[";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 653;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 655;
                         var_export($prop.'');
                         echo "], " . ($prop->getPHPVariable('$current')) . ");\n\n                        if (count(\$toRemove) > 0 && \$this->array_unique(\$old[";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 655;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 657;
                         var_export($prop.'');
                         echo "], \$toRemove)) {\n                            \$change['\$set'][";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 656;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 658;
                         var_export($prop.'');
                         echo "] = array_values(" . ($prop->getPHPVariable('$current')) . ");\n                        } else {\n                            foreach (";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 658;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 660;
                         echo $prop->getPHPVariable('$current') . " as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old[";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 659;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 661;
                         var_export($prop.'');
                         echo "])) {\n                                    \$change['\$push'][";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 660;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 662;
                         var_export($prop.'');
                         echo "]['\$each'][] = \$value;\n                                    continue;\n                                }\n                                if (\$value['__embed_class'] != \$old[";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 663;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 665;
                         var_export($prop.'');
                         echo "][\$index]['__embed_class']) {\n                                    \$change['\$set'][";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 664;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 666;
                         var_export($prop.'.');
                         echo " . \$index] = \$value;\n                                } else {\n                                    \$update = 'update_' . sha1(\$value['__embed_class']);\n                                    \$diff = \$this->\$update(\$value, \$old[";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 667;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 669;
                         var_export($prop.'');
                         echo "][\$index], true);\n                                    foreach (\$diff as \$op => \$value) {\n                                        foreach (\$value as \$p => \$val) {\n                                            \$change[\$op][";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 670;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 672;
                         var_export($prop.'.');
                         echo " . \$index . '.' . \$p] = \$val;\n                                        }\n                                    }\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                if (!empty(\$value['__instance'])) {\n                                    \$change['\$pull'][";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 678;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 680;
                         var_export($prop.'');
                         echo "]['__instance']['\$in'][] = \$value['__instance'];\n                                } else {\n                                    \$change['\$pull'][";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 680;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 682;
                         var_export($prop.'');
                         echo "][] = \$value;\n                                }\n                            }\n                        }\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 684;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 686;
                     }
                     else if ($prop->getAnnotation()->has('ReferenceMany,Array')) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 685;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 687;
                         echo "                        // add things to the array\n                        \$toRemove = array_diff_key(\$old[";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 686;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 688;
                         var_export($prop.'');
                         echo "], " . ($prop->getPHPVariable('$current')) . ");\n\n                        if ((count(\$toRemove) > 0 && \$this->array_unique(\$old[";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 688;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 690;
                         var_export($prop.'');
                         echo "], \$toRemove)) || !\$this->is_array(\$old[";
                         var_export($prop.'');
                         echo "])) {\n                            \$change['\$set'][";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 689;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 691;
                         var_export($prop.'');
                         echo "] = array_values(" . ($prop->getPHPVariable('$current')) . ");\n                        } else {\n                            foreach (";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 691;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 693;
                         echo $prop->getPHPVariable('$current') . " as \$index => \$value) {\n                                if (!array_key_exists(\$index, \$old[";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 692;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 694;
                         var_export($prop.'');
                         echo "])) {\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 693;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 695;
                         if ($prop->getAnnotation()->has('ReferenceMany')) {
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 694;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 696;
                             echo "                                        \$change['\$addToSet'][";
                             var_export($prop.'');
                             echo "]['\$each'][] = \$value;\n";
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 695;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 697;
                         }
                         else {
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 696;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 698;
                             echo "                                        \$change['\$push'][";
                             var_export($prop.'');
                             echo "]['\$each'][] = \$value;\n";
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 697;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 699;
                         }
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 698;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 700;
                         echo "                                    continue;\n                                }\n\n                                if (!empty(\$old[";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 701;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 703;
                         var_export($prop.'');
                         echo "][\$index]['__instance']) && is_array(\$value)) {\n                                    // __instance is an internal variable that helps\n                                    // activemongo2 to remove sub objects from arrays easily.\n                                    // Its value is private to the library and it shouldn't change\n                                    // unless the value of the object changes\n                                    \$diff = \$this->array_diff(\n                                        \$value,\n                                        \$old[";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 708;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 710;
                         var_export($prop.'');
                         echo "][\$index]\n                                    );\n                                    if (count(\$diff) == 1 && !empty(\$diff['__instance'])) {\n                                        \$value['__instance'] = \$old[";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 711;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 713;
                         var_export($prop.'');
                         echo "][\$index]['__instance'];\n                                        ";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 712;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 714;
                         echo $prop->getPHPVariable('$current') . "[\$index] = \$value;\n                                    }\n                                }\n\n                                if (\$old[";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 716;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 718;
                         var_export($prop.'');
                         echo "][\$index] != \$value) {\n                                    \$change['\$set'][";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 717;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 719;
                         var_export($prop . '.');
                         echo " . \$index] = \$value;\n                                }\n                            }\n\n                            foreach (\$toRemove as \$value) {\n                                if (!empty(\$value['__instance'])) {\n                                    \$change['\$pull'][";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 723;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 725;
                         var_export($prop.'');
                         echo "]['__instance']['\$in'][] = \$value['__instance'];\n                                } else {\n                                    \$change['\$pull'][";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 725;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 727;
                         var_export($prop.'');
                         echo "] = \$value;\n                                }\n                            }\n                        }\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 729;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 731;
                     }
                     else {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 730;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 732;
                         echo "                        \$change['\$set'][";
                         var_export($prop.'');
                         echo "] = " . ($prop->getPHPVariable('$current')) . ";\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 731;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 733;
                     }
 
 
 
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 732;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 734;
                     echo "                }\n            }\n\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 735;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 737;
                     $ann = $prop->getAnnotation();
                     $this->context['ann'] = $ann;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 736;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 738;
                     if ($ann->has('Array,ReferenceMany,EmbedMany')) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 737;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 739;
                         if ($ann->has('Limit')) {
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 738;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 740;
                             echo "                if (\$has_changed && !empty(\$change['\$push'][";
                             var_export($prop.'');
                             echo "])) {\n                    \$change['\$push'][";
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 739;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 741;
                             var_export($prop.'');
                             echo "]['\$slice'] = ";
                             var_export(0+current($prop->getAnnotation()->getOne('Limit')));
                             echo ";\n                }\n";
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 741;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 743;
                         }
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 742;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 744;
                         if ($ann->has('Sort')) {
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 743;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 745;
                             echo "                if (\$has_changed && !empty(\$change['\$push'][";
                             var_export($prop.'');
                             echo "])) {\n                    \$change['\$sort'][";
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 744;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 746;
                             var_export($prop.'');
                             echo "]['\$sort'] = ";
                             var_export(0+current($prop->getAnnotation()->getOne('Limit')));
                             echo ";\n                }\n";
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 746;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 748;
                         }
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 747;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 749;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 748;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 750;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 749;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 751;
                 echo "\n        return \$change;\n    }\n\n    protected function get_mapping_";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 753;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 755;
                 echo sha1($collection->getClass()) . "() \n    {\n        return array(\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 756;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 758;
                 foreach($collection->getProperties() as $prop) {
 
                     $this->context['prop'] = $prop;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 757;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 759;
                     echo "                ";
                     var_export($prop->getName(true));
                     echo " => ";
                     var_export($prop->getProperty());
                     echo ",\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 758;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 760;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 759;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 761;
                 echo "        );\n    }\n\n    /**\n     *  Populate objects ";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 763;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 765;
                 echo $collection->getClass() . " \n     */\n    protected function populate_";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 765;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 767;
                 echo sha1($collection->getClass()) . "(\\" . ($collection->getClass()) . " &\$object, \$data)\n    {\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 767;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 769;
                 if ($p = $collection->getParent()) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 768;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 770;
                     echo "            \$this->populate_" . (sha1($p->getClass())) . "(\$object, \$data);\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 769;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 771;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 770;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 772;
                 echo "\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 771;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 773;
                 if ($collection->is('GridFs')) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 772;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 774;
                     echo "            if (!\$data instanceof \\MongoGridFsFile) {\n                throw new \\RuntimeException(\"Internal error, trying to populate a GridFSFile with an array\");\n            }\n            \$data_file = \$data;\n            \$data      = \$data->file;\n            if (empty(\$data['metadata'])) {\n                \$data['metadata'] = [];\n            }\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 780;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 782;
                 }
                 else {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 781;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 783;
                     echo "\n            if (!is_array(\$data)) {\n                throw new \\RuntimeException(\"Internal error, trying to populate a document with a wrong data\");\n            }\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 785;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 787;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 786;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 788;
                 echo "\n        \$doc = \$data;\n\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 789;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 791;
                 foreach($collection->getProperties() as $prop) {
 
                     $this->context['prop'] = $prop;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 790;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 792;
                     if ($prop->getAnnotation()->has('ReferenceMany')) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 791;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 793;
                         echo "                if (!empty(" . ($prop->getPHPVariable()) . ")) {\n                    foreach(";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 792;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 794;
                         echo $prop->getPHPVariable() . " as \$id => \$sub) {\n                        if (empty(\$sub['__instance']) || !strpos(\$sub['__instance'], \$sub['\$ref'])) {\n                            \$sub['__instance'] = \$sub['\$ref'] . ':' . serialize(\$sub['\$id']) ;\n                        }\n                        ";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 796;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 798;
                         echo $prop->getPHPVariable() . "[\$id] = \$sub;\n                    }\n                }\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 799;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 801;
                     }
                     else if ($prop->getAnnotation()->has('Stream')) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 800;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 802;
                         if ($prop->isPublic()) {
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 801;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 803;
                             echo "                    \$object->" . ($prop->getPHPName()) . " = \$data_file->getResource();\n";
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 802;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 804;
                         }
                         else {
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 803;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 805;
                             echo "                    \$property = new \\ReflectionProperty(\$object, ";
                             var_export($prop->getPHPName());
                             echo ");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$object, \$data_file->getResource());\n";
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 806;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 808;
                         }
                         continue;
                     }
 
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 809;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 811;
                     echo "\n            if (array_key_exists(";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 810;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 812;
                     var_export($prop.'');
                     echo ", " . ($prop->getPHPBaseVariable()) . ")) {\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 811;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 813;
                     foreach($prop->getCallback('Hydratate') as $h) {
 
                         $this->context['h'] = $h;
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 812;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 814;
                         echo "                    " . ($h->toCode($prop, $prop->getPHPVariable())) . "\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 813;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 815;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 814;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 816;
                     echo "\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 815;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 817;
                     if ($prop->isPublic()) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 816;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 818;
                         echo "                    \$object->" . ($prop->getPHPName()) . " = " . ($prop->getPHPVariable()) . ";\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 817;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 819;
                     }
                     else {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 818;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 820;
                         echo "                    \$property = new \\ReflectionProperty(\$object, ";
                         var_export($prop->getPHPName());
                         echo ");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$object, ";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 820;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 822;
                         echo $prop->getPHPVariable() . ");\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 821;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 823;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 822;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 824;
                     echo "                \n            }\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 824;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 826;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 825;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 827;
                 echo "\n        if (empty(\$object->";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 826;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 828;
                 echo $instance . ")) {\n            \$object->";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 827;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 829;
                 echo $instance . " = new ActiveMongo2Mapped(";
                 var_export($collection->getClass());
                 echo ", \$data);\n        } else {\n            \$object->";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 829;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 831;
                 echo $instance . "->" . ($instance) . "_setOriginal(\$data);\n        }\n    }\n\n    /**\n     *  Get reference of  ";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 834;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 836;
                 echo $collection->getClass() . " object\n     */\n    protected function get_reference_";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 836;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 838;
                 echo sha1($collection->getClass()) . "(\\" . ($collection->getClass()) . " \$object, \$include = Array())\n    {\n        \$document = \$this->get_array_";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 838;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 840;
                 echo sha1($collection->getClass()) . "(\$object);\n        \$extra    = array();\n        if (\$include) {\n            \$extra  = array_intersect_key(\$document, \$include);\n        }\n\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 844;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 846;
                 if ($cache = $collection->getRefCache()) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 845;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 847;
                     echo "            \$extra = array_merge(\$extra,  array_intersect_key(\n                \$document, \n                ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 847;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 849;
                     var_export($cache);
                     echo "\n            ));\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 849;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 851;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 850;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 852;
                 echo "        \n        foreach (\$extra as \$key => \$value) {\n            if (is_object(\$value)) {\n                if (\$value instanceof \\ActiveMongo2\\Reference) {\n                    \$extra[\$key] = \$value->getReference();\n                } else {\n                    \$extra[\$key] = \$this->getReference(\$value);\n                }\n            }\n        }\n\n        return array_merge(array(\n                '\$ref'  => ";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 862;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 864;
                 var_export($collection->getName());
                 echo ", \n                '\$id'   => \$document['_id'],\n                '__class' => ";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 864;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 866;
                 var_export($collection->getClass());
                 echo ",\n                '__instance' => ";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 865;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 867;
                 var_export($collection->getName());
                 echo " . ':' . serialize(\$document['_id']),\n            )\n            , \$extra\n        );\n\n    }\n\n    /**\n     *  Validate ";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 873;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 875;
                 echo $collection->getClass() . " object\n     */\n    protected function get_array_";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 875;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 877;
                 echo sha1($collection) . "(\\" . ($collection) . " \$object, \$recursive = true)\n    {\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 877;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 879;
                 if (!$collection->getParent()) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 878;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 880;
                     echo "            \$doc = array();\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 879;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 881;
                 }
                 else {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 880;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 882;
                     echo "            \$doc = \$recursive ? \$this->get_array_" . (sha1($collection->getParent())) . "(\$object) : array();\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 881;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 883;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 882;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 884;
                 echo "\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 883;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 885;
                 foreach($collection->getProperties() as $prop) {
 
                     $this->context['prop'] = $prop;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 884;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 886;
                     if ($prop->isPublic() && !$prop->isCustom()) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 885;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 887;
                         echo "                /* Public property " . ($prop->getPHPName()) . " -> " . ($prop->getName()) . " */\n                if (\$object->";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 886;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 888;
                         echo $prop->getPHPName() . " !== NULL) {\n                    ";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 887;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 889;
                         echo $prop->getPHPVariable() . " = \$object->" . ($prop->getPHPName()) . ";\n                }\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 889;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 891;
                     }
                     else if ($prop->isCustom()) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 890;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 892;
                         echo "                /* public and custom property " . ($prop->getPHPName()) . " -> " . ($prop->getName()) . " */\n                if (!empty(\$object->";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 891;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 893;
                         echo $prop->getPHPName() . ")) {\n                    ";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 892;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 894;
                         echo $prop->getPHPVariable() . " = \$object->" . ($prop->getPHPName()) . ";\n                }\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 894;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 896;
                     }
                     else {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 895;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 897;
                         echo "                \$property = new \\ReflectionProperty(\$object, ";
                         var_export($prop->getPHPName());
                         echo ");\n                \$property->setAccessible(true);\n                ";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 897;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 899;
                         echo $prop->getPHPVariable() . " = \$property->getValue(\$object);\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 898;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 900;
                     }
 
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 899;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 901;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 900;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 902;
                 echo "\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 901;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 903;
                 foreach($collection->getProperties() as $prop) {
 
                     $this->context['prop'] = $prop;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 902;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 904;
                     foreach($prop->getCallback('DefaultValue') as $default) {
 
                         $this->context['default'] = $default;
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 903;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 905;
                         echo "                if (empty(" . ($prop->getPHPVariable()) . ")) {\n                    ";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 904;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 906;
                         echo $default->toCode($prop) . "\n                    ";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 905;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 907;
                         echo $prop->getPHPVariable() . " = \$return;\n                }\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 907;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 909;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 908;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 910;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 909;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 911;
                 echo "\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 910;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 912;
                 if ($collection->is('SingleCollection')) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 911;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 913;
                     echo "            // SINGLE COLLECTION\n            ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 912;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 914;
                     echo $collection->getDiscriminator(true)->getPHPVariable() . " = ";
                     var_export($collection->getClass());
                     echo ";\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 913;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 915;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 914;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 916;
                 echo "\n        if (empty(\$doc['_id'])) {\n            \$oldDoc = \$this->getRawDocument(\$object, false);\n            if (!empty(\$oldDoc['_id'])) {\n                \$doc['_id'] = \$oldDoc['_id'];\n            }\n        }\n\n        return \$doc;\n    }\n\n    protected function reflect_";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 925;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 927;
                 echo sha1($collection->getClass()) . "() \n    {\n        \$reflection = array(\n            'class'    => ";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 928;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 930;
                 var_export($collection->getClass());
                 echo ",\n            'name'     => ";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 929;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 931;
                 var_export($collection->getName());
                 echo ",\n            'collection'     => ";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 930;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 932;
                 var_export($collection->getName());
                 echo ",\n            'annotation' => array(\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 932;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 934;
                 foreach($collection->getAnnotation() as $ann) {
 
                     $this->context['ann'] = $ann;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 933;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 935;
                     echo "            ";
                     var_export($ann);
                     echo ",\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 934;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 936;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 935;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 937;
                 echo "            ),\n            'properties'  => array(\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 937;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 939;
                 foreach($collection->getProperties() as $prop) {
 
                     $this->context['prop'] = $prop;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 938;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 940;
                     echo "            ";
                     var_export($prop->getPHPName());
                     echo " => new \\ActiveMongo2\\Reflection\\Property(array(\n                'property' => ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 939;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 941;
                     var_export($prop.'');
                     echo ",\n                'type'     => ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 940;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 942;
                     var_export($prop->getType());
                     echo ",\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 941;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 943;
                     if ($prop->getReferenceCollection()) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 942;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 944;
                         echo "                'collection' => ";
                         var_export($prop->getReferenceCollection());
                         echo ",\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 943;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 945;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 944;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 946;
                     echo "                'annotation' => new Annotation(array(\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 945;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 947;
                     foreach($prop->getAnnotation() as $ann) {
 
                         $this->context['ann'] = $ann;
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 946;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 948;
                         echo "                        ";
                         var_export($ann);
                         echo ",\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 947;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 949;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 948;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 950;
                     echo "                )),\n            ), \$this),\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 950;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 952;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 951;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 953;
                 echo "        ));\n\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 953;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 955;
                 if ($collection->getParent()) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 954;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 956;
                     echo "            \$reflection['properties'] = array_merge(\n                \$this->reflect_";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 955;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 957;
                     echo sha1($collection->GetParent()) . "()['properties'], \n                \$reflection['properties']\n            );\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 958;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 960;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 959;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 961;
                 echo "        return \$reflection;\n    }\n\n    /**\n     *  Validate ";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 963;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 965;
                 echo $collection->getClass() . " object\n     */\n    protected function validate_";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 965;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 967;
                 echo sha1($collection->getClass()) . "(\\" . ($collection->getClass()) . " \$object)\n    {\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 967;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 969;
                 if ($collection->getParent()) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 968;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 970;
                     echo "            \$doc = array_merge(\n                \$this->validate_";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 969;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 971;
                     echo sha1($collection->getParent()) . "(\$object),\n                \$this->get_array_";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 970;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 972;
                     echo sha1($collection->getClass()) . "(\$object, false)\n            );\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 972;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 974;
                 }
                 else {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 973;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 975;
                     echo "            \$doc = \$this->get_array_" . (sha1($collection->getClass())) . "(\$object);\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 974;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 976;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 975;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 977;
                 echo "\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 976;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 978;
                 foreach($collection->getProperties() as $prop) {
 
                     $this->context['prop'] = $prop;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 977;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 979;
                     if ($prop->getAnnotation()->has('Required')) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 978;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 980;
                         echo "            if (empty(" . ($prop->getPHPVariable()) . ")) {\n                throw new \\RuntimeException(\"";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 979;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 981;
                         echo $prop.'' . " cannot be empty\");\n            }\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 981;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 983;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 982;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 984;
                     echo "            if (!empty(" . ($prop->getPHPVariable()) . ")) {\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 983;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 985;
                     foreach($prop->getCallback('Validate') as $val) {
 
                         $this->context['val'] = $val;
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 984;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 986;
                         echo "                " . ($val->toCode($prop, $prop->getPHPVariable())) . "\n                if (\$return === FALSE) {\n                    throw new \\RuntimeException(\"Validation failed for ";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 986;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 988;
                         echo $prop.'' . "\");\n                }\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 988;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 990;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 989;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 991;
                     echo "\n\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 991;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 993;
                     if ($prop->getAnnotation()->has('Date')) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 992;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 994;
                         echo "                    \$_date = \\date_create('" . "@" . "' . " . ($prop->getPHPVariable()) . "->sec);\n                    if (v\\validate_";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 993;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 995;
                         echo sha1($collection->getClass() . "::" . $prop->getPHPName()) . "(\$_date) === false) {\n                        throw new \\RuntimeException(\"Validation failed for ";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 994;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 996;
                         echo $prop.'' . "\");\n                    }\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 996;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 998;
                     }
                     else if (!$prop->isCustom() && $validator->hasRules($collection->getClass() . "::" . $prop->getPHPName())) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 997;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 999;
                         echo "                    if (v\\validate_" . (sha1($collection->getClass() . "::" . $prop->getPHPName())) . "(" . ($prop->getPHPVariable()) . ") === false) {\n                        throw new \\RuntimeException(\"Validation failed for ";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 998;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1000;
                         echo $prop.'' . "\");\n                    }\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1000;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1002;
                     }
 
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1001;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1003;
                     echo "            }\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1002;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1004;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1003;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1005;
                 echo "\n        return \$doc;\n    }\n\n    protected function update_property_";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1007;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1009;
                 echo sha1($collection->getClass()) . "(\\" . ($collection->getClass()) . " \$document, \$property, \$value)\n    {\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1009;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1011;
                 if ($collection->getParent()) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1010;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1012;
                     echo "            \$this->update_property_" . (sha1($collection->getParent())) . "(\$document, \$property, \$value);\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1011;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1013;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1012;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1014;
                 foreach($collection->getProperties() as $prop) {
 
                     $this->context['prop'] = $prop;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1013;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1015;
                     echo "            if (\$property ==  ";
                     var_export($prop.'');
                     echo "\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1014;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1016;
                     foreach($prop->getAnnotation()->getAll() as $annotation) {
 
                         $this->context['annotation'] = $annotation;
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1015;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1017;
                         echo "                 || \$property == ";
                         var_export('@'.$annotation['method']);
                         echo "\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1016;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1018;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1017;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1019;
                     echo "            ) {\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1018;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1020;
                     if ($prop->isPublic()) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1019;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1021;
                         echo "                    \$document->" . ($prop->getPHPName()) . " = \$value;\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1020;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1022;
                     }
                     else {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1021;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1023;
                         echo "                    \$property = new \\ReflectionProperty(\$object, ";
                         var_export($prop->getPHPNAme());
                         echo ");\n                    \$property->setAccessible(true);\n                    \$property->setValue(\$document, \$value);\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1024;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1026;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1025;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1027;
                     echo "            }\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1026;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1028;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1027;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1029;
                 echo "    }\n\n\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1030;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1032;
                 foreach($collections->getEvents() as $ev) {
 
                     $this->context['ev'] = $ev;
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1031;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1033;
                     echo "    /**\n     *  Code for ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1032;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1034;
                     echo $ev . " events for objects " . ($collection->getClass()) . "\n     */\n        protected function event_";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1034;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1036;
                     echo $ev . "_" . (sha1($collection->getClass())) . "(\$document, Array \$args)\n        {\n            \$class = \$this->get_class(\$document);\n            if (\$class != ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1037;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1039;
                     var_export($collection->getClass());
                     echo " && !is_subclass_of(\$class, ";
                     var_export($collection->getClass());
                     echo ")) {\n                throw new \\Exception(\"Class invalid class name (\$class) expecting  \"  . ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1038;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1040;
                     var_export($collection->getClass());
                     echo ");\n            }\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1040;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1042;
                     if ($collection->getParent()) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1041;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1043;
                         echo "                \$this->event_" . ($ev) . "_" . (sha1($collection->getParent()->getClass())) . "(\$document, \$args);\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1042;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1044;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1043;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1045;
                     echo "\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1044;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1046;
                     foreach($collection->getMethodsByAnnotation($ev) as $method) {
 
                         $this->context['method'] = $method;
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1045;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1047;
                         echo "                " . ($method->toCode($collection, '$document')) . "\n                if (\$return === FALSE) {\n                    throw new \\RuntimeException;\n                }\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1049;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1051;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1050;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1052;
                     echo "\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1051;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1053;
                     if ($ev =="postCreate" || $ev == "postUpdate") {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1052;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1054;
                         echo "                \$col = \$args[1]->getDatabase()->references_queue;\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1053;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1055;
                         ActiveMongo2\Template\Templates::exec("reference/deferred.tpl.php", compact('ev', 'collection'), $this->context);
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1054;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1056;
                         if ($ev == "postUpdate") {
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1055;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1057;
                             ActiveMongo2\Template\Templates::exec("reference/update.tpl.php", compact('ev', 'collection'), $this->context);
-                            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1056;
+                            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1058;
                         }
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1057;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1059;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1058;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1060;
                     echo "\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1059;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1061;
                     foreach($collection->getPlugins($ev) as $plugin) {
 
                         $this->context['plugin'] = $plugin;
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1060;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1062;
                         echo "                " . ($plugin->toCode($collection, '$document')) . "\n                if (\$return === FALSE) {\n                    throw new \\RuntimeException;\n                }\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1064;
+                        $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1066;
                     }
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1065;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1067;
                     echo "        }\n    \n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1067;
+                    $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1069;
                 }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1068;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1070;
                 echo "\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1069;
+                $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1071;
             }
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1070;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1072;
             echo "}\n\nclass ActiveMongo2Mapped\n{\n    protected \$class;\n    protected \$data;\n\n    public function __construct(\$name, Array \$data)\n    {\n        \$this->class = \$name;\n        \$this->data  = \$data;\n    }\n\n    public function getClass()\n    {\n        return \$this->class;\n    }\n\n    public function getOriginal()\n    {\n        return \$this->data;\n    }\n\n    public function ";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1093;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1095;
             echo $instance . "_setOriginal(Array \$data)\n    {\n        \$this->data = \$data;\n    }\n}\n\n";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1099;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1101;
             echo substr($validator->getCode(), 5) . "\n\nreturn array(\n    \"ns\" => ";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1102;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1104;
             var_export(trim($namespace, '\\'));
             echo ",\n    \"validator\" => ";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1103;
+            $line_54a0d5d246c8d[$_54a0d5d246c8d] = 1105;
             var_export($valns);
             echo ",\n);\n";
 
-            array_pop($file_54a0ccd90b9f4);
-
-            if ($return) {
-                return ob_get_clean();
-            }
-
-        }
-    }
-
-    /** 
-     *  Template class generated from Callback.tpl
-     */
-    class class_1895ec604b22a2e3f627b9d8d7ae6142d332247e extends base_template_df562f12800ad133cdbc6f040ca106a099504656
-    {
-
-        public function hasSection($name)
-        {
-
-            return false;
-        }
-
-
-        public function renderSection($name, Array $args = array(), $fail_on_missing = true)
-        {
-            if (!$this->hasSection($name)) {
-                if ($fail_on_missing) {
-                    throw new \RuntimeException("Cannot find section {$name}");
-                }
-                return "";
-            }
-
-        }
-
-        public function render(Array $vars = array(), $return = false)
-        {
-            try {
-                return $this->_render($vars, $return);
-            } catch (\Exception $e) {
-                if ($return) ob_get_clean();
-                throw new ActiveMongo2\Template\ExceptionWrapper($e, __FILE__);
-            }
-        }
-
-        public function _render(Array $vars = array(), $return = false)
-        {
-            global $file_54a0ccd90b9f4, $line_54a0ccd90b9f4;
-            $this->context = $vars;
-
-            extract($vars);
-            if ($return) {
-                ob_start();
-            }
-            $_54a0ccd90b9f4 = array_push($file_54a0ccd90b9f4, 'Callback.tpl') - 1;
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 1;
-
-            if (!$self->isEmbeddable()) {
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 2;
-                echo "    if (empty(self::\$loaded[";
-                var_export($self->getPath());
-                echo "])) {\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 3;
-                if ($self->isClass() || $self->isMethod()) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 4;
-                    echo "            if (!class_exists(";
-                    var_export($self->getClass());
-                    echo ", false)) {\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 5;
-                }
-                else {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 6;
-                    echo "            if (!function_exists(";
-                    var_export($self->getFunction());
-                    echo ")) {\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 7;
-                }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 8;
-                echo "            require __DIR__ . ";
-                var_export($self->getPath());
-                echo ";\n        }\n        self::\$loaded[";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 10;
-                var_export($self->getPath());
-                echo "] = true;\n    }\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 12;
-            }
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 13;
-            echo "\n\$args = empty(\$args) ? [] : \$args;\n\n";
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 16;
-            if ($self->isEmbeddable()) {
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 17;
-                echo "    " . ($self->toEmbedCode($var)) . "\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 18;
-            }
-            else if ($self->isMethod()) {
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 19;
-                if ($self->isPublic()) {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 20;
-                    if ($self->isStatic()) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 21;
-                        echo "            \$return = \\" . ($self->getClass()) . "::" . ($self->getMethod()) . "(\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 22;
-                    }
-                    else if ($prop->getClass() == $self->getClass()) {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 23;
-                        echo "            \$return = \$document->" . ($self->getMethod()) . "(\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 24;
-                    }
-                    else {
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 25;
-                        echo "            // Improve me (should construct once and reuse it)\n            \$return = (new \\";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 26;
-                        echo $self->getClass() . ")->" . ($self->getMethod()) . "(\n";
-                        $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 27;
-                    }
-
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 28;
-                    echo "            " . ($var) . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 31;
-                    var_export($args);
-                    echo ", // annotation arguments\n            \$this, // mapper instance\n            ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 33;
-                    var_export($prop->getClass());
-                    echo "\n        );\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 35;
-                }
-                else {
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 36;
-                    echo "        \$reflection = new \\ReflectionMethod(";
-                    var_export("\\". $self->getClass());
-                    echo ", ";
-                    var_export($self->getMethod());
-                    echo ");\n        \$reflection->setAccessible(true);\n        \$return = \$reflection->invoke(\n            ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 39;
-                    echo $var . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 42;
-                    var_export($args);
-                    echo ", // annotation arguments\n            \$this, // mapper instance\n            ";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 44;
-                    var_export($prop->getClass());
-                    echo "\n        );\n";
-                    $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 46;
-                }
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 47;
-            }
-            else {
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 48;
-                echo "    \$return = \\" . ($self->getFunction()) . "(\n        ";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 49;
-                echo $var . ", // document variable \n        \$args,  // external arguments (defined at run time)\n        \$this->connection, // connection\n        ";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 52;
-                var_export($args);
-                echo ", // annotation arguments\n        \$this, // mapper instance\n        ";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 54;
-                var_export($prop->getClass());
-                echo "\n    );\n";
-                $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 56;
-            }
-
-            $line_54a0ccd90b9f4[$_54a0ccd90b9f4] = 57;
-
-            array_pop($file_54a0ccd90b9f4);
+            array_pop($file_54a0d5d246c8d);
 
             if ($return) {
                 return ob_get_clean();
@@ -1750,15 +1757,15 @@ namespace ActiveMongo2\Template {
 
         public function getSimpleViewTrace()
         {
-            global $file_54a0ccd90b9f4, $line_54a0ccd90b9f4;
+            global $file_54a0d5d246c8d, $line_54a0d5d246c8d;
 
             $traces = $this->e->getTrace();
             $i = 0;
             foreach ($traces as &$trace) {
                 if (!empty($trace['file'])
-                    && $trace['file'] == $this->file && !empty($file_54a0ccd90b9f4[$i])) {
-                    $trace['file'] = $file_54a0ccd90b9f4[$i];
-                    $trace['line'] = $line_54a0ccd90b9f4[$i];
+                    && $trace['file'] == $this->file && !empty($file_54a0d5d246c8d[$i])) {
+                    $trace['file'] = $file_54a0d5d246c8d[$i];
+                    $trace['line'] = $line_54a0d5d246c8d[$i];
                     ++$i;
                 }
                 if (empty($trace['file'])) {
@@ -1797,10 +1804,10 @@ namespace ActiveMongo2\Template {
         public static function getAll()
         {
             return array (
-                0 => 'reference/update',
+                0 => 'callback',
                 1 => 'reference/deferred',
-                2 => 'documents',
-                3 => 'callback',
+                2 => 'reference/update',
+                3 => 'documents',
             );
         }
 
@@ -1825,14 +1832,14 @@ namespace ActiveMongo2\Template {
         public static function get($name, Array $context = array())
         {
             static $classes = array (
-                'reference/update.tpl.php' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
-                'reference/update' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
-                'reference/deferred.tpl.php' => 'class_7e3d172c6b9ee7fd7d68e93c41ee0d852447ceca',
-                'reference/deferred' => 'class_7e3d172c6b9ee7fd7d68e93c41ee0d852447ceca',
-                'documents.tpl.php' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
-                'documents' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
                 'callback.tpl' => 'class_1895ec604b22a2e3f627b9d8d7ae6142d332247e',
                 'callback' => 'class_1895ec604b22a2e3f627b9d8d7ae6142d332247e',
+                'reference/deferred.tpl.php' => 'class_7e3d172c6b9ee7fd7d68e93c41ee0d852447ceca',
+                'reference/deferred' => 'class_7e3d172c6b9ee7fd7d68e93c41ee0d852447ceca',
+                'reference/update.tpl.php' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
+                'reference/update' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
+                'documents.tpl.php' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
+                'documents' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
             );
             $name = strtolower($name);
             if (empty($classes[$name])) {
