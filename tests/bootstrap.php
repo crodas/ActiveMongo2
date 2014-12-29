@@ -25,14 +25,14 @@ function getConnection($cache = false)
         $conf->setCacheStorage(new \ActiveMongo2\Cache\Storage\Memory);
     }
 
-    $mongo = new MongoClient;
     if (!$first) {
-        $db = $mongo->selectDB('activemongo2_tests');
-        $db->drop();
+        $mongo = new MongoClient;
+        $mongo->selectDB('activemongo2_tests')->drop();
+        $mongo->selectDB('activemongo2_tests_foobar')->drop();
     }
 
-    $zconn = new \ActiveMongo2\Connection($conf, $mongo, 'activemongo2_tests');
-
+    $zconn = new \ActiveMongo2\Connection($conf, new MongoClient, 'activemongo2_tests');
+    $zconn->AddConnection('foobar', new MongoClient, 'activemongo2_tests_foobar');
     $first = true;
 
     return $zconn;

@@ -65,6 +65,7 @@ class Connection
         $this->mapper = $config->initialize($this);
         $this->conn   = array('default' => $conn);
         $this->db     = array('default' => $conn->selectDB($db));
+        $this->mapper->setDatabases($this->db);
         if ($config->hasGenerated() || $config->isDevel())  {
             $this->ensureIndex(true);
         }
@@ -74,6 +75,7 @@ class Connection
     {
         $this->conn[$name] = $conn;
         $this->db[$name]   = $conn->selectDB($dbname);
+        $this->mapper->setDatabases($this->db);
         return $this;
     }
 
@@ -95,6 +97,9 @@ class Connection
 
     public function getDatabase($name = 'default')
     {
+        if (empty($this->db[$name])) {
+            throw new \RuntimeException("Cannot find connection $name");
+        }
         return $this->db[$name];
     }
 
@@ -127,7 +132,7 @@ class Connection
 
     public function getCollection($collection)
     {
-        list($col, $class) = $this->mapper->getCollectionObject($collection, $this->getDatabase());
+        list($col, $class) = $this->mapper->getCollectionObject($collection);
 
         if (!empty($this->collections[$class])) {
             return $this->collections[$class];
@@ -201,7 +206,7 @@ class Connection
     protected function getMongoCollection($obj, $class = null, $error = null)
     {
         $class = $this->mapper->get_class($obj);
-        list($col, $class) = $this->mapper->getCollectionObject($class, $this->getDatabase());
+        list($col, $class) = $this->mapper->getCollectionObject($class);
 
         if ($col instanceof $class) {
             throw new \RuntimeException($error);
@@ -295,9 +300,7 @@ class Connection
 
     public function ensureIndex($background = false)
     {
-        foreach ($this->getDatabases() as $conn) {
-            $this->mapper->ensureIndex($conn, $background);
-        }
+        $this->mapper->ensureIndex($background);
     }
 
     public function dropDatabase($name = 'default')

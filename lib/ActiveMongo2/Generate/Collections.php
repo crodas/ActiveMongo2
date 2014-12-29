@@ -87,6 +87,17 @@ class Collections extends ArrayObject
         return $cols;
     }
 
+    public function byConnection()
+    {
+        $cols = array();
+        foreach ($this as $key => $value) {
+            $name = $value->GetClass();
+            $cols[$name] = $value->getConnection();
+        }
+
+        return $cols;
+    }
+
     public function byName()
     {
         $cols = array();

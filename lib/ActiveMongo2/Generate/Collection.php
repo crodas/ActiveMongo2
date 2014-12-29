@@ -56,6 +56,17 @@ class Collection extends Base
         }
     }
 
+    public function getConnection()
+    {
+        if ($this->annotation->has('Connection')) {
+            $conn = current($this->annotation->getOne('Connection'));
+            if (!empty($conn)) {
+                return $conn;
+            }
+        }
+        return 'default';
+    }
+
     public function getPlugins($type)
     {
         $plugins = array();

@@ -16,6 +16,8 @@ class Mapper
     protected $class_mapper = {{ var_export(@$collections->byClass(), true) }};
     protected static $loaded = array();
     protected $connection;
+    protected $connections;
+    protected $class_connections = {{@$collections->byConnection()}};
     protected $ns = "";
 
     public function __construct(Connection $conn, $ns)
@@ -25,6 +27,12 @@ class Mapper
             $this->ns = "{$ns}.";
         }
         spl_autoload_register(array($this, '__autoloader'));
+    }
+
+    public function setDatabases(Array $conns)
+    {
+        $this->connections = $conns;
+        return $this;
     }
 
     public function getRelativePath($object, $dir)
@@ -70,7 +78,7 @@ class Mapper
         return false;
     }
 
-    public function getCollectionObject($col, $db)
+    public function getCollectionObject($col)
     {
         if (!is_scalar($col) || empty($this->mapper[$col])) {
             $data = $this->mapClass($col);     
@@ -89,6 +97,13 @@ class Mapper
             $data['name'] = $this->ns . $data['name'];
         }
 
+        $conn = $this->class_connections[$data['class']];
+
+        if (empty($this->connections[$conn])) {
+            throw new \RuntimeException("Cannot find connection $conn");
+        }
+
+        $db = $this->connections[$conn];
         if (!empty($data['is_gridfs'])) {
             $col = $db->getGridFs($data['name']);
         } else {
@@ -418,18 +433,27 @@ class Mapper
         return $this->$method($document, $key, $value);
     }
 
-    public function ensureIndex($db)
+    public function ensureIndex($background)
     {
 
         @set($is_new, version_compare(MongoClient::VERSION, '1.5.0', '>'))
 
         @foreach($collections->getIndexes() as $id => $index)
-        try {
             @if (!empty($index['col'])) 
-                $col = $db->createCollection($this->ns . {{@$index['col']->getName()}}); 
+                @set($col, $index['col'])
             @else
-                $col = $db->createCollection($this->ns . {{@$index['prop']->getParent()->getName()}}); 
+                @set($col, $index['prop']->getParent())
             @end
+
+            $conn = $this->class_connections[{{@$col->getClass()}}];
+            if (empty($this->connections[$conn])) {
+                throw new \RuntimeException("Cannot find connection $conn");
+            }
+            $db = $this->connections[$conn];
+
+        try {
+            $col = $db->createCollection($this->ns . {{@$col->getName()}}); 
+
             @if ($is_new)
             $return = $col->createIndex(
                 {{@.$index['field']}},
