@@ -63,11 +63,18 @@ class Connection
         $this->config = $config;
         $this->cache  = $config->getCache();
         $this->mapper = $config->initialize($this);
-        $this->conn   = $conn;
-        $this->db     = $conn->selectDB($db);
+        $this->conn   = array('default' => $conn);
+        $this->db     = array('default' => $conn->selectDB($db));
         if ($config->hasGenerated() || $config->isDevel())  {
             $this->ensureIndex(true);
         }
+    }
+
+    public function addConnection($name, MongoClient $conn, $dbname)
+    {
+        $this->conn[$name] = $conn;
+        $this->db[$name]   = $conn->selectDB($dbname);
+        return $this;
     }
 
     public function setCacheStorage(Cache\Storage $storage)
@@ -76,14 +83,19 @@ class Connection
         return $this;
     }
 
-    public function command($command, $args = array())
+    public function command($command, $args = array(), $name = '')
     {
-        return $this->db->command($command, $args);
+        return $this->getDatabase($name)->command($command, $args);
     }
 
-    public function getDatabase()
+    public function getDatabases()
     {
         return $this->db;
+    }
+
+    public function getDatabase($name = 'default')
+    {
+        return $this->db[$name];
     }
 
     public function getConfiguration()
@@ -91,9 +103,12 @@ class Connection
         return $this->config;
     }
 
-    public function getConnection()
+    public function getConnection($name = 'default')
     {
-        return $this->conn;
+        if (empty($this->conn[$name])) {
+            throw new \RuntimeException("Cannot find connection named '$name'");
+        }
+        return $this->conn[$name];
     }
 
     public function __get($name)
@@ -112,7 +127,7 @@ class Connection
 
     public function getCollection($collection)
     {
-        list($col, $class) = $this->mapper->getCollectionObject($collection, $this->db);
+        list($col, $class) = $this->mapper->getCollectionObject($collection, $this->getDatabase());
 
         if (!empty($this->collections[$class])) {
             return $this->collections[$class];
@@ -186,7 +201,7 @@ class Connection
     protected function getMongoCollection($obj, $class = null, $error = null)
     {
         $class = $this->mapper->get_class($obj);
-        list($col, $class) = $this->mapper->getCollectionObject($class, $this->db);
+        list($col, $class) = $this->mapper->getCollectionObject($class, $this->getDatabase());
 
         if ($col instanceof $class) {
             throw new \RuntimeException($error);
@@ -280,11 +295,13 @@ class Connection
 
     public function ensureIndex($background = false)
     {
-        $this->mapper->ensureIndex($this->db, $background);
+        foreach ($this->getDatabases() as $conn) {
+            $this->mapper->ensureIndex($conn, $background);
+        }
     }
 
-    public function dropDatabase()
+    public function dropDatabase($name = 'default')
     {
-        return $this->db->drop();
+        return $this->getDatabase($name)->drop();
     }
 }
