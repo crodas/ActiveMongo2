@@ -16,11 +16,33 @@ class Mapper
     protected $class_mapper = {{ var_export(@$collections->byClass(), true) }};
     protected static $loaded = array();
     protected $connection;
+    protected $connections;
+    protected $class_connections = {{@$collections->byConnection()}};
+    protected $ns = array();
+    protected $ns_by_name = array();
 
     public function __construct(Connection $conn)
     {
         $this->connection = $conn;
         spl_autoload_register(array($this, '__autoloader'));
+    }
+
+    public function setDatabases(Array $conns, Array $ns)
+    {
+        $this->connections = $conns;
+
+        $this->ns = $ns;
+        foreach ($this->class_connections as $class => $conn) {
+            $ns ="";
+            if (!empty($this->ns[$conn])) {
+                $ns = $this->ns[$conn];
+            }
+            if (!empty($this->class_mapper[$class])) {
+                $this->ns_by_name[ $this->class_mapper[$class]['name'] ] = $ns;
+            }
+        }
+
+        return $this;
     }
 
     public function getRelativePath($object, $dir)
@@ -48,7 +70,7 @@ class Mapper
         return array(
         @foreach ($collections as $collection)
             @if ($collection->getName())
-                {{@$collection->getClass()}} => {{@$collection->getName()}},
+                {{@$collection->getClass()}} => $this->ns_by_name[{{@$collection->getName()}}]. {{@$collection->getName()}},
             @end
         @end
         );
@@ -66,7 +88,7 @@ class Mapper
         return false;
     }
 
-    public function getCollectionObject($col, $db)
+    public function getCollectionObject($col)
     {
         if (!is_scalar($col) || empty($this->mapper[$col])) {
             $data = $this->mapClass($col);     
@@ -81,6 +103,15 @@ class Mapper
             self::$loaded[$data['file']] = true;
         }
 
+        $data['name'] = $this->ns_by_name[$data['name']] . $data['name'];
+
+        $conn = $this->class_connections[$data['class']];
+
+        if (empty($this->connections[$conn])) {
+            throw new \RuntimeException("Cannot find connection $conn");
+        }
+
+        $db = $this->connections[$conn];
         if (!empty($data['is_gridfs'])) {
             $col = $db->getGridFs($data['name']);
         } else {
@@ -358,13 +389,19 @@ class Mapper
         if ($col instanceof \MongoCollection) {
             $col = $col->getName();
         }
+
         $class = NULL;
         switch ($col) {
         @foreach ($collections as $collection)
             @if ($collection->is('GridFs'))
+            case $this->ns_by_name[{{@$collection->getname()}}] . {{@$collection->getName() . '.files'}}:
+            case $this->ns_by_name[{{@$collection->getname()}}] . {{@$collection->getName() . '.chunks'}}:
             case {{@$collection->getName() . '.files'}}:
             case {{@$collection->getName() . '.chunks'}}:
             @else
+            @if ($collection->getName())
+                case $this->ns_by_name[{{@$collection->getname()}}] . {{@$collection->getName()}}:
+            @end
             case {{@$collection->getName()}}:
             @end
                 @if (!$collection->is('SingleCollection'))
@@ -407,18 +444,28 @@ class Mapper
         return $this->$method($document, $key, $value);
     }
 
-    public function ensureIndex($db)
+    public function ensureIndex($background)
     {
 
         @set($is_new, version_compare(MongoClient::VERSION, '1.5.0', '>'))
 
         @foreach($collections->getIndexes() as $id => $index)
-        try {
+            @set($next, uniqid(true))
             @if (!empty($index['col'])) 
-                $col = $db->createCollection({{@$index['col']->getName()}}); 
+                @set($col, $index['col'])
             @else
-                $col = $db->createCollection({{@$index['prop']->getParent()->getName()}}); 
+                @set($col, $index['prop']->getParent())
             @end
+
+            $conn = $this->class_connections[{{@$col->getClass()}}];
+            if (empty($this->connections[$conn])) {
+                goto skip_{{$next}};
+            }
+            $db = $this->connections[$conn];
+
+        try {
+            $col = $db->createCollection($this->ns_by_name[{{@$col->getName()}}] . {{@$col->getName()}}); 
+
             @if ($is_new)
             $return = $col->createIndex(
                 {{@.$index['field']}},
@@ -430,7 +477,7 @@ class Mapper
                 {{@.$index['extra']}}
             );
             @end
-        } catch (\Exception $e) {
+        } catch (\MongoException $e) {
             // delete index and try to rebuild it
             $col->deleteIndex({{@.$index['field']}});
 
@@ -446,6 +493,7 @@ class Mapper
             );
             @end
         }
+        skip_{{$next}}:
         @end
     }
 

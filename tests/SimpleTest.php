@@ -114,6 +114,8 @@ class SimpleTest extends \phpunit_framework_testcase
         $conn->save($user);
         $this->assertTrue($userCol->count() > 0);
         $conn->dropDatabase();
+        $this->assertTrue($userCol->count() != 0);
+        $conn->dropDatabase('foobar');
         $this->assertTrue($userCol->count() == 0);
 
     }

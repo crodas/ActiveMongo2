@@ -1,5 +1,9 @@
 language: php
-script: phpunit --coverage-clover=coverage.clover
+script: 
+    - phpunit --coverage-clover=coverage.clover
+    - rm -rf /tmp/activemongo2
+    - export NAMESPACE=root
+    - phpunit --coverage-clover=coverage.clover
 
 php:
     - 5.4

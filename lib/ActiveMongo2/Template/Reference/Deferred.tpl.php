@@ -38,7 +38,7 @@
                 ));
             @end
             foreach ($data as $row) {
-                $row['collection'] = {{@$ref['property']->getParent()->getName()}};
+                $row['collection'] = $this->ns_by_name[{{@$ref['property']->getParent()->getName()}}] . {{@$ref['property']->getParent()->getName()}};
                 $row['_id'] = array(
                     'source' => $row['source_id'], 
                     'target_id' => $row['id'], 

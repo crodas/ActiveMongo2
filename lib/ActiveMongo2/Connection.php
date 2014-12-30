@@ -56,6 +56,7 @@ class Connection
     protected $mapper;
     protected $cache;
     protected $config;
+    protected $ns = array();
     protected $queue = array();
 
     public function __construct(Configuration $config, MongoClient $conn, $db)
@@ -63,11 +64,25 @@ class Connection
         $this->config = $config;
         $this->cache  = $config->getCache();
         $this->mapper = $config->initialize($this);
-        $this->conn   = $conn;
-        $this->db     = $conn->selectDB($db);
+        $this->conn   = array('default' => $conn);
+        $this->db     = array('default' => $conn->selectDB($db));
+        $this->ns     = array('default' => $config->getNamespace());
+        $this->mapper->setDatabases($this->db, $this->ns);
         if ($config->hasGenerated() || $config->isDevel())  {
             $this->ensureIndex(true);
         }
+    }
+
+    public function addConnection($name, MongoClient $conn, $dbname, $ns = '')
+    {
+        $this->conn[$name] = $conn;
+        $this->db[$name]   = $conn->selectDB($dbname);
+        $this->ns[$name]   = "$ns.";
+        $this->mapper->setDatabases($this->db, $this->ns);
+        if ($this->config->hasGenerated() || $this->config->isDevel())  {
+            $this->ensureIndex(true);
+        }
+        return $this;
     }
 
     public function setCacheStorage(Cache\Storage $storage)
@@ -76,14 +91,22 @@ class Connection
         return $this;
     }
 
-    public function command($command, $args = array())
+    public function command($command, $args = array(), $name = '')
     {
-        return $this->db->command($command, $args);
+        return $this->getDatabase($name)->command($command, $args);
     }
 
-    public function getDatabase()
+    public function getDatabases()
     {
         return $this->db;
+    }
+
+    public function getDatabase($name = 'default')
+    {
+        if (empty($this->db[$name])) {
+            throw new \RuntimeException("Cannot find connection $name");
+        }
+        return $this->db[$name];
     }
 
     public function getConfiguration()
@@ -91,9 +114,12 @@ class Connection
         return $this->config;
     }
 
-    public function getConnection()
+    public function getConnection($name = 'default')
     {
-        return $this->conn;
+        if (empty($this->conn[$name])) {
+            throw new \RuntimeException("Cannot find connection named '$name'");
+        }
+        return $this->conn[$name];
     }
 
     public function __get($name)
@@ -112,7 +138,7 @@ class Connection
 
     public function getCollection($collection)
     {
-        list($col, $class) = $this->mapper->getCollectionObject($collection, $this->db);
+        list($col, $class) = $this->mapper->getCollectionObject($collection);
 
         if (!empty($this->collections[$class])) {
             return $this->collections[$class];
@@ -186,7 +212,7 @@ class Connection
     protected function getMongoCollection($obj, $class = null, $error = null)
     {
         $class = $this->mapper->get_class($obj);
-        list($col, $class) = $this->mapper->getCollectionObject($class, $this->db);
+        list($col, $class) = $this->mapper->getCollectionObject($class);
 
         if ($col instanceof $class) {
             throw new \RuntimeException($error);
@@ -280,11 +306,11 @@ class Connection
 
     public function ensureIndex($background = false)
     {
-        $this->mapper->ensureIndex($this->db, $background);
+        $this->mapper->ensureIndex($background);
     }
 
-    public function dropDatabase()
+    public function dropDatabase($name = 'default')
     {
-        return $this->db->drop();
+        return $this->getDatabase($name)->drop();
     }
 }

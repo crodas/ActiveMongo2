@@ -17,18 +17,22 @@ function getConnection($cache = false)
         ->addModelPath(__DIR__ . '/docs')
         ->development();
 
+    if (!empty($_SERVER["NAMESPACE"])) {
+        if (!$first) print "Using namespace {$_SERVER['NAMESPACE']}\n";
+        $conf->SetNamespace($_SERVER["NAMESPACE"]);
+    }
     if ($cache) {
         $conf->setCacheStorage(new \ActiveMongo2\Cache\Storage\Memory);
     }
 
-    $mongo = new MongoClient;
     if (!$first) {
-        $db = $mongo->selectDB('activemongo2_tests');
-        $db->drop();
+        $mongo = new MongoClient;
+        $mongo->selectDB('activemongo2_tests')->drop();
+        $mongo->selectDB('activemongo2_tests_foobar')->drop();
     }
 
-    $zconn = new \ActiveMongo2\Connection($conf, $mongo, 'activemongo2_tests');
-
+    $zconn = new \ActiveMongo2\Connection($conf, new MongoClient, 'activemongo2_tests');
+    $zconn->AddConnection('foobar', new MongoClient, 'activemongo2_tests_foobar', 'zzzz');
     $first = true;
 
     return $zconn;
