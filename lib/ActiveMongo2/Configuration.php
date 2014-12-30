@@ -68,6 +68,11 @@ class Configuration
         $this->cache  = new Cache\Cache;
     }
 
+    public function getNamespace()
+    {
+        return $this->namespace;
+    }
+
     public function setNamespace($ns)
     {
         $this->namespace = $ns;

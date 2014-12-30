@@ -32,7 +32,7 @@ function getConnection($cache = false)
     }
 
     $zconn = new \ActiveMongo2\Connection($conf, new MongoClient, 'activemongo2_tests');
-    $zconn->AddConnection('foobar', new MongoClient, 'activemongo2_tests_foobar');
+    $zconn->AddConnection('foobar', new MongoClient, 'activemongo2_tests_foobar', 'zzzz');
     $first = true;
 
     return $zconn;

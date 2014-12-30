@@ -26,6 +26,8 @@ class zfinalizeTest extends phpunit_framework_testcase
 
         $this->doTest($cols1, $cols2);
         $this->doTest($cols2, $cols1);
+
+        $this->assertTrue(in_array('activemongo2_tests_foobar.zzzz.user', $cols2));
     }
 }
 

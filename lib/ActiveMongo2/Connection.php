@@ -56,6 +56,7 @@ class Connection
     protected $mapper;
     protected $cache;
     protected $config;
+    protected $ns = array();
     protected $queue = array();
 
     public function __construct(Configuration $config, MongoClient $conn, $db)
@@ -65,17 +66,19 @@ class Connection
         $this->mapper = $config->initialize($this);
         $this->conn   = array('default' => $conn);
         $this->db     = array('default' => $conn->selectDB($db));
-        $this->mapper->setDatabases($this->db);
+        $this->ns     = array('default' => $config->getNamespace());
+        $this->mapper->setDatabases($this->db, $this->ns);
         if ($config->hasGenerated() || $config->isDevel())  {
             $this->ensureIndex(true);
         }
     }
 
-    public function addConnection($name, MongoClient $conn, $dbname)
+    public function addConnection($name, MongoClient $conn, $dbname, $ns = '')
     {
         $this->conn[$name] = $conn;
         $this->db[$name]   = $conn->selectDB($dbname);
-        $this->mapper->setDatabases($this->db);
+        $this->ns[$name]   = "$ns.";
+        $this->mapper->setDatabases($this->db, $this->ns);
         if ($this->config->hasGenerated() || $this->config->isDevel())  {
             $this->ensureIndex(true);
         }

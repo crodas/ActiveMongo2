@@ -18,20 +18,30 @@ class Mapper
     protected $connection;
     protected $connections;
     protected $class_connections = {{@$collections->byConnection()}};
-    protected $ns = "";
+    protected $ns = array();
+    protected $ns_by_name = array();
 
-    public function __construct(Connection $conn, $ns)
+    public function __construct(Connection $conn)
     {
         $this->connection = $conn;
-        if (!empty($ns)) {
-            $this->ns = "{$ns}.";
-        }
         spl_autoload_register(array($this, '__autoloader'));
     }
 
-    public function setDatabases(Array $conns)
+    public function setDatabases(Array $conns, Array $ns)
     {
         $this->connections = $conns;
+
+        $this->ns = $ns;
+        foreach ($this->class_connections as $class => $conn) {
+            $ns ="";
+            if (!empty($this->ns[$conn])) {
+                $ns = $this->ns[$conn];
+            }
+            if (!empty($this->class_mapper[$class])) {
+                $this->ns_by_name[ $this->class_mapper[$class]['name'] ] = $ns;
+            }
+        }
+
         return $this;
     }
 
@@ -60,7 +70,7 @@ class Mapper
         return array(
         @foreach ($collections as $collection)
             @if ($collection->getName())
-                {{@$collection->getClass()}} => $this->ns . {{@$collection->getName()}},
+                {{@$collection->getClass()}} => $this->ns_by_name[{{@$collection->getName()}}]. {{@$collection->getName()}},
             @end
         @end
         );
@@ -93,9 +103,7 @@ class Mapper
             self::$loaded[$data['file']] = true;
         }
 
-        if ($this->ns) {
-            $data['name'] = $this->ns . $data['name'];
-        }
+        $data['name'] = $this->ns_by_name[$data['name']] . $data['name'];
 
         $conn = $this->class_connections[$data['class']];
 
@@ -381,16 +389,19 @@ class Mapper
         if ($col instanceof \MongoCollection) {
             $col = $col->getName();
         }
-        if (strncmp($this->ns, $col, $len = strlen($this->ns)) == 0) {
-            $col = substr($col, $len);
-        }
+
         $class = NULL;
         switch ($col) {
         @foreach ($collections as $collection)
             @if ($collection->is('GridFs'))
+            case $this->ns_by_name[{{@$collection->getname()}}] . {{@$collection->getName() . '.files'}}:
+            case $this->ns_by_name[{{@$collection->getname()}}] . {{@$collection->getName() . '.chunks'}}:
             case {{@$collection->getName() . '.files'}}:
             case {{@$collection->getName() . '.chunks'}}:
             @else
+            @if ($collection->getName())
+                case $this->ns_by_name[{{@$collection->getname()}}] . {{@$collection->getName()}}:
+            @end
             case {{@$collection->getName()}}:
             @end
                 @if (!$collection->is('SingleCollection'))
@@ -453,7 +464,7 @@ class Mapper
             $db = $this->connections[$conn];
 
         try {
-            $col = $db->createCollection($this->ns . {{@$col->getName()}}); 
+            $col = $db->createCollection($this->ns_by_name[{{@$col->getName()}}] . {{@$col->getName()}}); 
 
             @if ($is_new)
             $return = $col->createIndex(
@@ -466,7 +477,7 @@ class Mapper
                 {{@.$index['extra']}}
             );
             @end
-        } catch (\Exception $e) {
+        } catch (\MongoException $e) {
             // delete index and try to rebuild it
             $col->deleteIndex({{@.$index['field']}});
 
