@@ -12,7 +12,7 @@
         "crodas/validator": ">=0.1.5"
     },
     "license": "BSD-4-Clause",
-    "version": "v0.1.32",
+    "version": "v0.2.1",
     "authors": [
         {
             "name": "César D. Rodas",
