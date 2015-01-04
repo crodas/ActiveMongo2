@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "8de129b59cd4de53461abaadf52eef31",
+    "hash": "78244b637025eb30458fd84f15c033ad",
     "packages": [
         {
             "name": "crodas/asset",
@@ -270,16 +270,16 @@
         },
         {
             "name": "crodas/validator",
-            "version": "v0.1.5",
+            "version": "v0.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/Validator.git",
-                "reference": "dcfc300b5eb678f3bfd0e7a630997c8644574c03"
+                "reference": "127f5554227290e48e660adcdf2f7236d5a91ee1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/Validator/zipball/dcfc300b5eb678f3bfd0e7a630997c8644574c03",
-                "reference": "dcfc300b5eb678f3bfd0e7a630997c8644574c03",
+                "url": "https://api.github.com/repos/crodas/Validator/zipball/127f5554227290e48e660adcdf2f7236d5a91ee1",
+                "reference": "127f5554227290e48e660adcdf2f7236d5a91ee1",
                 "shasum": ""
             },
             "require": {
@@ -306,24 +306,25 @@
                 }
             ],
             "description": "Validation library",
-            "time": "2014-09-05 21:40:47"
+            "time": "2015-01-03 00:21:57"
         },
         {
             "name": "crodas/watch-files",
-            "version": "v0.1.5",
+            "version": "v0.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/WatchFiles.git",
-                "reference": "9ac4b327fcd0610f147816e97ae592612855cd26"
+                "reference": "e9e08aa4ee6e7503e57d953eebd50193bf7a2580"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/WatchFiles/zipball/9ac4b327fcd0610f147816e97ae592612855cd26",
-                "reference": "9ac4b327fcd0610f147816e97ae592612855cd26",
+                "url": "https://api.github.com/repos/crodas/WatchFiles/zipball/e9e08aa4ee6e7503e57d953eebd50193bf7a2580",
+                "reference": "e9e08aa4ee6e7503e57d953eebd50193bf7a2580",
                 "shasum": ""
             },
             "require": {
-                "crodas/file-util": ">=0.1.7"
+                "crodas/file-util": ">=0.1.7",
+                "crodas/simple-view-engine": "~0.1"
             },
             "type": "library",
             "autoload": {
@@ -342,7 +343,7 @@
                 }
             ],
             "description": "Watch files and directories for changes",
-            "time": "2014-05-12 06:38:45"
+            "time": "2015-01-04 19:16:44"
         },
         {
             "name": "leafo/lessphp",
@@ -442,25 +443,30 @@
         },
         {
             "name": "patchwork/jsqueeze",
-            "version": "v1.0.5",
+            "version": "v2.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tchwork/jsqueeze.git",
-                "reference": "2587913cf62143d896943b248b21651314911e2c"
+                "reference": "70a8167daf0e2d5522d5d77a11e3a7d6753683ce"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tchwork/jsqueeze/zipball/2587913cf62143d896943b248b21651314911e2c",
-                "reference": "2587913cf62143d896943b248b21651314911e2c",
+                "url": "https://api.github.com/repos/tchwork/jsqueeze/zipball/70a8167daf0e2d5522d5d77a11e3a7d6753683ce",
+                "reference": "70a8167daf0e2d5522d5d77a11e3a7d6753683ce",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.1.4"
+                "php": ">=5.3.0"
             },
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0-dev"
+                }
+            },
             "autoload": {
-                "psr-0": {
-                    "JSqueeze": "class/"
+                "psr-4": {
+                    "Patchwork\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -480,7 +486,7 @@
                 "javascript",
                 "minification"
             ],
-            "time": "2014-11-08 10:03:23"
+            "time": "2015-01-01 10:47:37"
         },
         {
             "name": "seld/jsonlint",
