@@ -36,7 +36,7 @@
 */
 namespace ActiveMongo2\Generate;
 
-use Notoj\Annotation;
+use Notoj\Object\zProperty;
 use ActiveMongo2\Generate;
 
 class Property extends Base
@@ -50,12 +50,13 @@ class Property extends Base
 
     protected function getTypeFromAnnotation($annotation)
     {
-        foreach ($annotation->getOne('DataType') as $type) {
-            if ($this->type === null) {
-                $this->type = $type;
-            } else {
-                throw new \Exception("{$this->getPHPName()} has two data tyeps {$type} and {$this->type}");
-            }
+        if ($annotation->GetName() == 'datatype') {
+            return;
+        }
+        if ($this->type === null) {
+            $this->type = current($annotation->GetArgs());
+        } else {
+            throw new \Exception("{$this->getPHPName()} has two data tyeps {$type} and {$this->type}");
         }
     }
 
@@ -64,7 +65,7 @@ class Property extends Base
         return $this->collection;
     }
 
-    public function __construct(Collection $col, Annotation $prop)
+    public function __construct(Collection $col, zProperty $prop)
     {
         $this->collection = $col;
         $this->annotation = $prop;
@@ -88,17 +89,17 @@ class Property extends Base
 
     public function getPHPName()
     {
-        return $this->annotation['property'];
+        return $this->annotation->getName();
     }
 
     public function isPublic()
     {
-        return in_array('public', $this->annotation['visibility']);
+        return $this->annotation->isPublic();
     }
 
     public function getProperty()
     {
-        return $this->annotation['property'];
+        return $this->annotation->getName();
     }
 
     public function getCallback($filter)
@@ -139,11 +140,11 @@ class Property extends Base
     public function getReferenceCollection()
     {
         $ann = $this->annotation->getOne('Embed,EmbedOne,EmbedMany,ReferenceOne,Reference,ReferenceMany');
-        if (empty($ann) || empty($ann['args'])) {
+        if (empty($ann) || !$ann->getArgs()) {
             return false;
         }
 
-        $ref = strtolower(current($ann['args']));
+        $ref = strtolower(current($ann->getArgs()));
 
         foreach ($this->parent->getCollections() as $col) {
             if ($ref == $col->getName() || $ref == $col->getClass()) {

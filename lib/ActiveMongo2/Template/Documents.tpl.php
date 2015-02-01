@@ -14,6 +14,7 @@ class Mapper
 {
     protected $mapper = {{ var_export(@$collections->byName(), true) }};
     protected $class_mapper = {{ var_export(@$collections->byClass(), true) }};
+    protected $class_files =  {{ @$collections->autoload() }};
     protected static $loaded = array();
     protected $connection;
     protected $connections;
@@ -79,9 +80,9 @@ class Mapper
     public function __autoloader($class)
     {
         $class = strtolower($class);
-        if (!empty($this->class_mapper[$class])) {
-            self::$loaded[$this->class_mapper[$class]['file']] = true;
-            require __DIR__ . $this->class_mapper[$class]['file'];
+        if (!empty($this->class_files[$class])) {
+            self::$loaded[$this->class_files[$class]] = true;
+            require __DIR__ . $this->class_files[$class];
 
             return true;
         }
@@ -499,6 +500,10 @@ class Mapper
 
     @foreach ($collections as $collection)
 
+    /**
+     *  {{ $collection->getClass() }} => {{ $collection->GetName() }}
+     *  {{ count($collection->getAnnotation()->getAnnotations()) }}
+     */
     protected function set_property_{{sha1($collection->getClass())}}($object, $name, $value)
     {
         switch ($name) {
@@ -1024,7 +1029,7 @@ class Mapper
         @end
         @foreach ($collection->getProperties() as $prop)
             if ($property ==  {{@$prop.''}}
-            @foreach($prop->getAnnotation()->getAll() as $annotation) 
+            @foreach($prop->getAnnotation() as $annotation) 
                  || $property == {{@'@'.$annotation['method']}}
             @end
             ) {

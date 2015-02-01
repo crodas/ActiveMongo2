@@ -38,7 +38,7 @@ namespace ActiveMongo2\Generate;
 
 use Notoj\Notoj;
 use Notoj\Annotation;
-use Notoj\Annotation\AnnClass;
+use Notoj\Object\zClass;
 use ActiveMongo2\Generate;
 
 class Collection extends Base
@@ -109,15 +109,15 @@ class Collection extends Base
         }
     }
 
-    public function __construct(AnnClass $annotation, Collections $collections)
+    public function __construct(zClass $annotation, Collections $collections)
     {
         $this->annotation  = $annotation;
         $this->collections = $collections;
 
         $parent = $annotation->getParent();
         while ($parent) {
-            if (empty($collections[$parent['class']])) {
-                $collections[$parent['class']] = new self($parent, $collections);
+            if (empty($collections[$parent->getName()])) {
+                $collections[$parent->getName()] = new self($parent, $collections);
             }
             $parent = $parent->getParent();
         }
@@ -152,7 +152,7 @@ class Collection extends Base
 
     public function __toString()
     {
-        return $this->getClass();
+        return $this->annotation->getName();
     }
 
     public function getArray()
@@ -174,20 +174,15 @@ class Collection extends Base
         $args = $this->annotation->getOne('SingleCollection') ?: ['__type'];
         $prop = current($args);
         if ($obj) {
-            // we expect it as an annotation object
-            $ann = new Annotation;
-            $ann->setMetadata([
-                'type' => 'property',
-                'property' => $prop,
-            ]);
-            $prop = new Property($this, $ann);
+            $property = new \crodas\ClassInfo\Definition\TProperty($prop);
+            $prop = new Property($this, \Notoj\Object\Base::create($property, NULL));
         }
         return $prop;
     }
 
     public function getClass()
     {
-        return strtolower($this->annotation['class']);
+        return $this->annotation->getName();
     }
 
     public function getSafeName()
@@ -197,7 +192,7 @@ class Collection extends Base
 
     public function getHash()
     {
-        return $this->getSafeName() . '_' . sha1($this->getClass());
+        return $this->getSafeName() . '_' . sha1($this->annotation->getName());
     }
 
     protected function getNameFromParent()
@@ -212,8 +207,9 @@ class Collection extends Base
         return NULL;
     }
 
-    protected function getNameFromAnnotation($args, $ann)
+    protected function getNameFromAnnotation($annotation, $ann)
     {
+        $args = $annotation->GetArgs();
         foreach ($ann as $name) {
             if (!empty($args[$name])) {
                 return $args[$name];
@@ -224,7 +220,7 @@ class Collection extends Base
             return "fs";
         }
 
-        $parts = explode("\\", $this->getClass());
+        $parts = explode("\\", $this->annotation->getName());
         $name  = strtolower(end($parts)); 
         return $name;
     }
@@ -233,7 +229,7 @@ class Collection extends Base
     {
         $self = $this;
         return array_filter($this->collections->getAllReferences(), function($obj) use ($self) {
-            return $obj['target'] == $self;
+            return $obj['target'] === $self;
         });
     }
 
@@ -241,17 +237,17 @@ class Collection extends Base
     {
         $self = $this;
         return array_filter($this->collections->getAllReferences(), function($obj) use ($self) {
-            return $obj['property']->getParent() == $self;
+            return $obj['property']->getParent() === $self;
         });
     }
 
     public function getRefCache()
     {
         $cache = $this->collections->getReferenceCache();
-        if (!empty($cache[$this->getClass()])) {
+        if (!empty($cache[$this->annotation->getName()])) {
             return array_combine(
-                $cache[$this->getClass()],
-                $cache[$this->getClass()]
+                $cache[$this->annotation->getName()],
+                $cache[$this->annotation->getName()]
             );
         }
         return NULL;
@@ -288,6 +284,6 @@ class Collection extends Base
         if (empty($parent)) {
             return NULL;
         }
-        return $this->collections[$parent['class']];
+        return $this->collections[$parent->getName()];
     }
 }

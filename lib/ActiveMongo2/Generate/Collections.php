@@ -36,7 +36,6 @@
 */
 namespace ActiveMongo2\Generate;
 
-use Notoj\Annotations;
 use Notoj\Dir as NDir;
 use ArrayObject;
 
@@ -73,6 +72,18 @@ class Collections extends ArrayObject
     public function offsetGet($name)
     {
         return parent::offsetGet(strtolower($name));
+    }
+
+    public function autoload()
+    {
+        $classes = array();
+        foreach ($this as $key => $value) {
+            $name = $value->GetName();
+            if ($name) {
+                $classes[strtolower($value->getClass())] = $value->getPath();
+            }
+        } 
+        return $classes;
     }
 
     public function byClass()
@@ -123,7 +134,8 @@ class Collections extends ArrayObject
 
     protected function getIndexOrder($prop, $i = 0)
     {
-        $order = strtolower(current((array)$prop[$i]['args'])) == 'desc' ? -1 : 1;
+        $args = $prop[$i]->getArgs();
+        $order = strtolower(current((array)$args)) == 'desc' ? -1 : 1;
         if ($prop[1]->getAnnotation()->has('Geo')) {
             $order = '2dsphere';
         }
@@ -135,9 +147,14 @@ class Collections extends ArrayObject
     {
         $indexes = array();
         foreach ($this as $col) {
-            foreach ($col->getAnnotation()->get('Index,Unique') as $prop) {
-                $index = array('field' => array(), 'col' => $col, 'extra' => array());
-                foreach ($prop['args'] as $name => $order) {
+            foreach ($col->getAnnotation()->get('Index,Unique', 'Property') as $prop) {
+                $index = array(
+                    'field' => array(),
+                    'col' => $col,
+                    'extra' => array()
+                );
+                $args = $prop->getArgs();
+                foreach ($args as $name => $order) {
                     if (is_numeric($name)) {
                         $name  = $order;
                         $order = 1;
@@ -173,7 +190,7 @@ class Collections extends ArrayObject
             }
 
             if (empty($indexes[$name])) {
-                $indexes[$name] = $index;
+    $indexes[$name] = $index;
             }
             
             $indexes[$name]['extra'] = array_merge($indexes[$name]['extra'], $index['extra']);
@@ -187,7 +204,7 @@ class Collections extends ArrayObject
         $all = array();
         foreach ($this->getAllProperties() as $prop) {
             foreach ($prop->getAnnotation()->get($ann) as $a) {
-                if (empty($with_arg) || !empty($a['args'])) {
+                if (empty($with_arg) || !empty($a->GetArgs())) {
                     $all[] = [$a, $prop];
                 }
             }
@@ -209,7 +226,7 @@ class Collections extends ArrayObject
     public function getCollectionByName($name)
     {
         foreach ($this as $col) {
-            if ($col->getName() == $name || $col->getClass() == strtolower($name)) {
+            if ($col->getName() == $name || strtolower($col->getClass()) == strtolower($name)) {
                 return $col;
             }
         }
@@ -234,7 +251,7 @@ class Collections extends ArrayObject
         foreach ($references as $type => $multi) {
             foreach ($this->getAllPropertiesWithAnnotation($type, true) as $ann) {
                 list($ann, $prop) = $ann;
-                $args = $ann['args'];
+                $args = $ann->getArgs();
                 $target = $this->getCollectionByName($args[0]);
                 $args = array_merge(empty($args[1]) ? [] : $args[1], $refCache[$target->getClass()]);
                 $refs[] = array(
@@ -259,11 +276,11 @@ class Collections extends ArrayObject
         foreach ($this as $document) {
             $class = $document->getClass();
             $refCache[$class] = [];
-            foreach ($document->getAnnotation()->get('RefCache') as $args) {
+            foreach ($document->getAnnotation()->get('RefCache', 'Class') as $args) {
                 if (empty($args)) {
                     throw new \Exception("@RefCache expects at least one argument");
                 }
-                $refCache[$class] = array_merge($refCache[$class], $args['args']);
+                $refCache[$class] = array_merge($refCache[$class], $args->GetArgs());
             }
             $refCache[$class] = array_unique($refCache[$class]);
         }
@@ -278,13 +295,11 @@ class Collections extends ArrayObject
             return $cache[$name];
         }
         $anns = array();
-        foreach ($this->annotations->get($name) as $ann) {
+        foreach ($this->annotations->get($name, 'Callable') as $ann) {
             $type = new Type($ann, $name);
-            foreach ($ann->get($name) as $arg) {
-                $xname = current($arg['args'] ?: []);
-                if (!empty($xname)) {
-                    $anns[$xname] = $type;
-                }
+            $xname = current($ann->GetArgs());
+            if (!empty($xname)) {
+                $anns[$xname] = $type;
             }
         }
         return $cache[$name] = $anns;
@@ -301,13 +316,11 @@ class Collections extends ArrayObject
 
     protected function readCollections()
     {
-        foreach (array('Persist', 'Embeddable') as $type) {
-            foreach ($this->annotations->get($type) as $object) {
-                $object = new Collection($object, $this);
-                $this[$object->getClass()] = $object;
+        foreach ($this->annotations->getClasses('Persist,Embeddable') as $object) {
+            if (empty($this[$object->GetName()])) {
+                $this[$object->getName()] = new Collection($object, $this); 
             }
         }
-
     }
 
     public function getValidator()
@@ -322,11 +335,13 @@ class Collections extends ArrayObject
 
     public function __construct(Array $dirs)
     {
-        $this->annotations = new Annotations;
-        $this->addDirs($dirs);
-        $this->addDirs(array_map(function($dir) {
-            return __DIR__ . '/../' . $dir;
-        }, array('Filter', 'Plugin')));
+        $dirs = array_merge(
+            $dirs,
+            array_map(function($dir) {
+                return __DIR__ . '/../' . $dir;
+            }, array('Filter', 'Plugin'))
+        );
+        $this->annotations = new NDir($dirs);
         $this->readCollections();
 
         $this->files = array_unique($this->files);
