@@ -83,6 +83,7 @@ class Universal
         $conn->save($uuid);
 
         $mapper->updateProperty($doc, '@Universal', $uuid->id);
+
         $conn->save($doc);
     }
 }

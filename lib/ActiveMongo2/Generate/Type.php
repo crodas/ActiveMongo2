@@ -53,7 +53,7 @@ class Type extends Base
 
     public function getFunction()
     {
-        return $this->annotation->getName();
+        return $this->annotation->getObject()->getName();
     }
 
     public function getMethod()
@@ -128,6 +128,7 @@ class Type extends Base
         if ($annotation) {
             $args = $annotation->GetArgs();
         }
+
         return Templates::get('callback')
             ->render(compact('args', 'prop', 'self', 'var'), true);
     }

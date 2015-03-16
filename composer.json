@@ -9,7 +9,8 @@
         "crodas/watch-files": "~0.1",
         "crodas/file-util": ">=0.1.14",
         "crodas/cli": "~0.1",
-        "crodas/validator": ">=0.1.7"
+        "crodas/validator": ">=0.1.7",
+        "crodas/validator": "dev-develop"
     },
     "license": "BSD-4-Clause",
     "version": "v0.2.1",

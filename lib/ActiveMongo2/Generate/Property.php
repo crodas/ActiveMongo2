@@ -41,6 +41,7 @@ use ActiveMongo2\Generate;
 
 class Property extends Base
 {
+    protected $is_custom;
     protected $collection;
     protected $type = null;
     protected $rawName;
@@ -65,9 +66,10 @@ class Property extends Base
         return $this->collection;
     }
 
-    public function __construct(Collection $col, zProperty $prop)
+    public function __construct(Collection $col, zProperty $prop, $is_custom = false)
     {
         $this->collection = $col;
+        $this->is_custom  = $is_custom;
         $this->annotation = $prop;
 
         if ($prop->has('Id')) {
@@ -170,6 +172,7 @@ class Property extends Base
         if ($this->isId()) {
             return $this->rawName = '_id';
         } else if (!empty($field)) {
+            $field = $field->getArgs();
             return $this->rawName = current($field);
         }
 
@@ -178,7 +181,7 @@ class Property extends Base
 
     public function isCustom()
     {
-        return $this->annotation['custom'] === true;
+        return $this->is_custom;
     }
 
     public function getName($prefix = false)

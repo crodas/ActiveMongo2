@@ -74,6 +74,11 @@ class Collections extends ArrayObject
         return parent::offsetGet(strtolower($name));
     }
 
+    public function getAnnotation()
+    {
+        return $this->annotations;
+    }
+
     public function autoload()
     {
         $classes = array();

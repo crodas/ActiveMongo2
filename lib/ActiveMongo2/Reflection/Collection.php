@@ -58,17 +58,17 @@ class Collection extends ArrayObject
     protected function propertiesByAnnotation($search)
     {
         $properties = array();
-        $search     = substr($search, 1);
+        $search     = strtolower(substr($search, 1));
         foreach ($this->data['properties'] as $prop) {
             foreach ($prop['annotation'] as $ann) {
-                if ($ann['method'] == $search) {
+                if ($ann->getName() == $search) {
                     $properties[] = $prop;
                     break;  
                 }
             }
         }
 
-        if (empty($properties) && $search == 'Id') {
+        if (empty($properties) && $search == 'id') {
             return array(new Property([
                 'property' => '_id',
                 'type'     => '_id',

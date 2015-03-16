@@ -46,19 +46,7 @@ class Generate
 {
     protected $files = array();
     protected $config;
-
-    protected function fixPath(Generate\Collections $collections)
-    {
-        $self = $this;
-        $fixPath = function($value) use ($self) {
-            $value->setPath($self->getRelativePath($value->getPath()));
-        };
-        $collections->map($fixPath);
-        array_map($fixPath, $collections->getAnnotationByName('DefaultValue'));
-        array_map($fixPath, $collections->getAnnotationByName('Plugin'));
-        array_map($fixPath, $collections->getAnnotationByName('Hydratate'));
-        array_map($fixPath, $collections->getAnnotationByName('Validate'));
-    }
+    protected static $cdir;
 
     protected function writeFileWatch(Watch $watcher, Generate\Collections $collections)
     {
@@ -76,7 +64,7 @@ class Generate
         $this->config = $config;
 
         $collections = new Generate\Collections((array)$config->getModelPath(), $this);
-        $this->fixPath($collections);
+        self::$cdir  = $this->config->getLoader();
 
         $target    = $config->getLoader();
         $namespace = "ActiveMongo2\\Namspace" . uniqid(true); 
@@ -98,10 +86,10 @@ class Generate
         $this->writeFileWatch($watcher, $collections);
     }
     
-    public function getRelativePath($dir1, $dir2=NULL)
+    public static function getRelativePath($dir1, $dir2=NULL)
     {
         if (empty($dir2)) {
-            $dir2 = $this->config->getLoader();
+            $dir2 = self::$cdir;
         }
 
         if (substr($dir1, 0, 4) == "/../") {

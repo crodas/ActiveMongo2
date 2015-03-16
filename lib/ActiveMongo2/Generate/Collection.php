@@ -37,7 +37,7 @@
 namespace ActiveMongo2\Generate;
 
 use Notoj\Notoj;
-use Notoj\Annotation;
+use Notoj\Annotation\Annotation;
 use Notoj\Object\zClass;
 use ActiveMongo2\Generate;
 
@@ -49,17 +49,30 @@ class Collection extends Base
     protected $_name;
 
     protected function addWeight($p, $method) {
-        if ($p->getAnnotation()->has('Last')) {
+        if ($p->has('Last')) {
             $method->pos = -1 * $method->pos * 100;
-        } else if ($p->getAnnotation()->has('First')) {
+        } else if ($p->has('First')) {
             $method->pos = $method->pos * 100;
         }
+    }
+
+    public function serializeAnnArgs(Annotation $ann)
+    {
+        $args = [];
+        foreach ($ann->getArgs() as $arg) {
+            if ($arg instanceof Annotation) {
+                $arg = $this->serializeAnnArgs($arg);
+            }
+            $args[] = $arg;
+        }
+
+        return $args;
     }
 
     public function getConnection()
     {
         if ($this->annotation->has('Connection')) {
-            $conn = current($this->annotation->getOne('Connection'));
+            $conn = current($this->annotation->getOne('Connection')->getArgs());
             if (!empty($conn)) {
                 return $conn;
             }
@@ -71,16 +84,26 @@ class Collection extends Base
     {
         $plugins = array();
         $index   = 0;
-        foreach ($this->collections->getAnnotationByName('Plugin') as $name => $p) {
-            if ($this->annotation->has($name)) {
-                foreach ($p->getMethodsByAnnotation($type) as $method) {
-                    $method->name = $name;
-                    $method->pos = ++$index;
-                    $this->addWeight($p, $method);
-                    $plugins[] = $method;
+
+        foreach ($this->collections->getAnnotation()->getClasses('Plugin') as $class) {
+            $have = false;
+            foreach ($class->get('Plugin') as $annotation) {
+                $name = current($annotation->getArgs());
+                if ($name && $this->annotation->has($name)) {
+                    $have = true;
+                    break;
                 }
-            } 
-        } 
+            }
+
+            if (!$have) continue;
+
+            foreach ($class->getMethods($type) as $method) {
+                $method = new Type($method->getOne($type), $name);
+                $method->pos = ++$index;
+                $this->addWeight($class, $method);
+                $plugins[] = $method;
+            }
+        }
 
         usort($plugins, function($a, $b) {
             return $b->pos - $a->pos;
@@ -92,7 +115,6 @@ class Collection extends Base
     public function onMapping()
     {
         foreach ($this->getPlugins('onMapping') as $plugin) {
-            $ann = $plugin->getAnnotation();
             if ($plugin->isMethod()) {
                 $class  = $plugin->getClass();
                 $method = $plugin->getMethod();
@@ -142,17 +164,14 @@ class Collection extends Base
     public function defineProperty($annotation, $name)
     {
         $ann = Notoj::parseDocComment($annotation);
-        $ann->setMetadata(array(
-            'visibility'    => ['public'],
-            'property'      => $name,
-            'custom'        => true,
-        ));
-        $this->properties[] = (new Property($this, $ann))->setParent($this);
+        $prop = new \crodas\ClassInfo\Definition\TProperty($name);
+        $prop = \Notoj\Object\Base::create($prop, NULL);
+        $this->properties[] = (new Property($this, $prop, true))->setParent($this);
     }
 
     public function __toString()
     {
-        return $this->annotation->getName();
+        return strtolower($this->annotation->getName());
     }
 
     public function getArray()
@@ -171,8 +190,13 @@ class Collection extends Base
 
     public function getDiscriminator($obj = false)
     {
-        $args = $this->annotation->getOne('SingleCollection') ?: ['__type'];
-        $prop = current($args);
+        $prop = '__type';
+        if ($single = $this->annotation->getOne('SingleCollection')) {
+            $args = $single->getArgs();
+            if (!empty($args)) {
+                $prop = current($args);
+            }
+        }
         if ($obj) {
             $property = new \crodas\ClassInfo\Definition\TProperty($prop);
             $prop = new Property($this, \Notoj\Object\Base::create($property, NULL));
@@ -182,7 +206,7 @@ class Collection extends Base
 
     public function getClass()
     {
-        return $this->annotation->getName();
+        return strtolower($this->annotation->getName());
     }
 
     public function getSafeName()

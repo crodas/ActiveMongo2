@@ -37,6 +37,7 @@
 
 namespace ActiveMongo2\Generate;
 
+use ActiveMongo2\Generate;
 use Notoj\Annotation\AnnClass;
 
 abstract class Base
@@ -84,7 +85,14 @@ abstract class Base
 
     public function getClass()
     {
-        return $this->annotation->getName();
+        if ($this->annotation instanceof \Notoj\Object\Base) {
+            return $this->annotation->GetClass()->GetName();
+        }
+        $object = $this->annotation->getObject();
+        if ($object instanceof \Notoj\Object\zClass) {
+            return $object->getName();
+        }
+        return $object->getClass()->getName();
     }
 
     public function isPublic()
@@ -112,7 +120,6 @@ abstract class Base
         foreach ($this->annotation->getMethods() as $method) {
             if ($method->has($ann)) {
                 $method = new Type($method->getOne($ann), $ann);
-
                 $method->setPath($this->getPath());
                 $methods[] = $method;
             }
@@ -134,6 +141,6 @@ abstract class Base
 
     public function getPath()
     {
-        return $this->file ?: $this->annotation->getFile();
+        return Generate::getRelativePath($this->annotation->getFile());
     }
 }
