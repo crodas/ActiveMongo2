@@ -286,15 +286,12 @@ class Collection extends Base
 
     public function getName()
     {
-        if ($this->_name) {
-            return $this->_name;
-        }
         $args = $this->getAnnotationArgs();
         if ($args === FALSE) {
             return NULL;
         } 
         
-        return $this->_name =  $this->getNameFromParent()
+        return $this->getNameFromParent()
             ?: $this->getNameFromAnnotation($args, [0, 'collection']);
     }
 
