@@ -232,6 +232,7 @@ class Collections extends ArrayObject
     public function getCollectionByName($name)
     {
         foreach ($this as $col) {
+            var_dump(array($col->getName(), $col->GetClass()));
             if ($col->getName() == $name || strtolower($col->getClass()) == strtolower($name)) {
                 return $col;
             }
