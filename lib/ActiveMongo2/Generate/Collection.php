@@ -46,7 +46,6 @@ class Collection extends Base
     protected $collections;
     protected $validator;
     protected $properties = array();
-    protected $_name;
 
     protected function addWeight($p, $method) {
         if ($p->has('Last')) {
@@ -286,16 +285,12 @@ class Collection extends Base
 
     public function getName()
     {
-        if (!empty($this->_name)) {
-            return $this->_name;
-        }
-
         $args = $this->getAnnotationArgs();
         if ($args === FALSE) {
             return NULL;
         } 
         
-        return $this->name = $this->getNameFromParent()
+        return $this->getNameFromParent()
             ?: $this->getNameFromAnnotation($args, [0, 'collection']);
     }
 
