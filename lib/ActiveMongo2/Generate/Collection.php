@@ -37,8 +37,8 @@
 namespace ActiveMongo2\Generate;
 
 use Notoj\Notoj;
-use Notoj\Annotation;
-use Notoj\Annotation\AnnClass;
+use Notoj\Annotation\Annotation;
+use Notoj\Object\zClass;
 use ActiveMongo2\Generate;
 
 class Collection extends Base
@@ -49,17 +49,30 @@ class Collection extends Base
     protected $_name;
 
     protected function addWeight($p, $method) {
-        if ($p->getAnnotation()->has('Last')) {
+        if ($p->has('Last')) {
             $method->pos = -1 * $method->pos * 100;
-        } else if ($p->getAnnotation()->has('First')) {
+        } else if ($p->has('First')) {
             $method->pos = $method->pos * 100;
         }
+    }
+
+    public function serializeAnnArgs(Annotation $ann)
+    {
+        $args = [];
+        foreach ($ann->getArgs() as $arg) {
+            if ($arg instanceof Annotation) {
+                $arg = $this->serializeAnnArgs($arg);
+            }
+            $args[] = $arg;
+        }
+
+        return $args;
     }
 
     public function getConnection()
     {
         if ($this->annotation->has('Connection')) {
-            $conn = current($this->annotation->getOne('Connection'));
+            $conn = current($this->annotation->getOne('Connection')->getArgs());
             if (!empty($conn)) {
                 return $conn;
             }
@@ -71,16 +84,26 @@ class Collection extends Base
     {
         $plugins = array();
         $index   = 0;
-        foreach ($this->collections->getAnnotationByName('Plugin') as $name => $p) {
-            if ($this->annotation->has($name)) {
-                foreach ($p->getMethodsByAnnotation($type) as $method) {
-                    $method->name = $name;
-                    $method->pos = ++$index;
-                    $this->addWeight($p, $method);
-                    $plugins[] = $method;
+
+        foreach ($this->collections->getAnnotation()->getClasses('Plugin') as $class) {
+            $have = false;
+            foreach ($class->get('Plugin') as $annotation) {
+                $name = current($annotation->getArgs());
+                if ($name && $this->annotation->has($name)) {
+                    $have = true;
+                    break;
                 }
-            } 
-        } 
+            }
+
+            if (!$have) continue;
+
+            foreach ($class->getMethods($type) as $method) {
+                $method = new Type($method->getOne($type), $name);
+                $method->pos = ++$index;
+                $this->addWeight($class, $method);
+                $plugins[] = $method;
+            }
+        }
 
         usort($plugins, function($a, $b) {
             return $b->pos - $a->pos;
@@ -92,12 +115,11 @@ class Collection extends Base
     public function onMapping()
     {
         foreach ($this->getPlugins('onMapping') as $plugin) {
-            $ann = $plugin->getAnnotation();
             if ($plugin->isMethod()) {
                 $class  = $plugin->getClass();
                 $method = $plugin->getMethod();
                 if (!class_exists($class)) {
-                    require $ann['file'];
+                    require $plugin->getannotation()->getFile();
                 }
                 if ($plugin->isStatic())  {
                     $class::$method($this);
@@ -109,21 +131,23 @@ class Collection extends Base
         }
     }
 
-    public function __construct(AnnClass $annotation, Collections $collections)
+    public function __construct(zClass $annotation, Collections $collections)
     {
         $this->annotation  = $annotation;
         $this->collections = $collections;
 
         $parent = $annotation->getParent();
         while ($parent) {
-            if (empty($collections[$parent['class']])) {
-                $collections[$parent['class']] = new self($parent, $collections);
+            if (empty($collections[$parent->getName()])) {
+                $collections[$parent->getName()] = new self($parent, $collections);
             }
             $parent = $parent->getParent();
         }
 
         foreach ($this->annotation->getProperties() as $prop) {
-            $this->properties[] = (new Property($this, $prop))->setParent($this);
+            if ($prop->getAnnotations()->count() > 0) {
+                $this->properties[] = (new Property($this, $prop))->setParent($this);
+            }
         }
 
         $this->onMapping();
@@ -141,18 +165,16 @@ class Collection extends Base
 
     public function defineProperty($annotation, $name)
     {
-        $ann = Notoj::parseDocComment($annotation);
-        $ann->setMetadata(array(
-            'visibility'    => ['public'],
-            'property'      => $name,
-            'custom'        => true,
-        ));
-        $this->properties[] = (new Property($this, $ann))->setParent($this);
+        $ann  = Notoj::parseDocComment($annotation);
+        $name = $name[0] == '$' ? $name : '$' . $name; 
+        $prop = new \crodas\ClassInfo\Definition\TProperty($name);
+        $prop = \Notoj\Object\Base::create($prop, NULL);
+        $this->properties[] = (new Property($this, $prop, true))->setParent($this);
     }
 
     public function __toString()
     {
-        return $this->getClass();
+        return strtolower($this->annotation->getName());
     }
 
     public function getArray()
@@ -171,23 +193,23 @@ class Collection extends Base
 
     public function getDiscriminator($obj = false)
     {
-        $args = $this->annotation->getOne('SingleCollection') ?: ['__type'];
-        $prop = current($args);
+        $prop = '__type';
+        if ($single = $this->annotation->getOne('SingleCollection')) {
+            $args = $single->getArgs();
+            if (!empty($args)) {
+                $prop = current($args);
+            }
+        }
         if ($obj) {
-            // we expect it as an annotation object
-            $ann = new Annotation;
-            $ann->setMetadata([
-                'type' => 'property',
-                'property' => $prop,
-            ]);
-            $prop = new Property($this, $ann);
+            $property = new \crodas\ClassInfo\Definition\TProperty($prop);
+            $prop = new Property($this, \Notoj\Object\Base::create($property, NULL));
         }
         return $prop;
     }
 
     public function getClass()
     {
-        return strtolower($this->annotation['class']);
+        return strtolower($this->annotation->getName());
     }
 
     public function getSafeName()
@@ -197,7 +219,7 @@ class Collection extends Base
 
     public function getHash()
     {
-        return $this->getSafeName() . '_' . sha1($this->getClass());
+        return $this->getSafeName() . '_' . sha1($this->annotation->getName());
     }
 
     protected function getNameFromParent()
@@ -212,8 +234,9 @@ class Collection extends Base
         return NULL;
     }
 
-    protected function getNameFromAnnotation($args, $ann)
+    protected function getNameFromAnnotation($annotation, $ann)
     {
+        $args = $annotation->GetArgs();
         foreach ($ann as $name) {
             if (!empty($args[$name])) {
                 return $args[$name];
@@ -224,7 +247,7 @@ class Collection extends Base
             return "fs";
         }
 
-        $parts = explode("\\", $this->getClass());
+        $parts = explode("\\", $this->annotation->getName());
         $name  = strtolower(end($parts)); 
         return $name;
     }
@@ -233,7 +256,7 @@ class Collection extends Base
     {
         $self = $this;
         return array_filter($this->collections->getAllReferences(), function($obj) use ($self) {
-            return $obj['target'] == $self;
+            return $obj['target'] === $self;
         });
     }
 
@@ -241,17 +264,18 @@ class Collection extends Base
     {
         $self = $this;
         return array_filter($this->collections->getAllReferences(), function($obj) use ($self) {
-            return $obj['property']->getParent() == $self;
+            return $obj['property']->getParent() === $self;
         });
     }
 
     public function getRefCache()
     {
         $cache = $this->collections->getReferenceCache();
-        if (!empty($cache[$this->getClass()])) {
+        $class = strtolower($this->annotation->getName());
+        if (!empty($cache[$class])) {
             return array_combine(
-                $cache[$this->getClass()],
-                $cache[$this->getClass()]
+                $cache[$class],
+                $cache[$class]
             );
         }
         return NULL;
@@ -288,6 +312,6 @@ class Collection extends Base
         if (empty($parent)) {
             return NULL;
         }
-        return $this->collections[$parent['class']];
+        return $this->collections[$parent->getName()];
     }
 }

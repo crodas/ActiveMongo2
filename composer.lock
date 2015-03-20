@@ -4,61 +4,24 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "78244b637025eb30458fd84f15c033ad",
+    "hash": "da2d39bc7b636deaa0f649d8d05a8c7c",
     "packages": [
         {
-            "name": "crodas/asset",
-            "version": "v0.1.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/crodas/SimpleAssetManager.git",
-                "reference": "a81661cc5739fa15c0ed7b6809b392b955c26401"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/crodas/SimpleAssetManager/zipball/a81661cc5739fa15c0ed7b6809b392b955c26401",
-                "reference": "a81661cc5739fa15c0ed7b6809b392b955c26401",
-                "shasum": ""
-            },
-            "require": {
-                "crodas/file-util": ">=0.1.7",
-                "crodas/service-provider": ">=0.1.17",
-                "leafo/lessphp": "*",
-                "leafo/scssphp": "*",
-                "patchwork/jsqueeze": "*"
-            },
-            "type": "library",
-            "autoload": {
-                "classmap": [
-                    "lib/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-4-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "César D. Rodas",
-                    "email": "crodas@php.net"
-                }
-            ],
-            "description": "Very simple asset manager",
-            "time": "2014-09-05 21:19:35"
-        },
-        {
             "name": "crodas/class-info",
-            "version": "v0.1.11",
+            "version": "v0.1.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/ClassInfo.git",
-                "reference": "2d5639089b7e19f261a33aa0cdfd85165c38fe04"
+                "reference": "13cce6f3ef526430e0bba2b119054a8af6131d95"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/ClassInfo/zipball/2d5639089b7e19f261a33aa0cdfd85165c38fe04",
-                "reference": "2d5639089b7e19f261a33aa0cdfd85165c38fe04",
+                "url": "https://api.github.com/repos/crodas/ClassInfo/zipball/13cce6f3ef526430e0bba2b119054a8af6131d95",
+                "reference": "13cce6f3ef526430e0bba2b119054a8af6131d95",
                 "shasum": ""
+            },
+            "require": {
+                "nikic/php-parser": "1.1.*"
             },
             "type": "library",
             "autoload": {
@@ -77,7 +40,7 @@
                 }
             ],
             "description": "Get classes and functions defined in a given file",
-            "time": "2014-10-26 14:50:25"
+            "time": "2015-02-12 23:49:51"
         },
         {
             "name": "crodas/cli",
@@ -118,16 +81,16 @@
         },
         {
             "name": "crodas/file-util",
-            "version": "v0.1.14",
+            "version": "v0.1.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/FileUtils.git",
-                "reference": "11b165f635b885a89bb57b9b5102399956578e8d"
+                "reference": "0a2876ccbbeadfd077010a6e99bf46fe6f0178a6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/FileUtils/zipball/11b165f635b885a89bb57b9b5102399956578e8d",
-                "reference": "11b165f635b885a89bb57b9b5102399956578e8d",
+                "url": "https://api.github.com/repos/crodas/FileUtils/zipball/0a2876ccbbeadfd077010a6e99bf46fe6f0178a6",
+                "reference": "0a2876ccbbeadfd077010a6e99bf46fe6f0178a6",
                 "shasum": ""
             },
             "type": "library",
@@ -147,25 +110,25 @@
                 }
             ],
             "description": "Useful libraries to manipulate files",
-            "time": "2014-12-18 23:28:36"
+            "time": "2015-01-06 01:42:03"
         },
         {
             "name": "crodas/notoj",
-            "version": "v0.1.21",
+            "version": "dev-develop",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/Notoj.git",
-                "reference": "ef0e1f28347926c0d2d3e2251de3f15ff88b79f8"
+                "reference": "f516aab9d786bc42294d5d712c1c5983ebae354f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/Notoj/zipball/ef0e1f28347926c0d2d3e2251de3f15ff88b79f8",
-                "reference": "ef0e1f28347926c0d2d3e2251de3f15ff88b79f8",
+                "url": "https://api.github.com/repos/crodas/Notoj/zipball/f516aab9d786bc42294d5d712c1c5983ebae354f",
+                "reference": "f516aab9d786bc42294d5d712c1c5983ebae354f",
                 "shasum": ""
             },
             "require": {
                 "crodas/class-info": ">=0.1.11",
-                "crodas/file-util": ">=0.1.9",
+                "crodas/file-util": ">=0.1.14",
                 "php": ">=5.3.0"
             },
             "type": "library",
@@ -185,25 +148,25 @@
                 }
             ],
             "description": "Annotation parser. Uses reflection and provides cache out of the box.",
-            "time": "2014-10-26 16:02:38"
+            "time": "2015-02-14 17:34:06"
         },
         {
             "name": "crodas/service-provider",
-            "version": "v0.1.26",
+            "version": "v0.1.27",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/ServiceProvider.git",
-                "reference": "dee88fe061de2fbb58edf7722319c9e6a1cfa78c"
+                "reference": "1326060526630a5a52a6c93d2f9ad1e5d24a0119"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/ServiceProvider/zipball/dee88fe061de2fbb58edf7722319c9e6a1cfa78c",
-                "reference": "dee88fe061de2fbb58edf7722319c9e6a1cfa78c",
+                "url": "https://api.github.com/repos/crodas/ServiceProvider/zipball/1326060526630a5a52a6c93d2f9ad1e5d24a0119",
+                "reference": "1326060526630a5a52a6c93d2f9ad1e5d24a0119",
                 "shasum": ""
             },
             "require": {
                 "crodas/file-util": "~0.1",
-                "crodas/notoj": "~0.1",
+                "crodas/notoj": "dev-develop",
                 "crodas/simple-view-engine": "~0.1",
                 "crodas/watch-files": "~0.1",
                 "seld/jsonlint": "*",
@@ -226,28 +189,30 @@
                 }
             ],
             "description": "Little configuration manager and dependency injection",
-            "time": "2014-11-19 17:19:06"
+            "time": "2015-01-28 13:37:56"
         },
         {
             "name": "crodas/simple-view-engine",
-            "version": "v0.1.34",
+            "version": "v0.1.37",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/SimpleView.git",
-                "reference": "b106d58a4b61e07ec8ae56e2220863483770b176"
+                "reference": "5fc97024744d37bfdb82c890878c8b2a07cf017f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/SimpleView/zipball/b106d58a4b61e07ec8ae56e2220863483770b176",
-                "reference": "b106d58a4b61e07ec8ae56e2220863483770b176",
+                "url": "https://api.github.com/repos/crodas/SimpleView/zipball/5fc97024744d37bfdb82c890878c8b2a07cf017f",
+                "reference": "5fc97024744d37bfdb82c890878c8b2a07cf017f",
                 "shasum": ""
             },
             "require": {
-                "crodas/asset": "~0.1",
                 "crodas/service-provider": "~0.1",
                 "crodas/watch-files": "*",
                 "symfony/console": "*",
                 "symfony/finder": "*"
+            },
+            "suggest": {
+                "crodas/asset": "To use assets with the view"
             },
             "type": "library",
             "autoload": {
@@ -266,26 +231,26 @@
                 }
             ],
             "description": "Simple View engine designed to generate code. Based on Laravel's 4 Blade.",
-            "time": "2014-10-07 17:28:08"
+            "time": "2015-03-09 01:38:36"
         },
         {
             "name": "crodas/validator",
-            "version": "v0.1.6",
+            "version": "dev-develop",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/Validator.git",
-                "reference": "127f5554227290e48e660adcdf2f7236d5a91ee1"
+                "reference": "1d68e6d2049f71d54f39b9f3a0f565c0f413a7bc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/Validator/zipball/127f5554227290e48e660adcdf2f7236d5a91ee1",
-                "reference": "127f5554227290e48e660adcdf2f7236d5a91ee1",
+                "url": "https://api.github.com/repos/crodas/Validator/zipball/1d68e6d2049f71d54f39b9f3a0f565c0f413a7bc",
+                "reference": "1d68e6d2049f71d54f39b9f3a0f565c0f413a7bc",
                 "shasum": ""
             },
             "require": {
                 "crodas/cli": "~0.1",
                 "crodas/file-util": ">=0.1.7",
-                "crodas/notoj": "~0.1",
+                "crodas/notoj": "dev-develop",
                 "crodas/simple-view-engine": ">=0.1.28",
                 "crodas/watch-files": "~0.1"
             },
@@ -306,7 +271,7 @@
                 }
             ],
             "description": "Validation library",
-            "time": "2015-01-03 00:21:57"
+            "time": "2015-03-09 06:37:55"
         },
         {
             "name": "crodas/watch-files",
@@ -346,160 +311,62 @@
             "time": "2015-01-04 19:16:44"
         },
         {
-            "name": "leafo/lessphp",
-            "version": "v0.5.0",
+            "name": "nikic/php-parser",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/leafo/lessphp.git",
-                "reference": "0f5a7f5545d2bcf4e9fad9a228c8ad89cc9aa283"
+                "url": "https://github.com/nikic/PHP-Parser.git",
+                "reference": "ac05ef6f95bf8361549604b6031c115f92f39528"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/leafo/lessphp/zipball/0f5a7f5545d2bcf4e9fad9a228c8ad89cc9aa283",
-                "reference": "0f5a7f5545d2bcf4e9fad9a228c8ad89cc9aa283",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/ac05ef6f95bf8361549604b6031c115f92f39528",
+                "reference": "ac05ef6f95bf8361549604b6031c115f92f39528",
                 "shasum": ""
+            },
+            "require": {
+                "ext-tokenizer": "*",
+                "php": ">=5.3"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "0.4.x-dev"
+                    "dev-master": "1.0-dev"
                 }
             },
             "autoload": {
-                "classmap": [
-                    "lessc.inc.php"
+                "files": [
+                    "lib/bootstrap.php"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "MIT",
-                "GPL-3.0"
+                "BSD-3-Clause"
             ],
             "authors": [
                 {
-                    "name": "Leaf Corcoran",
-                    "email": "leafot@gmail.com",
-                    "homepage": "http://leafo.net"
+                    "name": "Nikita Popov"
                 }
             ],
-            "description": "lessphp is a compiler for LESS written in PHP.",
-            "homepage": "http://leafo.net/lessphp/",
-            "time": "2014-11-24 18:39:20"
-        },
-        {
-            "name": "leafo/scssphp",
-            "version": "v0.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/leafo/scssphp.git",
-                "reference": "8c08da585537e97efd528c7d278463d2b9396371"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/leafo/scssphp/zipball/8c08da585537e97efd528c7d278463d2b9396371",
-                "reference": "8c08da585537e97efd528c7d278463d2b9396371",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "3.7.*"
-            },
-            "bin": [
-                "bin/pscss"
-            ],
-            "type": "library",
-            "autoload": {
-                "classmap": [
-                    "classmap.php"
-                ],
-                "psr-4": {
-                    "Leafo\\ScssPhp\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT",
-                "GPL-3.0"
-            ],
-            "authors": [
-                {
-                    "name": "Leaf Corcoran",
-                    "email": "leafot@gmail.com",
-                    "homepage": "http://leafo.net"
-                }
-            ],
-            "description": "scssphp is a compiler for SCSS written in PHP.",
-            "homepage": "http://leafo.net/scssphp/",
+            "description": "A PHP parser written in PHP",
             "keywords": [
-                "css",
-                "less",
-                "sass",
-                "scss",
-                "stylesheet"
+                "parser",
+                "php"
             ],
-            "time": "2014-08-12 22:41:53"
-        },
-        {
-            "name": "patchwork/jsqueeze",
-            "version": "v2.0.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/tchwork/jsqueeze.git",
-                "reference": "70a8167daf0e2d5522d5d77a11e3a7d6753683ce"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/tchwork/jsqueeze/zipball/70a8167daf0e2d5522d5d77a11e3a7d6753683ce",
-                "reference": "70a8167daf0e2d5522d5d77a11e3a7d6753683ce",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.0-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Patchwork\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "(Apache-2.0 or GPL-2.0)"
-            ],
-            "authors": [
-                {
-                    "name": "Nicolas Grekas",
-                    "email": "p@tchwork.com"
-                }
-            ],
-            "description": "Efficient JavaScript minification in PHP",
-            "homepage": "https://github.com/tchwork/jsqueeze",
-            "keywords": [
-                "compression",
-                "javascript",
-                "minification"
-            ],
-            "time": "2015-01-01 10:47:37"
+            "time": "2015-01-18 11:29:59"
         },
         {
             "name": "seld/jsonlint",
-            "version": "1.3.0",
+            "version": "1.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/jsonlint.git",
-                "reference": "a7bc2ec9520ad15382292591b617c43bdb1fec35"
+                "reference": "863ae85c6d3ef60ca49cb12bd051c4a0648c40c4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/jsonlint/zipball/a7bc2ec9520ad15382292591b617c43bdb1fec35",
-                "reference": "a7bc2ec9520ad15382292591b617c43bdb1fec35",
+                "url": "https://api.github.com/repos/Seldaek/jsonlint/zipball/863ae85c6d3ef60ca49cb12bd051c4a0648c40c4",
+                "reference": "863ae85c6d3ef60ca49cb12bd051c4a0648c40c4",
                 "shasum": ""
             },
             "require": {
@@ -532,21 +399,21 @@
                 "parser",
                 "validator"
             ],
-            "time": "2014-09-05 15:36:20"
+            "time": "2015-01-04 21:18:15"
         },
         {
             "name": "symfony/console",
-            "version": "v2.6.1",
+            "version": "v2.6.4",
             "target-dir": "Symfony/Component/Console",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console.git",
-                "reference": "ef825fd9f809d275926547c9e57cbf14968793e8"
+                "reference": "e44154bfe3e41e8267d7a3794cd9da9a51cfac34"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Console/zipball/ef825fd9f809d275926547c9e57cbf14968793e8",
-                "reference": "ef825fd9f809d275926547c9e57cbf14968793e8",
+                "url": "https://api.github.com/repos/symfony/Console/zipball/e44154bfe3e41e8267d7a3794cd9da9a51cfac34",
+                "reference": "e44154bfe3e41e8267d7a3794cd9da9a51cfac34",
                 "shasum": ""
             },
             "require": {
@@ -589,21 +456,21 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "http://symfony.com",
-            "time": "2014-12-02 20:19:20"
+            "time": "2015-01-25 04:39:26"
         },
         {
             "name": "symfony/finder",
-            "version": "v2.6.1",
+            "version": "v2.6.4",
             "target-dir": "Symfony/Component/Finder",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Finder.git",
-                "reference": "0d3ef7f6ec55a7af5eca7914eaa0dacc04ccc721"
+                "reference": "16513333bca64186c01609961a2bb1b95b5e1355"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Finder/zipball/0d3ef7f6ec55a7af5eca7914eaa0dacc04ccc721",
-                "reference": "0d3ef7f6ec55a7af5eca7914eaa0dacc04ccc721",
+                "url": "https://api.github.com/repos/symfony/Finder/zipball/16513333bca64186c01609961a2bb1b95b5e1355",
+                "reference": "16513333bca64186c01609961a2bb1b95b5e1355",
                 "shasum": ""
             },
             "require": {
@@ -636,21 +503,21 @@
             ],
             "description": "Symfony Finder Component",
             "homepage": "http://symfony.com",
-            "time": "2014-12-02 20:19:20"
+            "time": "2015-01-03 08:01:59"
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.6.1",
+            "version": "v2.6.4",
             "target-dir": "Symfony/Component/Yaml",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "3346fc090a3eb6b53d408db2903b241af51dcb20"
+                "reference": "60ed7751671113cf1ee7d7778e691642c2e9acd8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/3346fc090a3eb6b53d408db2903b241af51dcb20",
-                "reference": "3346fc090a3eb6b53d408db2903b241af51dcb20",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/60ed7751671113cf1ee7d7778e691642c2e9acd8",
+                "reference": "60ed7751671113cf1ee7d7778e691642c2e9acd8",
                 "shasum": ""
             },
             "require": {
@@ -683,13 +550,16 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "http://symfony.com",
-            "time": "2014-12-02 20:19:20"
+            "time": "2015-01-25 04:39:26"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "crodas/notoj": 20,
+        "crodas/validator": 20
+    },
     "prefer-stable": false,
     "platform": {
         "php": ">=5.4.0"

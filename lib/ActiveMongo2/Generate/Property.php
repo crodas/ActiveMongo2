@@ -36,11 +36,12 @@
 */
 namespace ActiveMongo2\Generate;
 
-use Notoj\Annotation;
+use Notoj\Object\zProperty;
 use ActiveMongo2\Generate;
 
 class Property extends Base
 {
+    protected $is_custom;
     protected $collection;
     protected $type = null;
     protected $rawName;
@@ -50,12 +51,13 @@ class Property extends Base
 
     protected function getTypeFromAnnotation($annotation)
     {
-        foreach ($annotation->getOne('DataType') as $type) {
-            if ($this->type === null) {
-                $this->type = $type;
-            } else {
-                throw new \Exception("{$this->getPHPName()} has two data tyeps {$type} and {$this->type}");
-            }
+        if ($annotation->GetName() == 'datatype') {
+            return;
+        }
+        if ($this->type === null) {
+            $this->type = current($annotation->GetArgs());
+        } else {
+            throw new \Exception("{$this->getPHPName()} has two data tyeps {$type} and {$this->type}");
         }
     }
 
@@ -64,9 +66,10 @@ class Property extends Base
         return $this->collection;
     }
 
-    public function __construct(Collection $col, Annotation $prop)
+    public function __construct(Collection $col, zProperty $prop, $is_custom = false)
     {
         $this->collection = $col;
+        $this->is_custom  = $is_custom;
         $this->annotation = $prop;
 
         if ($prop->has('Id')) {
@@ -88,17 +91,17 @@ class Property extends Base
 
     public function getPHPName()
     {
-        return $this->annotation['property'];
+        return $this->annotation->getName();
     }
 
     public function isPublic()
     {
-        return in_array('public', $this->annotation['visibility']);
+        return $this->annotation->isPublic();
     }
 
     public function getProperty()
     {
-        return $this->annotation['property'];
+        return $this->annotation->getName();
     }
 
     public function getCallback($filter)
@@ -139,11 +142,11 @@ class Property extends Base
     public function getReferenceCollection()
     {
         $ann = $this->annotation->getOne('Embed,EmbedOne,EmbedMany,ReferenceOne,Reference,ReferenceMany');
-        if (empty($ann) || empty($ann['args'])) {
+        if (empty($ann) || !$ann->getArgs()) {
             return false;
         }
 
-        $ref = strtolower(current($ann['args']));
+        $ref = strtolower(current($ann->getArgs()));
 
         foreach ($this->parent->getCollections() as $col) {
             if ($ref == $col->getName() || $ref == $col->getClass()) {
@@ -169,6 +172,7 @@ class Property extends Base
         if ($this->isId()) {
             return $this->rawName = '_id';
         } else if (!empty($field)) {
+            $field = $field->getArgs();
             return $this->rawName = current($field);
         }
 
@@ -177,7 +181,7 @@ class Property extends Base
 
     public function isCustom()
     {
-        return $this->annotation['custom'] === true;
+        return $this->is_custom;
     }
 
     public function getName($prefix = false)

@@ -36,7 +36,7 @@
 */
 namespace ActiveMongo2\Generate;
 
-use Notoj\Annotation;
+use Notoj\Annotation\Annotation;
 use ActiveMongo2\Template\Templates;
 
 class Type extends Base
@@ -53,7 +53,7 @@ class Type extends Base
 
     public function getFunction()
     {
-        return $this->annotation['function'];
+        return $this->annotation->getObject()->getName();
     }
 
     public function getMethod()
@@ -63,10 +63,10 @@ class Type extends Base
 
     protected function getFunctionBodyStart(&$name)
     {
-        $parts = explode("\\", $this->annotation['function']);
+        $parts = explode("\\", $this->annotation->GetName());
         $name  = end($parts); 
-        $lines = file($this->annotation['file']);
-        return implode('', array_slice($lines, $this->annotation['line'] -1));
+        $lines = file($this->annotation->getFile());
+        return implode('', array_slice($lines, $this->annotation->getObject()->getLine() -1));
     }
 
     protected function getFunctionBodyEnd($code, $end)
@@ -117,13 +117,18 @@ class Type extends Base
 
     public function isEmbeddable()
     {
-        return $this->annotation->has('Embed') && $this->getEmbeddableCode($code);
+        return $this->annotation->getParent()->has('Embed') && $this->getEmbeddableCode($code);
     }
 
     public function toCode($prop, $var = '$doc')
     {
         $self = $this;
-        $args = (array)$prop->annotation->getOne($this->name);
+        $args = array();
+        $annotation = $prop->annotation->getOne($this->name);
+        if ($annotation) {
+            $args = $annotation->GetArgs();
+        }
+
         return Templates::get('callback')
             ->render(compact('args', 'prop', 'self', 'var'), true);
     }
