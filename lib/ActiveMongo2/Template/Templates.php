@@ -125,7 +125,8 @@ namespace {
             foreach($collection->getForwardReferences() as $ref) {
 
                 $this->context['ref'] = $ref;
-                echo "    // update " . ($collection->getName()) . " references in  " . ($ref['property']->getParent()->getName()) . " \n";
+                echo "    // update " . ($collection->getName()) . " references in  " . ($ref['property']->getParent()->getName()) . " \n    // ";
+                echo $ref['deferred'] ? 'ues' : 'no' . "\n";
                 if ($ref['deferred']) {
                     if (!empty($deferred_done)) {
                         continue;
@@ -820,7 +821,7 @@ namespace {
                             echo "])) {\n                    \$change['\$push'][";
                             var_export($prop.'');
                             echo "]['\$slice'] = ";
-                            var_export(0+current($prop->getAnnotation()->getOne('Limit')));
+                            var_export(0+current($prop->getAnnotation()->getOne('Limit')->getArgs()));
                             echo ";\n                }\n";
                         }
                         if ($ann->has('Sort')) {
@@ -829,7 +830,7 @@ namespace {
                             echo "])) {\n                    \$change['\$sort'][";
                             var_export($prop.'');
                             echo "]['\$sort'] = ";
-                            var_export(0+current($prop->getAnnotation()->getOne('Limit')));
+                            var_export(0+current($prop->getAnnotation()->getOne('Limit')->getArgs()));
                             echo ";\n                }\n";
                         }
                     }

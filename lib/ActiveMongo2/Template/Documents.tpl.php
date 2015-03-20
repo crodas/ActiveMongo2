@@ -754,12 +754,12 @@ class Mapper
             @if ($ann->has('Array,ReferenceMany,EmbedMany'))
                 @if ($ann->has('Limit'))
                 if ($has_changed && !empty($change['$push'][{{@$prop.''}}])) {
-                    $change['$push'][{{@$prop.''}}]['$slice'] = {{@0+current($prop->getAnnotation()->getOne('Limit'))}};
+                    $change['$push'][{{@$prop.''}}]['$slice'] = {{@0+current($prop->getAnnotation()->getOne('Limit')->getArgs())}};
                 }
                 @end
                 @if ($ann->has('Sort'))
                 if ($has_changed && !empty($change['$push'][{{@$prop.''}}])) {
-                    $change['$sort'][{{@$prop.''}}]['$sort'] = {{@0+current($prop->getAnnotation()->getOne('Limit'))}};
+                    $change['$sort'][{{@$prop.''}}]['$sort'] = {{@0+current($prop->getAnnotation()->getOne('Limit')->getArgs())}};
                 }
                 @end
             @end

@@ -1,6 +1,7 @@
 @set($deferred_done, false)
 @foreach ($collection->getForwardReferences() as $ref)
     // update {{$collection->getName()}} references in  {{$ref['property']->getParent()->getName()}} 
+    // {{ $ref['deferred'] ? 'ues' : 'no' }}
     @if ($ref['deferred'])
         @if (!empty($deferred_done))
             @continue

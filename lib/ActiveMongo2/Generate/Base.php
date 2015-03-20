@@ -86,13 +86,13 @@ abstract class Base
     public function getClass()
     {
         if ($this->annotation instanceof \Notoj\Object\Base) {
-            return $this->annotation->GetClass()->GetName();
+            return strtolower($this->annotation->GetClass()->GetName());
         }
         $object = $this->annotation->getObject();
         if ($object instanceof \Notoj\Object\zClass) {
-            return $object->getName();
+            return strtolower($object->getName());
         }
-        return $object->getClass()->getName();
+        return strtolower($object->getClass()->getName());
     }
 
     public function isPublic()

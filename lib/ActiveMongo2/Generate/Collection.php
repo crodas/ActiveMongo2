@@ -119,7 +119,7 @@ class Collection extends Base
                 $class  = $plugin->getClass();
                 $method = $plugin->getMethod();
                 if (!class_exists($class)) {
-                    require $ann['file'];
+                    require $plugin->getannotation()->getFile();
                 }
                 if ($plugin->isStatic())  {
                     $class::$method($this);
@@ -145,7 +145,9 @@ class Collection extends Base
         }
 
         foreach ($this->annotation->getProperties() as $prop) {
-            $this->properties[] = (new Property($this, $prop))->setParent($this);
+            if ($prop->getAnnotations()->count() > 0) {
+                $this->properties[] = (new Property($this, $prop))->setParent($this);
+            }
         }
 
         $this->onMapping();
@@ -163,7 +165,8 @@ class Collection extends Base
 
     public function defineProperty($annotation, $name)
     {
-        $ann = Notoj::parseDocComment($annotation);
+        $ann  = Notoj::parseDocComment($annotation);
+        $name = $name[0] == '$' ? $name : '$' . $name; 
         $prop = new \crodas\ClassInfo\Definition\TProperty($name);
         $prop = \Notoj\Object\Base::create($prop, NULL);
         $this->properties[] = (new Property($this, $prop, true))->setParent($this);
@@ -268,10 +271,11 @@ class Collection extends Base
     public function getRefCache()
     {
         $cache = $this->collections->getReferenceCache();
-        if (!empty($cache[$this->annotation->getName()])) {
+        $class = strtolower($this->annotation->getName());
+        if (!empty($cache[$class])) {
             return array_combine(
-                $cache[$this->annotation->getName()],
-                $cache[$this->annotation->getName()]
+                $cache[$class],
+                $cache[$class]
             );
         }
         return NULL;

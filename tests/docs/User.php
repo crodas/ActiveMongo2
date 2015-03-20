@@ -51,7 +51,7 @@ class UserDocument
     public $runEvent = false;
 
     /** @preCreate */
-    public function preUpdateEvent()
+    public function preUpdateEvent($obj)
     {
         $this->runEvent = true; 
     }
