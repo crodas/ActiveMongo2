@@ -209,7 +209,8 @@ class Collections extends ArrayObject
         $all = array();
         foreach ($this->getAllProperties() as $prop) {
             foreach ($prop->getAnnotation()->get($ann) as $a) {
-                if (empty($with_arg) || !empty($a->GetArgs())) {
+                $args = $a->GetArgs();
+                if (empty($with_arg) || !empty($args)) {
                     $all[] = [$a, $prop];
                 }
             }
