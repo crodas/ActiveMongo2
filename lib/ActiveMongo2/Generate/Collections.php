@@ -233,8 +233,8 @@ class Collections extends ArrayObject
     {
         $names = array();
         foreach ($this as $col) {
-            $names[] = $col->getName();
-            if ($col->getName() == $name || strtolower($col->getClass()) == strtolower($name)) {
+            $names[] = $col->getName() ?: $col->getClass();
+            if ($col->getName() == $name || $col->getClass() == strtolower($name)) {
                 return $col;
             }
         }
