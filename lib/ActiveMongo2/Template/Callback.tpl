@@ -23,6 +23,7 @@ $args = empty($args) ? [] : $args;
             $return = $document->{{$self->getMethod()}}(
         @else
             // Improve me (should construct once and reuse it)
+            // {{ get_class($self) . " _ " . get_class($self->getAnnotation()) }}
             $return = (new \{{$self->getClass()}})->{{$self->getMethod()}}(
         @end
             {{$var}}, // document variable 

@@ -3,16 +3,17 @@
     "description": "Mongo abstraction",
     "require": {
         "php": ">=5.4.0",
-        "crodas/service-provider": ">=0.1.12",
-        "crodas/notoj": ">=0.1.18",
+        "crodas/service-provider": ">=0.1.27",
+        "crodas/notoj": "dev-develop",
         "crodas/simple-view-engine": "~0.1",
         "crodas/watch-files": "~0.1",
         "crodas/file-util": ">=0.1.14",
         "crodas/cli": "~0.1",
-        "crodas/validator": ">=0.1.5"
+        "crodas/validator": ">=0.1.7",
+        "crodas/validator": "dev-develop"
     },
     "license": "BSD-4-Clause",
-    "version": "v0.2.1",
+    "version": "v0.3.1",
     "authors": [
         {
             "name": "César D. Rodas",

@@ -67,7 +67,6 @@ class Autocomplete
         return $words;
     }
 
-
     /**
      *  @preSave
      */

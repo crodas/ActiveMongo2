@@ -27,7 +27,7 @@ class DeferredTest extends \phpunit_framework_testcase
 
         $this->post = $post->id;
         $this->user = $user->userid;
-
+        
         $this->assertNotEquals($this->getUser()->visits, $this->getPost()->author_ref->visits);
         $this->assertNotEquals($this->getUser()->visits, $this->getPost()->author_refs[0]->visits);
 

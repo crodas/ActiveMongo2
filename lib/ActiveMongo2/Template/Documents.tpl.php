@@ -5,7 +5,8 @@ namespace {{trim($namespace, '\\')}};
 use {{$valns}} as v;
 use MongoClient;
 use ActiveMongo2\Connection;
-use Notoj\Annotation;
+use Notoj\Annotation\Annotation;
+use Notoj\Annotation\Annotations;
 use Notoj;
 
 @set($instance, '_' . uniqid(true))
@@ -14,6 +15,7 @@ class Mapper
 {
     protected $mapper = {{ var_export(@$collections->byName(), true) }};
     protected $class_mapper = {{ var_export(@$collections->byClass(), true) }};
+    protected $class_files =  {{ @$collections->autoload() }};
     protected static $loaded = array();
     protected $connection;
     protected $connections;
@@ -79,9 +81,9 @@ class Mapper
     public function __autoloader($class)
     {
         $class = strtolower($class);
-        if (!empty($this->class_mapper[$class])) {
-            self::$loaded[$this->class_mapper[$class]['file']] = true;
-            require __DIR__ . $this->class_mapper[$class]['file'];
+        if (!empty($this->class_files[$class])) {
+            self::$loaded[$this->class_files[$class]] = true;
+            require __DIR__ . $this->class_files[$class];
 
             return true;
         }
@@ -108,7 +110,7 @@ class Mapper
         $conn = $this->class_connections[$data['class']];
 
         if (empty($this->connections[$conn])) {
-            throw new \RuntimeException("Cannot find connection $conn");
+            throw new \RuntimeException("Cannot find connection $conn. We have " . print_r(array_keys($this->connections), true));
         }
 
         $db = $this->connections[$conn];
@@ -265,7 +267,6 @@ class Mapper
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
-
         return $this->{"get_reference_" . sha1($class)}($object, $extra);
     }
 
@@ -499,6 +500,10 @@ class Mapper
 
     @foreach ($collections as $collection)
 
+    /**
+     *  {{ $collection->getClass() }} => {{ $collection->GetName() }}
+     *  {{ count($collection->getAnnotation()->getAnnotations()) }}
+     */
     protected function set_property_{{sha1($collection->getClass())}}($object, $name, $value)
     {
         switch ($name) {
@@ -749,12 +754,12 @@ class Mapper
             @if ($ann->has('Array,ReferenceMany,EmbedMany'))
                 @if ($ann->has('Limit'))
                 if ($has_changed && !empty($change['$push'][{{@$prop.''}}])) {
-                    $change['$push'][{{@$prop.''}}]['$slice'] = {{@0+current($prop->getAnnotation()->getOne('Limit'))}};
+                    $change['$push'][{{@$prop.''}}]['$slice'] = {{@0+current($prop->getAnnotation()->getOne('Limit')->getArgs())}};
                 }
                 @end
                 @if ($ann->has('Sort'))
                 if ($has_changed && !empty($change['$push'][{{@$prop.''}}])) {
-                    $change['$sort'][{{@$prop.''}}]['$sort'] = {{@0+current($prop->getAnnotation()->getOne('Limit'))}};
+                    $change['$sort'][{{@$prop.''}}]['$sort'] = {{@0+current($prop->getAnnotation()->getOne('Limit')->getArgs())}};
                 }
                 @end
             @end
@@ -942,8 +947,8 @@ class Mapper
             'name'     => {{@$collection->getName()}},
             'collection'     => {{@$collection->getName()}},
             'annotation' => array(
-        @foreach ($collection->getAnnotation() as $ann) 
-            {{@$ann}},
+        @foreach ($collection->getAnnotation()->getAnnotations() as $ann) 
+            new Annotation({{@$ann->getName()}}, {{@$collection->serializeAnnArgs($ann)}}),
         @end
             ),
             'properties'  => array(
@@ -954,9 +959,9 @@ class Mapper
                 @if ($prop->getReferenceCollection())
                 'collection' => {{@$prop->getReferenceCollection()}},
                 @end
-                'annotation' => new Annotation(array(
-                    @foreach ($prop->getAnnotation() as $ann)
-                        {{@$ann}},
+                'annotation' => new Annotations(array(
+                    @foreach ($prop->getAnnotation()->getAnnotations() as $ann)
+                    new Annotation({{@$ann->getName()}}, {{@$collection->serializeAnnArgs($ann)}}),
                     @end
                 )),
             ), $this),
@@ -1022,10 +1027,11 @@ class Mapper
         @if ($collection->getParent())
             $this->update_property_{{sha1($collection->getParent())}}($document, $property, $value);
         @end
+        $iproperty = strtolower($property);
         @foreach ($collection->getProperties() as $prop)
             if ($property ==  {{@$prop.''}}
-            @foreach($prop->getAnnotation()->getAll() as $annotation) 
-                 || $property == {{@'@'.$annotation['method']}}
+            @foreach($prop->getAnnotation()->getAnnotations() as $annotation) 
+                 || $iproperty == {{@'@'.$annotation->getName()}}
             @end
             ) {
                 @if ($prop->isPublic())

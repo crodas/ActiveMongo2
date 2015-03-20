@@ -37,6 +37,7 @@
 
 namespace ActiveMongo2\Generate;
 
+use ActiveMongo2\Generate;
 use Notoj\Annotation\AnnClass;
 
 abstract class Base
@@ -54,7 +55,7 @@ abstract class Base
 
     public function isMethod()
     {
-        return !empty($this->annotation['class']) && !empty($this->annotation['function']);
+        return $this->annotation->isMethod();
     }
 
     public function setParent(Base $p)
@@ -68,7 +69,7 @@ abstract class Base
         if (!$this->annotation->has('Persist') && !$this->annotation->has('Embeddable')) {
             return false;
         }
-        return $this->annotation->getOne('Persist') ?: $this->annotation->getOne('Embeddable');
+        return current($this->annotation->get('Persist') ?: $this->annotation->get('Embeddable'));
     }
 
 
@@ -84,22 +85,29 @@ abstract class Base
 
     public function getClass()
     {
-        return strtolower($this->annotation['class']);
+        if ($this->annotation instanceof \Notoj\Object\Base) {
+            return strtolower($this->annotation->GetClass()->GetName());
+        }
+        $object = $this->annotation->getObject();
+        if ($object instanceof \Notoj\Object\zClass) {
+            return strtolower($object->getName());
+        }
+        return strtolower($object->getClass()->getName());
     }
 
     public function isPublic()
     {
-        return in_array('public', $this->annotation['visibility']);
+        return $this->annotation->getObject()->isPublic();
     }
 
     public function isStatic()
     {
-        return in_array('static', $this->annotation['visibility']);
+        return $this->annotation->getObject()->isStatic();
     }
 
     public function isAbstract()
     {
-        return in_array('abstract', $this->annotation['visibility']);
+        return $this->annotation->getObject()->isAbstract();
     }
 
     public function getMethodsByAnnotation($ann)
@@ -111,7 +119,7 @@ abstract class Base
         $methods = array();
         foreach ($this->annotation->getMethods() as $method) {
             if ($method->has($ann)) {
-                $method = new Type($method, $ann);
+                $method = new Type($method->getOne($ann), $ann);
                 $method->setPath($this->getPath());
                 $methods[] = $method;
             }
@@ -121,7 +129,7 @@ abstract class Base
 
     public function isClass()
     {
-        return $this->annotation instanceof AnnClass;
+        return $this->annotation->isClass();
     }
 
 
@@ -133,6 +141,6 @@ abstract class Base
 
     public function getPath()
     {
-        return $this->file ?: $this->annotation['file'];
+        return Generate::getRelativePath($this->annotation->getFile());
     }
 }

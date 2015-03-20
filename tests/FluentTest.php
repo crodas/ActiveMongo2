@@ -82,6 +82,7 @@ class FluentTest extends \phpunit_framework_testcase
         $this->assertTrue(!$result['updatedExisting'] || $result['nModified'] == 0);
         $this->assertEquals(0, $result['n']);
 
+        $conn->getcollection('user')->count();
         for ($i=0; $i < 50; $i++) {
             $u = new UserDocument;
             $u->username = uniqid();
