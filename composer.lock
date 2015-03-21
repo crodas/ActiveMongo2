@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "381aebe971674739627195686eaa7a3c",
+    "hash": "1e981019b8949ef85f851a15834a0ed8",
     "packages": [
         {
             "name": "crodas/class-info",
@@ -114,16 +114,16 @@
         },
         {
             "name": "crodas/notoj",
-            "version": "dev-develop",
+            "version": "v1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/Notoj.git",
-                "reference": "ca4dbca9b6a5622f1ecd5d84ecf8bdc8c20b1277"
+                "reference": "4065b0407bcfa71e125f1c1149ce08ed491be33d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/Notoj/zipball/ca4dbca9b6a5622f1ecd5d84ecf8bdc8c20b1277",
-                "reference": "ca4dbca9b6a5622f1ecd5d84ecf8bdc8c20b1277",
+                "url": "https://api.github.com/repos/crodas/Notoj/zipball/4065b0407bcfa71e125f1c1149ce08ed491be33d",
+                "reference": "4065b0407bcfa71e125f1c1149ce08ed491be33d",
                 "shasum": ""
             },
             "require": {
@@ -137,7 +137,7 @@
                     "Notoj": "lib/"
                 }
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-4-Clause"
             ],
@@ -148,29 +148,29 @@
                 }
             ],
             "description": "Annotation parser. Uses reflection and provides cache out of the box.",
-            "time": "2015-03-12 23:58:01"
+            "time": "2015-03-21 14:23:43"
         },
         {
             "name": "crodas/service-provider",
-            "version": "v0.1.27",
+            "version": "v0.1.28",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/ServiceProvider.git",
-                "reference": "1326060526630a5a52a6c93d2f9ad1e5d24a0119"
+                "reference": "b8d389e776c057c5094b9ad3ab79c616d69180a3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/ServiceProvider/zipball/1326060526630a5a52a6c93d2f9ad1e5d24a0119",
-                "reference": "1326060526630a5a52a6c93d2f9ad1e5d24a0119",
+                "url": "https://api.github.com/repos/crodas/ServiceProvider/zipball/b8d389e776c057c5094b9ad3ab79c616d69180a3",
+                "reference": "b8d389e776c057c5094b9ad3ab79c616d69180a3",
                 "shasum": ""
             },
             "require": {
                 "crodas/file-util": "~0.1",
-                "crodas/notoj": "dev-develop",
+                "crodas/notoj": "^1.0",
                 "crodas/simple-view-engine": "~0.1",
                 "crodas/watch-files": "~0.1",
                 "seld/jsonlint": "*",
-                "symfony/yaml": "*"
+                "symfony/yaml": "~2.6"
             },
             "type": "library",
             "autoload": {
@@ -178,7 +178,7 @@
                     "ServiceProvider": "lib/"
                 }
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-4-Clause"
             ],
@@ -189,7 +189,7 @@
                 }
             ],
             "description": "Little configuration manager and dependency injection",
-            "time": "2015-01-28 13:37:56"
+            "time": "2015-03-21 14:41:01"
         },
         {
             "name": "crodas/simple-view-engine",
@@ -239,18 +239,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/Validator.git",
-                "reference": "1d68e6d2049f71d54f39b9f3a0f565c0f413a7bc"
+                "reference": "7eec03dc491b98dac06f6ae6dc07d37b132c9fe8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/Validator/zipball/1d68e6d2049f71d54f39b9f3a0f565c0f413a7bc",
-                "reference": "1d68e6d2049f71d54f39b9f3a0f565c0f413a7bc",
+                "url": "https://api.github.com/repos/crodas/Validator/zipball/7eec03dc491b98dac06f6ae6dc07d37b132c9fe8",
+                "reference": "7eec03dc491b98dac06f6ae6dc07d37b132c9fe8",
                 "shasum": ""
             },
             "require": {
                 "crodas/cli": "~0.1",
                 "crodas/file-util": ">=0.1.7",
-                "crodas/notoj": "dev-develop",
+                "crodas/notoj": "^1.0",
                 "crodas/simple-view-engine": ">=0.1.28",
                 "crodas/watch-files": "~0.1"
             },
@@ -260,7 +260,7 @@
                     "crodas": "lib/"
                 }
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-4-Clause"
             ],
@@ -271,7 +271,7 @@
                 }
             ],
             "description": "Validation library",
-            "time": "2015-03-09 06:37:55"
+            "time": "2015-03-21 14:41:44"
         },
         {
             "name": "crodas/watch-files",
@@ -564,7 +564,6 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "crodas/notoj": 20,
         "crodas/validator": 20
     },
     "prefer-stable": false,
