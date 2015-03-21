@@ -617,7 +617,13 @@ class SimpleTest extends \phpunit_framework_testcase
         /* Update from another instance */
         $npost = getConnection()->getCollection('post')->findOne(['_id' => $post->id]);
         $npost->title = "xxx";
+
+        $this->assertEquals($npost->__ol_version, $post->__ol_version);
+
         $conn->save($npost);
+
+        $this->assertNotEquals($npost->__ol_version, $post->__ol_version);
+        define('_EXPECTED_VERSION', $npost->__ol_version);
 
         /* expect the error! */
         $post->title  = "foobar post - yyy";
@@ -628,6 +634,6 @@ class SimpleTest extends \phpunit_framework_testcase
     public function testCheckStateLockingPlugin()
     {
         $x = getConnection()->getCollection('post')->findOne(['titulo' => 'xxx']);
-        $this->assertEquals($x->__ol_version, 2);
+        $this->assertEquals($x->__ol_version, _EXPECTED_VERSION);
     }
 }

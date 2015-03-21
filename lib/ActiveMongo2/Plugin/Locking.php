@@ -48,13 +48,13 @@ class Locking
     /** @onMapping */
     public static function onCompile($schema)
     {
-        $schema->defineProperty('/** @Hidden @Int */', '__ol_version');
+        $schema->defineProperty('/** @Hidden @String */', '__ol_version');
     }
 
     /** @preCreate */
     public static function onCreate($doc, Array $args)
     {
-        $args[0]['__ol_version'] = 1;
+        $args[0]['__ol_version'] = time() . '::' . uniqid(true);
     }
 
     /**
@@ -63,7 +63,7 @@ class Locking
     public static function prepareUpdate($doc, array $args)
     {
         $args[2]['__ol_version'] = $doc->__ol_version; /* Change the update query to include the version */
-        $args[0]['$set']['__ol_version'] = ++$doc->__ol_version; /* increment __ol_version */
+        $args[0]['$set']['__ol_version'] = time() . '::' . uniqid(true);
         $args[3] = 1; /* $w */
 
         if (count($args[0]) > 1) {
