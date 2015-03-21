@@ -9,6 +9,10 @@ use Notoj\Annotation\Annotation;
 use Notoj\Annotation\Annotations;
 use Notoj;
 
+@foreach ($collections->byName() as $name => $class)
+    define({{@'C' . $name}}, {{@$class['class']}});
+@end
+
 @set($instance, '_' . uniqid(true))
 
 class Mapper
@@ -72,7 +76,7 @@ class Mapper
         return array(
         @foreach ($collections as $collection)
             @if ($collection->getName())
-                {{@$collection->getClass()}} => $this->ns_by_name[{{@$collection->getName()}}]. {{@$collection->getName()}},
+                {{$collection->getClassCode()}} => $this->ns_by_name[{{@$collection->getName()}}]. {{@$collection->getName()}},
             @end
         @end
         );
@@ -163,9 +167,9 @@ class Mapper
 
         switch ($table) {
         @foreach($collections as $collection)
-            case {{@$collection->getClass()}}:
+            case {{$collection->getClassCode()}}:
                 @if ($collection->is('SingleCollection') && $collection->getParent()) {
-                    $query[{{@$collection->getDiscriminator()}}] = {{@$collection->getClass()}};
+                    $query[{{@$collection->getDiscriminator()}}] = {{$collection->getClassCode()}};
                 @end
                 @foreach ($collection->getMethodsByAnnotation('onQuery') as $method)
                     {{$method->toCode($collection, '$query')}}
@@ -188,7 +192,7 @@ class Mapper
         if (empty($this->class_mapper[$class])) {
             @foreach($collections as $collection)
                 @if ($collection->is('SingleCollection'))
-                if ($class == {{@$collection->getClass()}} ||  $class == {{@$collection->getName()}}){
+                if ($class == {{$collection->getClassCode()}} ||  $class == {{@$collection->getName()}}){
                     return {{@['name' => $collection->getName(), 'dynamic' => true, 'prop' => $collection->getDiscriminator(), 'class' => NULL]}};
                 }
                 @end
@@ -364,7 +368,7 @@ class Mapper
         }
         $method = "event_{$event}_" . sha1($class);
         if (!is_callable(array($this, $method))) {
-            throw new \RuntimeException("Cannot trigger {$event} event on '$class' objects");
+            return;
         }
 
         return $this->$method($object, $args);
@@ -406,7 +410,7 @@ class Mapper
             case {{@$collection->getName()}}:
             @end
                 @if (!$collection->is('SingleCollection'))
-                    $class = {{@$collection->getClass()}};
+                    $class = {{$collection->getClassCode()}};
                 @else
                     if (!empty({{$collection->getDiscriminator(true)->getPHPVariable()}})) {
                         $class = {{ $collection->getDiscriminator(true)->getPHPVariable()}};
@@ -842,7 +846,7 @@ class Mapper
         @end
 
         if (empty($object->{{$instance}})) {
-            $object->{{$instance}} = new ActiveMongo2Mapped({{@$collection->getClass()}}, $data);
+            $object->{{$instance}} = new ActiveMongo2Mapped({{$collection->getClassCode()}}, $data);
         } else {
             $object->{{$instance}}->{{$instance}}_setOriginal($data);
         }
@@ -879,7 +883,7 @@ class Mapper
         return array_merge(array(
                 '$ref'  => {{@$collection->getName()}}, 
                 '$id'   => $document['_id'],
-                '__class' => {{@$collection->getClass()}},
+                '__class' => {{$collection->getClassCode()}},
                 '__instance' => {{@$collection->getName()}} . ':' . serialize($document['_id']),
             )
             , $extra
@@ -927,7 +931,7 @@ class Mapper
 
         @if ($collection->is('SingleCollection'))
             // SINGLE COLLECTION
-            {{$collection->getDiscriminator(true)->getPHPVariable()}} = {{@$collection->getClass()}};
+            {{$collection->getDiscriminator(true)->getPHPVariable()}} = {{$collection->getClassCode()}};
         @end 
 
         if (empty($doc['_id'])) {
@@ -943,7 +947,7 @@ class Mapper
     protected function reflect_{{sha1($collection->getClass())}}() 
     {
         $reflection = array(
-            'class'    => {{@$collection->getClass()}},
+            'class'    => {{$collection->getClassCode()}},
             'name'     => {{@$collection->getName()}},
             'collection'     => {{@$collection->getName()}},
             'annotation' => array(
@@ -1047,17 +1051,19 @@ class Mapper
 
 
         @foreach ($collections->getEvents() as $ev)
+            @if ($collection->hasEvent($ev))
     /**
      *  Code for {{$ev}} events for objects {{$collection->getClass()}}
      */
         protected function event_{{$ev}}_{{sha1($collection->getClass())}}($document, Array $args)
         {
             $class = $this->get_class($document);
-            if ($class != {{@$collection->getClass()}} && !is_subclass_of($class, {{@$collection->getClass()}})) {
-                throw new \Exception("Class invalid class name ($class) expecting  "  . {{@$collection->getClass()}});
+            if ($class != {{$collection->getClassCode()}} && !is_subclass_of($class, {{$collection->getClassCode()}})) {
+                throw new \Exception("Class invalid class name ($class) expecting  "  . {{$collection->getClassCode()}});
             }
-            @if ($collection->getParent())
-                $this->event_{{$ev}}_{{sha1($collection->getParent()->getClass())}}($document, $args);
+            @if ($collection->getParent() && $collection->getParent()->hasEvent($ev))
+                @set($method, "event_" . $ev . "_" . sha1($collection->getParent()->getClass()))
+                $this->{{$method}}($document, $args);
             @end
 
             @foreach ($collection->getMethodsByAnnotation($ev) as $method)
@@ -1082,7 +1088,7 @@ class Mapper
                 }
             @end
         }
-    
+            @end
         @end
 
     @end
