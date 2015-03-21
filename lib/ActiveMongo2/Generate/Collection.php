@@ -80,23 +80,29 @@ class Collection extends Base
         return 'default';
     }
 
+    protected function getMyPlugins($type)
+    {
+        $plugins = array();
+        foreach ($this->collections->getAnnotation()->getClasses('Plugin') as $class) {
+            foreach ($class->get('Plugin') as $annotation) {
+                $name = current($annotation->getArgs());
+                if ($name && $this->annotation->has($name)) {
+                    $plugins[] = [$name, $class];
+                    break;
+                }
+            }
+        }
+
+        return $plugins;
+    }
+
     public function getPlugins($type)
     {
         $plugins = array();
         $index   = 0;
 
-        foreach ($this->collections->getAnnotation()->getClasses('Plugin') as $class) {
-            $have = false;
-            foreach ($class->get('Plugin') as $annotation) {
-                $name = current($annotation->getArgs());
-                if ($name && $this->annotation->has($name)) {
-                    $have = true;
-                    break;
-                }
-            }
-
-            if (!$have) continue;
-
+        foreach ($this->getMyPlugins($type) as $plugin) {
+            list($name, $class) = $plugin;
             foreach ($class->getMethods($type) as $method) {
                 $method = new Type($method->getOne($type), $name);
                 $method->pos = ++$index;
@@ -115,35 +121,12 @@ class Collection extends Base
     public function onMapping()
     {
         foreach ($this->getPlugins('onMapping') as $plugin) {
-            if ($plugin->isMethod()) {
-                $class  = $plugin->getClass();
-                $method = $plugin->getMethod();
-                if (!class_exists($class)) {
-                    require $plugin->getannotation()->getFile();
-                }
-                if ($plugin->isStatic())  {
-                    $class::$method($this);
-                } else {
-                    $obj = new $class;
-                    $class->$method($this);
-                }
-            }
+            $plugin->getAnnotation()->getObject()->exec($this);
         }
     }
 
-    public function __construct(zClass $annotation, Collections $collections)
+    protected function parseProperties()
     {
-        $this->annotation  = $annotation;
-        $this->collections = $collections;
-
-        $parent = $annotation->getParent();
-        while ($parent) {
-            if (empty($collections[$parent->getName()])) {
-                $collections[$parent->getName()] = new self($parent, $collections);
-            }
-            $parent = $parent->getParent();
-        }
-
         foreach ($this->annotation->getProperties() as $prop) {
             if ($prop->getAnnotations()->count() > 0) {
                 $this->properties[] = (new Property($this, $prop))->setParent($this);
@@ -151,6 +134,26 @@ class Collection extends Base
         }
 
         $this->onMapping();
+    }
+
+    protected function processParentClasses()
+    {
+        $parent = $this->annotation->getParent();
+        while ($parent) {
+            if (empty($this->collections[$parent->getName()])) {
+                $this->collections[$parent->getName()] = new self($parent, $this->collections);
+            }
+            $parent = $parent->getParent();
+        }
+
+    }
+
+    public function __construct(zClass $annotation, Collections $collections)
+    {
+        $this->annotation  = $annotation;
+        $this->collections = $collections;
+        $this->processParentClasses();
+        $this->parseProperties();
     }
 
     public function getTypes()
@@ -283,16 +286,12 @@ class Collection extends Base
 
     public function getName()
     {
-        if (!empty($this->_name)) {
-            return $this->_name;
-        }
-
         $args = $this->getAnnotationArgs();
         if ($args === FALSE) {
             return NULL;
         } 
         
-        return $this->name = $this->getNameFromParent()
+        return $this->getNameFromParent()
             ?: $this->getNameFromAnnotation($args, [0, 'collection']);
     }
 

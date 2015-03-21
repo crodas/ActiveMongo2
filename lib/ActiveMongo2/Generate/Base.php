@@ -66,10 +66,10 @@ abstract class Base
 
     public function getAnnotationArgs()
     {
-        if (!$this->annotation->has('Persist') && !$this->annotation->has('Embeddable')) {
+        if (!$this->annotation->has('Persist,Embeddable')) {
             return false;
         }
-        return current($this->annotation->get('Persist') ?: $this->annotation->get('Embeddable'));
+        return $this->annotation->getOne('Persist,Embeddable');
     }
 
 

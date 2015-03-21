@@ -3,8 +3,8 @@
     "description": "Mongo abstraction",
     "require": {
         "php": ">=5.4.0",
-        "crodas/service-provider": ">=0.1.27",
-        "crodas/notoj": "dev-develop",
+        "crodas/service-provider": "^0.1",
+        "crodas/notoj": "^1.0.3",
         "crodas/simple-view-engine": "~0.1",
         "crodas/watch-files": "~0.1",
         "crodas/file-util": ">=0.1.14",
@@ -13,7 +13,7 @@
         "crodas/validator": "dev-develop"
     },
     "license": "BSD-4-Clause",
-    "version": "v0.3.2",
+    "version": "v0.3.3",
     "authors": [
         {
             "name": "César D. Rodas",

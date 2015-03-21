@@ -231,12 +231,14 @@ class Collections extends ArrayObject
 
     public function getCollectionByName($name)
     {
+        $names = array();
         foreach ($this as $col) {
-            if ($col->getName() == $name || strtolower($col->getClass()) == strtolower($name)) {
+            $names[] = $col->getName() ?: $col->getClass();
+            if ($col->getName() == $name || $col->getClass() == strtolower($name)) {
                 return $col;
             }
         }
-        throw new \RuntimeException("Cannot find collection {$name}");
+        throw new \RuntimeException("Cannot find collection {$name} We have (" . implode(", ", $names) . ")");
     }
 
     public function getAllReferences()
