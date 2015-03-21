@@ -243,10 +243,16 @@ class Connection
             return $this;
         }
 
-        $this->mapper->trigger($trigger_events, 'preUpdate', $obj, array(&$update, $this));
+        $selector = array('_id' => $oldDoc['_id']);
+        $this->mapper->trigger($trigger_events, 'preUpdate', $obj, array(&$update, $this, &$selector, &$w));
 
+        $return = array();
         foreach ($update as $op => $value) {
-            $col->update(array('_id' => $oldDoc['_id']),  array($op => $value), compact('w'));
+            $return[$op] = $col->update(
+                $selector,
+                array($op => $value), 
+                compact('w')
+            );
         }
 
         if (!empty($update['$set'])) {
@@ -254,7 +260,7 @@ class Connection
         }
 
         $this->mapper->populate($obj, $document);
-        $this->mapper->trigger($trigger_events, 'postUpdate', $obj, array($update, $this,$oldDoc['_id']));
+        $this->mapper->trigger($trigger_events, 'postUpdate', $obj, array($update, $this, $oldDoc['_id'], $return));
         $this->mapper->trigger($trigger_events, 'postSave', $obj, array($update, $this));
 
         return $this;

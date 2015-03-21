@@ -595,4 +595,39 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($post->author->username, $user->username);
         $this->assertEquals($post->author->username, $post->author_ref->username);
     }
+
+    /** @expectedException ActiveMongo2\Plugin\LockingException */
+    public function testLockingPlugin()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda-s";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = $user;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers[] = $user;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+        
+        /* Update from another instance */
+        $npost = getConnection()->getCollection('post')->findOne(['_id' => $post->id]);
+        $npost->title = "xxx";
+        $conn->save($npost);
+
+        /* expect the error! */
+        $post->title  = "foobar post - yyy";
+        $conn->save($post);
+    }
+
+    /** @dependsOn testLockingPlugin */
+    public function testCheckStateLockingPlugin()
+    {
+        $x = getConnection()->getCollection('post')->findOne(['titulo' => 'xxx']);
+        $this->assertEquals($x->__ol_version, 2);
+    }
 }
