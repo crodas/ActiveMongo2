@@ -74,23 +74,31 @@ class Locking
         }
     }
 
+    protected static function analizeUpdate(Array $Changes, Array $current, Array $saved, $class)
+    {
+        $allowed  = ['updated' => 1, '__ol_version' => 1];
+        foreach ($Changes as $op => $changes) {
+            foreach ($changes as $column => $values) {
+                if (empty($allowed[$column]) && !empty($current[$column]) && !empty($saved[$column]) && $current[$column] !== $saved[$column]) {
+                    throw new LockingException("You cannot update stale document {$class} due column => {$column}");
+                }
+            }
+        }
+    }
+
     /**
      *  @postUpdate
      */
     public static function checkUpdate($doc, array $args, $conn, $xargs, $mapper, $class)
     {
-        $allowed  = ['updated' => 1, '__ol_version' => 1];
         $response = current($args[3]);
         if ($response['n'] != 1) {
-            $new = $mapper->getDocument($doc);
-            $cur = $mapper->getDocument($conn->getCollection($class)->getById( $args[2] ));
-            foreach ($args[0] as $op => $changes) {
-                foreach ($changes as $column => $values) {
-                    if (empty($allowed[$column]) && !empty($new[$column]) && !empty($cur[$column]) && $new[$column] !== $cur[$column]) {
-                        throw new LockingException("You cannot update stale document " . get_class($doc) . " due column => {$column}");
-                    }
-                }
-            }
+            self::analizeUpdate(
+                $args[0],
+                $mapper->getDocument($doc),
+                $mapper->getDocument($conn->getCollection($class)->getById( $args[2] )),
+                $class
+            );
         }
 
         foreach ($args[0] as $op => $changes) {
