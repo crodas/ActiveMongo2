@@ -96,6 +96,20 @@ class Collection extends Base
         return $plugins;
     }
 
+    public function hasEvent($ev)
+    {
+        $hasEvent = count($this->getMethodsByAnnotation($ev)) > 0 || in_array($ev, ['postCreate', 'postUpdate'])
+            || ($this->getParent() && $this->getParent()->hasEvent($ev));
+
+        if (!$hasEvent) {
+            foreach ($this->getPlugins($ev) as $plugin) {
+                return true;
+            }
+        }
+
+        return $hasEvent;
+    }
+
     public function getPlugins($type)
     {
         $plugins = array();
@@ -204,7 +218,7 @@ class Collection extends Base
             }
         }
         if ($obj) {
-            $property = new \crodas\ClassInfo\Definition\TProperty($prop);
+            $property = new \crodas\ClassInfo\Definition\TProperty('$' . $prop);
             $prop = new Property($this, \Notoj\Object\Base::create($property, NULL));
         }
         return $prop;
@@ -213,6 +227,15 @@ class Collection extends Base
     public function getClass()
     {
         return strtolower($this->annotation->getName());
+    }
+
+    public function getClassCode()
+    {
+        if ($this->getName() && !$this->getParent()) {
+            return 'C' . $this->getName();
+        }
+
+        return var_export($this->getClass(), true);
     }
 
     public function getSafeName()

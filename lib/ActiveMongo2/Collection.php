@@ -192,7 +192,11 @@ class Collection implements IteratorAggregate
                 $cache
             );
         }
-        $document = $this->findOne(['_id' => $id]);
+        if (is_string($id) && is_numeric($id)) {
+            $document = $this->findOne(['_id' => ['$in' => [$id, 0+$id]]]);
+        } else {
+            $document = $this->findOne(['_id' => $id]);
+        }
 
         if (!$document) {
             throw new \RuntimeException("Cannot find object with _id $id");
@@ -226,7 +230,7 @@ class Collection implements IteratorAggregate
     public function findOne($query = array(), $fields = array())
     {
         $this->mapper->onQuery($this->zclass, $query);
-        $doc =  $this->zcol->findOne($query, $fields);
+        $doc = $this->zcol->findOne($query, $fields);
         if (empty($doc)) {
             return $doc;
         }

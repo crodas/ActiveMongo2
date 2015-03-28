@@ -595,4 +595,64 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($post->author->username, $user->username);
         $this->assertEquals($post->author->username, $post->author_ref->username);
     }
+
+    /** 
+     * @expectedException ActiveMongo2\Plugin\LockingException 
+     */
+    public function testLockingPlugin()
+    {
+        $conn = getConnection();
+
+        $post = new Locked;
+        $post->title = "xxx";
+        $post->tags  = ["y"];
+        $conn->save($post);
+        
+        /* Update from another instance */
+        $npost = getConnection()->getCollection('locked')->findOne(['_id' => $post->id]);
+        $npost->title = "yyy";
+
+        $this->assertEquals($npost->__ol_version, $post->__ol_version);
+
+        $conn->save($npost);
+
+        $this->assertNotEquals($npost->__ol_version, $post->__ol_version);
+        define('_EXPECTED_VERSION', $npost->__ol_version);
+
+        /* expect the error! */
+        $post->title  = "foobar post - yyy";
+        $conn->save($post);
+    }
+
+    /** 
+     * @dependsOn testLockingPlugin 
+     */
+    public function testCheckStateLockingPlugin()
+    {
+        $x = getConnection()->getCollection('locked')->findOne(['title' => 'yyy']);
+        $this->assertEquals($x->__ol_version, _EXPECTED_VERSION);
+    }
+
+    /** 
+     * @dependsOn testLockingPlugin 
+     * @dependsOn testCheckStateLockingPlugin
+     */
+    public function testLockingNoConflicts()
+    {
+        $conn = getConnection();
+        $x = $conn->getCollection('locked')->findOne(['title' => 'yyy']);
+        $y = $conn->getCollection('locked')->findOne(['title' => 'yyy']);
+
+        $x->title = "ttt";
+        $y->tags  = ['yyy'];
+
+        $conn->save($x);
+        $conn->save($y);
+
+        $new = $conn->getCollection('locked')->findOne(['title' => 'ttt']);
+        $this->assertEquals($x->title, $new->title);
+        $this->assertNotEquals($y->title, $new->title);
+        $this->assertEquals($y->tags, $new->tags);
+        $this->assertEquals($y->__ol_version, $new->__ol_version);
+    }
 }

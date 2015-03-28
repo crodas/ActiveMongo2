@@ -398,6 +398,17 @@ namespace {
             echo "<?php\n\nnamespace ";
             echo trim($namespace, '\\') . ";\n\nuse ";
             echo $valns . " as v;\nuse MongoClient;\nuse ActiveMongo2\\Connection;\nuse Notoj\\Annotation\\Annotation;\nuse Notoj\\Annotation\\Annotations;\nuse Notoj;\n\n";
+            foreach($collections->byName() as $name => $class) {
+
+                $this->context['name'] = $name;
+                $this->context['class'] = $class;
+                echo "    define(";
+                var_export('C' . $name);
+                echo ", ";
+                var_export($class['class']);
+                echo ");\n";
+            }
+            echo "\n";
             $instance = '_' . uniqid(true);
             $this->context['instance'] = $instance;
             echo "\nclass Mapper\n{\n    protected \$mapper = ";
@@ -411,9 +422,7 @@ namespace {
 
                 $this->context['collection'] = $collection;
                 if ($collection->getName()) {
-                    echo "                ";
-                    var_export($collection->getClass());
-                    echo " => \$this->ns_by_name[";
+                    echo "                " . ($collection->getClassCode()) . " => \$this->ns_by_name[";
                     var_export($collection->getName());
                     echo "]. ";
                     var_export($collection->getName());
@@ -424,15 +433,11 @@ namespace {
             foreach($collections as $collection) {
 
                 $this->context['collection'] = $collection;
-                echo "            case ";
-                var_export($collection->getClass());
-                echo ":\n";
+                echo "            case " . ($collection->getClassCode()) . ":\n";
                 if ($collection->is('SingleCollection') && $collection->getParent()) {
                     echo "                    \$query[";
                     var_export($collection->getDiscriminator());
-                    echo "] = ";
-                    var_export($collection->getClass());
-                    echo ";\n";
+                    echo "] = " . ($collection->getClassCode()) . ";\n";
                 }
                 foreach($collection->getMethodsByAnnotation('onQuery') as $method) {
 
@@ -451,9 +456,7 @@ namespace {
 
                 $this->context['collection'] = $collection;
                 if ($collection->is('SingleCollection')) {
-                    echo "                if (\$class == ";
-                    var_export($collection->getClass());
-                    echo " ||  \$class == ";
+                    echo "                if (\$class == " . ($collection->getClassCode()) . " ||  \$class == ";
                     var_export($collection->getName());
                     echo "){\n                    return ";
                     var_export(['name' => $collection->getName(), 'dynamic' => true, 'prop' => $collection->getDiscriminator(), 'class' => NULL]);
@@ -462,7 +465,7 @@ namespace {
             }
             echo "            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        \$data = \$this->class_mapper[\$class];\n\n        if (empty(self::\$loaded[\$data['file']])) {\n            if (!class_exists(\$data['class'], false)) {\n                require __DIR__ . \$data['file'];\n            }\n            self::\$loaded[\$data['file']] = true;\n        }\n\n        return \$data;\n    }\n\n    protected function is_array(\$array)\n    {\n        if (is_array(\$array)) {\n            \$keys = array_keys(\$array);\n            \$expected = range(0, count(\$array)-1);\n            return count(array_diff(\$keys, \$expected)) == 0;\n        }\n        return false;\n    }\n\n    protected function array_unique(\$array, \$toRemove)\n    {\n        \$return = array();\n        \$count  = array();\n        foreach (\$array as \$key => \$value) {\n            \$val = serialize(\$value);\n            if (empty(\$count[\$val])) {\n                \$count[\$val] = 0;\n            }\n            \$count[\$val]++; \n        }\n        foreach (\$toRemove as \$value) {\n            \$val = serialize(\$value);\n            if (!empty(\$count[\$val]) && \$count[\$val] != 1) {\n                return true;\n            }\n        }\n        return false;\n    }\n\n    public function mapObject(\$object)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->class_mapper[\$class];\n    }\n\n    public function getReflection(\$name)\n    {\n        \$class = strtolower(\$name);\n        if (empty(\$this->class_mapper[\$class])) {\n            if (empty(\$this->mapper[\$name])) {\n                throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n            }\n            \$class = \$this->mapper[\$name]['class'];\n        }\n\n        return new \\ActiveMongo2\\Reflection\\Collection(\$this->{\"reflect_\" . sha1(\$class)}(), \$this);\n    }\n\n    public function getReference(\$object, Array \$extra = array())\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n        return \$this->{\"get_reference_\" . sha1(\$class)}(\$object, \$extra);\n    }\n\n    public function populateFromArray(\$object, Array \$data)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"populate_from_array_\" . sha1(\$class)}(\$object, \$data);\n    }\n\n\n    public function getDocument(\$object)\n    {\n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$object = \$object->getObject();\n        }\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"get_array_\" . sha1(\$class)}(\$object);\n    }\n\n    public function validate(\$object)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"validate_\" . sha1(\$class)}(\$object);\n    }\n\n    public function set_property(\$object, \$name, \$value)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"set_property_\" . sha1(\$class)}(\$object, \$name, \$value);\n    }\n\n    public function get_property(\$object, \$name)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"get_property_\" . sha1(\$class)}(\$object, \$name);\n    }\n\n    public function update(\$object, Array &\$doc, Array \$old)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"update_\" . sha1(\$class)}(\$doc, \$old);\n    }\n\n    public function getRawDocument(\$object)\n    {\n        if (!empty(\$object->";
             echo $instance . ") && \$object->" . ($instance) . " instanceof ActiveMongo2Mapped) {\n            return \$object->";
-            echo $instance . "->getOriginal();\n        }\n\n        return array();\n    }\n\n    public function populate(&\$object, \$data)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"populate_\" . sha1(\$class)}(\$object, \$data);\n    }\n\n    public function trigger(\$w, \$event, \$object, Array \$args = array())\n    {\n        if (!\$w) return;\n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = strtolower(\$object->getClass());\n        } else {\n            \$class = strtolower(\$this->get_class(\$object));\n        }\n        \$method = \"event_{\$event}_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            throw new \\RuntimeException(\"Cannot trigger {\$event} event on '\$class' objects\");\n        }\n\n        return \$this->\$method(\$object, \$args);\n    }\n\n    public function getMapping(\$class)\n    {\n        if (is_object(\$class)) {\n            \$class = \$this->get_class(\$class);\n        }\n        \$func  = \"get_mapping_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$func))) {\n            throw new \\Exception(\"Cannot map \$class\");\n        }\n        return \$this->\$func();\n    }\n\n    public function getObjectClass(\$col, \$doc)\n    {\n        if (\$doc instanceof \\MongoGridFsFile) {\n            \$doc = \$doc->file;\n        }\n        if (\$col instanceof \\MongoCollection) {\n            \$col = \$col->getName();\n        }\n\n        \$class = NULL;\n        switch (\$col) {\n";
+            echo $instance . "->getOriginal();\n        }\n\n        return array();\n    }\n\n    public function populate(&\$object, \$data)\n    {\n        \$class = strtolower(\$this->get_class(\$object));\n\n        if (empty(\$this->class_mapper[\$class])) {\n            throw new \\RuntimeException(\"Cannot map class {\$class} to its document\");\n        }\n\n        return \$this->{\"populate_\" . sha1(\$class)}(\$object, \$data);\n    }\n\n    public function trigger(\$w, \$event, \$object, Array \$args = array())\n    {\n        if (!\$w) return;\n        if (\$object instanceof \\ActiveMongo2\\Reference) {\n            \$class = strtolower(\$object->getClass());\n        } else {\n            \$class = strtolower(\$this->get_class(\$object));\n        }\n        \$method = \"event_{\$event}_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$method))) {\n            return;\n        }\n\n        return \$this->\$method(\$object, \$args);\n    }\n\n    public function getMapping(\$class)\n    {\n        if (is_object(\$class)) {\n            \$class = \$this->get_class(\$class);\n        }\n        \$func  = \"get_mapping_\" . sha1(\$class);\n        if (!is_callable(array(\$this, \$func))) {\n            throw new \\Exception(\"Cannot map \$class\");\n        }\n        return \$this->\$func();\n    }\n\n    public function getObjectClass(\$col, \$doc)\n    {\n        if (\$doc instanceof \\MongoGridFsFile) {\n            \$doc = \$doc->file;\n        }\n        if (\$col instanceof \\MongoCollection) {\n            \$col = \$col->getName();\n        }\n\n        \$class = NULL;\n        switch (\$col) {\n";
             foreach($collections as $collection) {
 
                 $this->context['collection'] = $collection;
@@ -494,9 +497,7 @@ namespace {
                     echo ":\n";
                 }
                 if (!$collection->is('SingleCollection')) {
-                    echo "                    \$class = ";
-                    var_export($collection->getClass());
-                    echo ";\n";
+                    echo "                    \$class = " . ($collection->getClassCode()) . ";\n";
                 }
                 else {
                     echo "                    if (!empty(" . ($collection->getDiscriminator(true)->getPHPVariable()) . ")) {\n                        \$class = ";
@@ -902,9 +903,7 @@ namespace {
                 }
                 echo "\n        if (empty(\$object->";
                 echo $instance . ")) {\n            \$object->";
-                echo $instance . " = new ActiveMongo2Mapped(";
-                var_export($collection->getClass());
-                echo ", \$data);\n        } else {\n            \$object->";
+                echo $instance . " = new ActiveMongo2Mapped(" . ($collection->getClassCode()) . ", \$data);\n        } else {\n            \$object->";
                 echo $instance . "->" . ($instance) . "_setOriginal(\$data);\n        }\n    }\n\n    /**\n     *  Get reference of  ";
                 echo $collection->getClass() . " object\n     */\n    protected function get_reference_";
                 echo sha1($collection->getClass()) . "(\\" . ($collection->getClass()) . " \$object, \$include = Array())\n    {\n        \$document = \$this->get_array_";
@@ -917,8 +916,7 @@ namespace {
                 echo "        \n        foreach (\$extra as \$key => \$value) {\n            if (is_object(\$value)) {\n                if (\$value instanceof \\ActiveMongo2\\Reference) {\n                    \$extra[\$key] = \$value->getReference();\n                } else {\n                    \$extra[\$key] = \$this->getReference(\$value);\n                }\n            }\n        }\n\n        return array_merge(array(\n                '\$ref'  => ";
                 var_export($collection->getName());
                 echo ", \n                '\$id'   => \$document['_id'],\n                '__class' => ";
-                var_export($collection->getClass());
-                echo ",\n                '__instance' => ";
+                echo $collection->getClassCode() . ",\n                '__instance' => ";
                 var_export($collection->getName());
                 echo " . ':' . serialize(\$document['_id']),\n            )\n            , \$extra\n        );\n\n    }\n\n    /**\n     *  Validate ";
                 echo $collection->getClass() . " object\n     */\n    protected function get_array_";
@@ -966,14 +964,11 @@ namespace {
                 echo "\n";
                 if ($collection->is('SingleCollection')) {
                     echo "            // SINGLE COLLECTION\n            ";
-                    echo $collection->getDiscriminator(true)->getPHPVariable() . " = ";
-                    var_export($collection->getClass());
-                    echo ";\n";
+                    echo $collection->getDiscriminator(true)->getPHPVariable() . " = " . ($collection->getClassCode()) . ";\n";
                 }
                 echo "\n        if (empty(\$doc['_id'])) {\n            \$oldDoc = \$this->getRawDocument(\$object, false);\n            if (!empty(\$oldDoc['_id'])) {\n                \$doc['_id'] = \$oldDoc['_id'];\n            }\n        }\n\n        return \$doc;\n    }\n\n    protected function reflect_";
                 echo sha1($collection->getClass()) . "() \n    {\n        \$reflection = array(\n            'class'    => ";
-                var_export($collection->getClass());
-                echo ",\n            'name'     => ";
+                echo $collection->getClassCode() . ",\n            'name'     => ";
                 var_export($collection->getName());
                 echo ",\n            'collection'     => ";
                 var_export($collection->getName());
@@ -1093,39 +1088,39 @@ namespace {
                 foreach($collections->getEvents() as $ev) {
 
                     $this->context['ev'] = $ev;
-                    echo "    /**\n     *  Code for ";
-                    echo $ev . " events for objects " . ($collection->getClass()) . "\n     */\n        protected function event_";
-                    echo $ev . "_" . (sha1($collection->getClass())) . "(\$document, Array \$args)\n        {\n            \$class = \$this->get_class(\$document);\n            if (\$class != ";
-                    var_export($collection->getClass());
-                    echo " && !is_subclass_of(\$class, ";
-                    var_export($collection->getClass());
-                    echo ")) {\n                throw new \\Exception(\"Class invalid class name (\$class) expecting  \"  . ";
-                    var_export($collection->getClass());
-                    echo ");\n            }\n";
-                    if ($collection->getParent()) {
-                        echo "                \$this->event_" . ($ev) . "_" . (sha1($collection->getParent()->getClass())) . "(\$document, \$args);\n";
-                    }
-                    echo "\n";
-                    foreach($collection->getMethodsByAnnotation($ev) as $method) {
-
-                        $this->context['method'] = $method;
-                        echo "                " . ($method->toCode($collection, '$document')) . "\n                if (\$return === FALSE) {\n                    throw new \\RuntimeException;\n                }\n";
-                    }
-                    echo "\n";
-                    if ($ev =="postCreate" || $ev == "postUpdate") {
-                        echo "                \$col = \$args[1]->getDatabase()->references_queue;\n";
-                        ActiveMongo2\Template\Templates::exec("reference/deferred.tpl.php", compact('ev', 'collection'), $this->context);
-                        if ($ev == "postUpdate") {
-                            ActiveMongo2\Template\Templates::exec("reference/update.tpl.php", compact('ev', 'collection'), $this->context);
+                    if ($collection->hasEvent($ev)) {
+                        echo "    /**\n     *  Code for ";
+                        echo $ev . " events for objects " . ($collection->getClass()) . "\n     */\n        protected function event_";
+                        echo $ev . "_" . (sha1($collection->getClass())) . "(\$document, Array \$args)\n        {\n            \$class = \$this->get_class(\$document);\n            if (\$class != ";
+                        echo $collection->getClassCode() . " && !is_subclass_of(\$class, " . ($collection->getClassCode()) . ")) {\n                throw new \\Exception(\"Class invalid class name (\$class) expecting  \"  . ";
+                        echo $collection->getClassCode() . ");\n            }\n";
+                        if ($collection->getParent() && $collection->getParent()->hasEvent($ev)) {
+                            $method = "event_" . $ev . "_" . sha1($collection->getParent()->getClass());
+                            $this->context['method'] = $method;
+                            echo "                \$this->" . ($method) . "(\$document, \$args);\n";
                         }
-                    }
-                    echo "\n";
-                    foreach($collection->getPlugins($ev) as $plugin) {
+                        echo "\n";
+                        foreach($collection->getMethodsByAnnotation($ev) as $method) {
 
-                        $this->context['plugin'] = $plugin;
-                        echo "                " . ($plugin->toCode($collection, '$document')) . "\n                if (\$return === FALSE) {\n                    throw new \\RuntimeException;\n                }\n";
+                            $this->context['method'] = $method;
+                            echo "                " . ($method->toCode($collection, '$document')) . "\n                if (\$return === FALSE) {\n                    throw new \\RuntimeException;\n                }\n";
+                        }
+                        echo "\n";
+                        if ($ev =="postCreate" || $ev == "postUpdate") {
+                            echo "                \$col = \$args[1]->getDatabase()->references_queue;\n";
+                            ActiveMongo2\Template\Templates::exec("reference/deferred.tpl.php", compact('ev', 'collection'), $this->context);
+                            if ($ev == "postUpdate") {
+                                ActiveMongo2\Template\Templates::exec("reference/update.tpl.php", compact('ev', 'collection'), $this->context);
+                            }
+                        }
+                        echo "\n";
+                        foreach($collection->getPlugins($ev) as $plugin) {
+
+                            $this->context['plugin'] = $plugin;
+                            echo "                " . ($plugin->toCode($collection, '$document')) . "\n                if (\$return === FALSE) {\n                    throw new \\RuntimeException;\n                }\n";
+                        }
+                        echo "        }\n";
                     }
-                    echo "        }\n    \n";
                 }
                 echo "\n";
             }
