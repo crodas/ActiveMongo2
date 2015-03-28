@@ -218,7 +218,7 @@ class Collection extends Base
             }
         }
         if ($obj) {
-            $property = new \crodas\ClassInfo\Definition\TProperty($prop);
+            $property = new \crodas\ClassInfo\Definition\TProperty('$' . $prop);
             $prop = new Property($this, \Notoj\Object\Base::create($property, NULL));
         }
         return $prop;

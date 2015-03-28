@@ -77,12 +77,28 @@ class Locking
     /**
      *  @postUpdate
      */
-    public static function checkUpdate($doc, array $args)
+    public static function checkUpdate($doc, array $args, $conn, $xargs, $mapper, $class)
     {
-        foreach ($args[3] as $key => $value) {
-            if ($value['n'] != 1) {
-                throw new LockingException("You cannot update stale document " . get_class($doc));
+        $allowed  = ['updated' => 1, '__ol_version' => 1];
+        $response = current($args[3]);
+        if ($response['n'] != 1) {
+            $new = $mapper->getDocument($doc);
+            $cur = $mapper->getDocument($conn->getCollection($class)->getById( $args[2] ));
+            foreach ($args[0] as $op => $changes) {
+                foreach ($changes as $column => $values) {
+                    if (empty($allowed[$column]) && !empty($new[$column]) && !empty($cur[$column]) && $new[$column] !== $cur[$column]) {
+                        throw new LockingException("You cannot update stale document " . get_class($doc) . " due column => {$column}");
+                    }
+                }
             }
+        }
+
+        foreach ($args[0] as $op => $changes) {
+            $args[4]->update(
+                array('_id' => $args[2]),
+                array($op => $changes), 
+                array('w' => 1)
+            );
         }
     }
 }

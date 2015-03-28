@@ -596,27 +596,21 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($post->author->username, $post->author_ref->username);
     }
 
-    /** @expectedException ActiveMongo2\Plugin\LockingException */
+    /** 
+     * @expectedException ActiveMongo2\Plugin\LockingException 
+     */
     public function testLockingPlugin()
     {
         $conn = getConnection();
-        $user = new UserDocument;
-        $user->username = "croda-s";
-        $conn->save($user);
 
-        $post = new PostDocument;
-        $post->author_ref = $user;
-        $post->author = $user;
-        $post->collaborators[] = $user;
-        $post->title  = "foobar post";
-        $post->array  = [1];
-        $post->readers[] = $user;
-        $post->author_id = $user->userid;
+        $post = new Locked;
+        $post->title = "xxx";
+        $post->tags  = ["y"];
         $conn->save($post);
         
         /* Update from another instance */
-        $npost = getConnection()->getCollection('post')->findOne(['_id' => $post->id]);
-        $npost->title = "xxx";
+        $npost = getConnection()->getCollection('locked')->findOne(['_id' => $post->id]);
+        $npost->title = "yyy";
 
         $this->assertEquals($npost->__ol_version, $post->__ol_version);
 
@@ -630,10 +624,35 @@ class SimpleTest extends \phpunit_framework_testcase
         $conn->save($post);
     }
 
-    /** @dependsOn testLockingPlugin */
+    /** 
+     * @dependsOn testLockingPlugin 
+     */
     public function testCheckStateLockingPlugin()
     {
-        $x = getConnection()->getCollection('post')->findOne(['titulo' => 'xxx']);
+        $x = getConnection()->getCollection('locked')->findOne(['title' => 'yyy']);
         $this->assertEquals($x->__ol_version, _EXPECTED_VERSION);
+    }
+
+    /** 
+     * @dependsOn testLockingPlugin 
+     * @dependsOn testCheckStateLockingPlugin
+     */
+    public function testLockingNoConflicts()
+    {
+        $conn = getConnection();
+        $x = $conn->getCollection('locked')->findOne(['title' => 'yyy']);
+        $y = $conn->getCollection('locked')->findOne(['title' => 'yyy']);
+
+        $x->title = "ttt";
+        $y->tags  = ['yyy'];
+
+        $conn->save($x);
+        $conn->save($y);
+
+        $new = $conn->getCollection('locked')->findOne(['title' => 'ttt']);
+        $this->assertEquals($x->title, $new->title);
+        $this->assertNotEquals($y->title, $new->title);
+        $this->assertEquals($y->tags, $new->tags);
+        $this->assertEquals($y->__ol_version, $new->__ol_version);
     }
 }

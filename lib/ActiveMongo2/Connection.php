@@ -260,7 +260,7 @@ class Connection
         }
 
         $this->mapper->populate($obj, $document);
-        $this->mapper->trigger($trigger_events, 'postUpdate', $obj, array($update, $this, $oldDoc['_id'], $return));
+        $this->mapper->trigger($trigger_events, 'postUpdate', $obj, array($update, $this, $oldDoc['_id'], $return, $col));
         $this->mapper->trigger($trigger_events, 'postSave', $obj, array($update, $this));
 
         return $this;
