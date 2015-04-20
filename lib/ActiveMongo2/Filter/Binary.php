@@ -56,7 +56,7 @@ function _hydratate_binary(&$value)
 function _validate_binary(&$value)
 {
     if (!$value instanceof MongoBinData) {
-        $value = new MongoBinData($value);
+        $value = new MongoBinData($value, 2);
     }
     return true;
 }

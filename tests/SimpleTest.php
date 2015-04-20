@@ -655,4 +655,14 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($y->tags, $new->tags);
         $this->assertEquals($y->__ol_version, $new->__ol_version);
     }
+    
+    public function testBinary()
+    {
+        $conn = getConnection();
+        $doc  = new BinaryDoc;
+        $doc->content = file_get_contents(__FILE__);
+        $conn->save($doc);
+        $doc2 = $conn->_binary->findOne();
+        $this->assertEquals($doc->content, $doc2->content);
+    }
 }
