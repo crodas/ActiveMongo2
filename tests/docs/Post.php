@@ -18,6 +18,8 @@ class Middle extends BaseDocument
  */
 class PostDocument extends Middle
 {
+    use \ActiveMongo2\Query;
+
     /** @Universal @Index(desc) */
     public $global_id;
 

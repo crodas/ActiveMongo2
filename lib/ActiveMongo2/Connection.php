@@ -59,6 +59,14 @@ class Connection
     protected $ns = array();
     protected $queue = array();
 
+    private static $default;
+
+    public static function setDefault(Connection $conn)
+    {
+        self::$default = $conn;
+        Query::setConnection($conn);
+    }
+
     public function __construct(Configuration $config, MongoClient $conn, $db)
     {
         $this->config = $config;
@@ -71,6 +79,7 @@ class Connection
         if ($config->hasGenerated() || $config->isDevel())  {
             $this->ensureIndex(true);
         }
+        self::setDefault($this);
     }
 
     public function addConnection($name, MongoClient $conn, $dbname, $ns = '')
@@ -262,6 +271,8 @@ class Connection
         $this->mapper->populate($obj, $document);
         $this->mapper->trigger($trigger_events, 'postUpdate', $obj, array($update, $this, $oldDoc['_id'], $return, $col));
         $this->mapper->trigger($trigger_events, 'postSave', $obj, array($update, $this));
+        // Invalidate cache
+        $this->cache->set([$col, $oldDoc['_id']], []);
 
         return $this;
     }

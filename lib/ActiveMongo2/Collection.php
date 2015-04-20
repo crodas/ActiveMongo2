@@ -196,7 +196,7 @@ class Collection implements IteratorAggregate
     public function getById($id)
     {
         $cache = $this->cache->get([$this->zcol, $id]);
-        if (is_array($cache)) {
+        if (is_array($cache) && !empty($cache)) {
             return $this->registerDocument(
                 $cache
             );

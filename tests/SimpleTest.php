@@ -665,4 +665,28 @@ class SimpleTest extends \phpunit_framework_testcase
         $doc2 = $conn->_binary->findOne();
         $this->assertEquals($doc->content, $doc2->content);
     }
+
+    /**
+     *  @expectedException RuntimeException
+     */ 
+    public function testFindNotFound()
+    {
+        $doc = PostDocument::find(0xffffff + ceil(mt_rand()*0xfffff));
+    }
+
+    public function testFindArray()
+    {
+        $docs = PostDocument::find([2]);
+        $this->assertTrue($docs instanceof \ActiveMongo2\Cursor\Cursor);
+    }
+
+    public function testFindAndSave()
+    {
+        $doc = PostDocument::find(2);
+        $this->assertTrue($doc instanceof PostDocument);
+        $doc->tags = ['something'];
+        $doc->save();
+        $docx = PostDocument::find(2);
+        $this->assertEquals($docx->tags, ['something']);
+    }
 }
