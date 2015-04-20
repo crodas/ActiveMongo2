@@ -204,7 +204,7 @@ class Collection implements IteratorAggregate
         $document = $this->findOne(['_id' => $this->getIdQuery($id)]);
 
         if (!$document) {
-            throw new \RuntimeException("Cannot find object with _id $id");
+            throw new Exception\NotFound("Cannot find object with _id $id");
         }
 
         $this->cache->set([$this->zcol, $id], $this->mapper->getRawDocument($document, false));

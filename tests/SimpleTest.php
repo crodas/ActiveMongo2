@@ -667,12 +667,21 @@ class SimpleTest extends \phpunit_framework_testcase
     }
 
     /**
-     *  @expectedException RuntimeException
+     *  @expectedException ActiveMongo2\Exception\NotFound
      */ 
     public function testFindNotFound()
     {
         $doc = PostDocument::find(0xffffff + ceil(mt_rand()*0xfffff));
     }
+
+    /**
+     *  @expectedException ActiveMongo2\Exception\NotFound
+     */ 
+    public function testFindArrayException()
+    {
+        $docs = PostDocument::find([2, 0xfffffff]);
+    }
+
 
     public function testFindArray()
     {

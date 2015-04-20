@@ -34,41 +34,10 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2;
+namespace ActiveMongo2\Exception;
 
-trait Query
+use RuntimeException;
+
+class NotFound extends RuntimeException
 {
-    protected static $conn;
-
-    public static function setConnection(Connection $conn)
-    {
-        self::$conn = $conn;
-    }
-
-    public static function find_by(Array $filter)
-    {
-        return self::$conn->getCollection(__CLASS__)->findOne($filter);
-    }
-
-    public static function where(Array $filter)
-    {
-        return self::$conn->getCollection(__CLASS__)->find($filter);
-    }
-
-    public static function find($id)
-    {
-        if (is_array($id)) {
-            $cursor = self::$conn->getCollection(__CLASS__)->find(['_id' => ['$in' => $id]]);
-            if ($cursor->count() != count($id)) {
-                throw new Exception\NotFound("Cannot find all elements");
-            }
-            return $cursor;
-        }
-        return self::$conn->getCollection(__CLASS__)->getById($id);
-    }
-
-    public function save()
-    {
-        return self::$conn->save($this);
-    }
 }
