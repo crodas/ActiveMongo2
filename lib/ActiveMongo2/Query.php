@@ -40,6 +40,18 @@ trait Query
 {
     protected static $conn;
 
+    public static function find_or_create_by(Array $object)
+    {
+        $col = self::$conn->getCollection(__CLASS__);
+        $doc = $col->findOne($object);
+        if (empty($doc)) {
+            $doc = new self;
+            $col->populateFromArray($doc, $object);
+        }
+
+        return $doc;
+    }
+
     public static function setConnection(Connection $conn)
     {
         self::$conn = $conn;

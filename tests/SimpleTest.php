@@ -698,4 +698,19 @@ class SimpleTest extends \phpunit_framework_testcase
         $docx = PostDocument::find(2);
         $this->assertEquals($docx->tags, ['something']);
     }
+
+    /**
+     *  @dependsOn testFindAndSave
+     */
+    public function testFindOrCreate()
+    {
+        $post = PostDocument::find_or_create_by(array("tags" => ['xxx', 'yyy']));
+        $this->assertEquals(null, $post->id);
+        $this->assertEquals(['xxx', 'yyy'], $post->tags);
+
+        $post = PostDocument::find_or_create_by(array("tags" => 'something'));
+        $this->assertEquals(2, $post->id);
+        $this->assertEquals(['something'], $post->tags);
+    }
+
 }
