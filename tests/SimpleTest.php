@@ -655,4 +655,62 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($y->tags, $new->tags);
         $this->assertEquals($y->__ol_version, $new->__ol_version);
     }
+    
+    public function testBinary()
+    {
+        $conn = getConnection();
+        $doc  = new BinaryDoc;
+        $doc->content = file_get_contents(__FILE__);
+        $conn->save($doc);
+        $doc2 = $conn->_binary->findOne();
+        $this->assertEquals($doc->content, $doc2->content);
+    }
+
+    /**
+     *  @expectedException ActiveMongo2\Exception\NotFound
+     */ 
+    public function testFindNotFound()
+    {
+        $doc = PostDocument::find(0xffffff + ceil(mt_rand()*0xfffff));
+    }
+
+    /**
+     *  @expectedException ActiveMongo2\Exception\NotFound
+     */ 
+    public function testFindArrayException()
+    {
+        $docs = PostDocument::find([2, 0xfffffff]);
+    }
+
+
+    public function testFindArray()
+    {
+        $docs = PostDocument::find([2]);
+        $this->assertTrue($docs instanceof \ActiveMongo2\Cursor\Cursor);
+    }
+
+    public function testFindAndSave()
+    {
+        $doc = PostDocument::find(2);
+        $this->assertTrue($doc instanceof PostDocument);
+        $doc->tags = ['something'];
+        $doc->save();
+        $docx = PostDocument::find(2);
+        $this->assertEquals($docx->tags, ['something']);
+    }
+
+    /**
+     *  @dependsOn testFindAndSave
+     */
+    public function testFindOrCreate()
+    {
+        $post = PostDocument::find_or_create_by(array("tags" => ['xxx', 'yyy']));
+        $this->assertEquals(null, $post->id);
+        $this->assertEquals(['xxx', 'yyy'], $post->tags);
+
+        $post = PostDocument::find_or_create_by(array("tags" => 'something'));
+        $this->assertEquals(2, $post->id);
+        $this->assertEquals(['something'], $post->tags);
+    }
+
 }

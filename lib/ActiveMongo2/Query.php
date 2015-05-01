@@ -34,79 +34,53 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace ActiveMongo2\Plugin;
+namespace ActiveMongo2;
 
-class LockingException extends \RuntimeException
+trait Query
 {
-}
+    protected static $conn;
 
-/**
- *  @Plugin(Locking)
- */
-class Locking
-{
-    /** @onMapping */
-    public static function onCompile($schema)
+    public static function find_or_create_by(Array $object)
     {
-        $schema->defineProperty('/** @Hidden @String */', '__ol_version');
-    }
-
-    /** @preCreate */
-    public static function onCreate($doc, Array $args)
-    {
-        $args[0]['__ol_version'] = time() . '::' . uniqid(true);
-    }
-
-    /**
-     *  @preUpdate
-     */
-    public static function prepareUpdate($doc, array $args)
-    {
-        $args[2]['__ol_version'] = $doc->__ol_version; /* Change the update query to include the version */
-        $args[0]['$set']['__ol_version'] = time() . '::' . uniqid(true);
-        $args[3] = 1; /* $w */
-
-        if (count($args[0]) > 1) {
-            /* Make sure we execute $set at the end of the stack */
-            $set = $args[0]['$set'];
-            unset($args[0]['$set']);
-            $args[0]['$set'] = $set;
+        $col = self::$conn->getCollection(__CLASS__);
+        $doc = $col->findOne($object);
+        if (empty($doc)) {
+            $doc = new self;
+            $col->populateFromArray($doc, $object);
         }
+
+        return $doc;
     }
 
-    protected static function analizeUpdate(Array $Changes, Array $current, Array $saved, $class)
+    public static function setConnection(Connection $conn)
     {
-        $allowed  = ['updated' => 1, '__ol_version' => 1];
-        foreach ($Changes as $op => $changes) {
-            foreach ($changes as $column => $values) {
-                if (empty($allowed[$column]) && !empty($current[$column]) && !empty($saved[$column]) && $current[$column] !== $saved[$column]) {
-                    throw new LockingException("You cannot update stale document {$class} due column => {$column}");
-                }
+        self::$conn = $conn;
+    }
+
+    public static function find_by(Array $filter)
+    {
+        return self::$conn->getCollection(__CLASS__)->findOne($filter);
+    }
+
+    public static function where(Array $filter)
+    {
+        return self::$conn->getCollection(__CLASS__)->find($filter);
+    }
+
+    public static function find($id)
+    {
+        if (is_array($id)) {
+            $cursor = self::$conn->getCollection(__CLASS__)->find(['_id' => ['$in' => $id]]);
+            if ($cursor->count() != count($id)) {
+                throw new Exception\NotFound("Cannot find all elements");
             }
+            return $cursor;
         }
+        return self::$conn->getCollection(__CLASS__)->getById($id);
     }
 
-    /**
-     *  @postUpdate
-     */
-    public static function checkUpdate($doc, array $args, $conn, $xargs, $mapper, $class)
+    public function save()
     {
-        $response = current($args[3]);
-        if ($response['n'] != 1) {
-            self::analizeUpdate(
-                $args[0],
-                $mapper->getDocument($doc),
-                $mapper->getDocument($conn->getCollection($class)->getById( $args[2] )),
-                $class
-            );
-        }
-
-        foreach ($args[0] as $op => $changes) {
-            $args[4]->update(
-                array('_id' => $args[2]),
-                array($op => $changes), 
-                array('w' => 1)
-            );
-        }
+        return self::$conn->save($this);
     }
 }

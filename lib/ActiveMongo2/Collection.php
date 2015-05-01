@@ -184,22 +184,27 @@ class Collection implements IteratorAggregate
         return new Cursor\Cursor($query, $fields, $this->zconn, $this, $this->zcol, $this->mapper);
     }
 
+    protected function getIdQuery($id)
+    {
+        if (is_string($id) && is_numeric($id)) {
+            return ['$in' => [$id, $id+0]];
+        }
+
+        return $id;
+    }
+
     public function getById($id)
     {
         $cache = $this->cache->get([$this->zcol, $id]);
-        if (is_array($cache)) {
+        if (is_array($cache) && !empty($cache)) {
             return $this->registerDocument(
                 $cache
             );
         }
-        if (is_string($id) && is_numeric($id)) {
-            $document = $this->findOne(['_id' => ['$in' => [$id, 0+$id]]]);
-        } else {
-            $document = $this->findOne(['_id' => $id]);
-        }
+        $document = $this->findOne(['_id' => $this->getIdQuery($id)]);
 
         if (!$document) {
-            throw new \RuntimeException("Cannot find object with _id $id");
+            throw new Exception\NotFound("Cannot find object with _id $id");
         }
 
         $this->cache->set([$this->zcol, $id], $this->mapper->getRawDocument($document, false));

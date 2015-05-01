@@ -42,7 +42,7 @@ class CacheReferenceTest extends \phpunit_framework_testcase
         // the object which is referenced too
         $post->readers[1]->visits = 1024;
         $conn->save($post);
-        $this->assertNotEquals($this->getUser()->visits, 1024);
+        $this->assertEquals($this->getUser()->visits, 1024);
         $conn->delete($this->getUser());
         $conn->delete($post);
     }
