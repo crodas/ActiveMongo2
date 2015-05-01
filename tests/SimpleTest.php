@@ -220,6 +220,13 @@ class SimpleTest extends \phpunit_framework_testcase
         $user = $conn->getCollection('user')->findOne(['_id' => $user->userid]);
         $this->assertEquals($user->username, "david");
 
+        /* Wrap __call/__get() {{{ */
+        $this->assertEquals($post->author_ref->_id, $user->userid);
+        $this->assertEquals($post->author_ref->username(), $user->username);
+        $this->assertEquals($post->author_ref->something(), $user->userid);
+        $this->assertEquals($post->author_ref->userid(), $user->userid);
+        /* }}} */
+
         $conn->dropDatabase();
 
     }
