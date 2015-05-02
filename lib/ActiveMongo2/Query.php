@@ -57,6 +57,20 @@ trait Query
         self::$conn = $conn;
     }
 
+    public static function pluck()
+    {
+        $fields = func_Get_args();
+        $rows   = [];
+        foreach (self::$conn->getCollection(__CLASS__)->rawCollection()->find([], $fields) as $row) {
+            if (count($fields) == 1) {
+                $rows[] = $row[$fields[0]];
+            } else {
+                $rows[] = $row;
+            }
+        }
+        return $rows;
+    }
+
     public static function find_by(Array $filter)
     {
         return self::$conn->getCollection(__CLASS__)->findOne($filter);
@@ -77,6 +91,11 @@ trait Query
             return $cursor;
         }
         return self::$conn->getCollection(__CLASS__)->getById($id);
+    }
+
+    public static function sum($field, $where = array())
+    {
+        return self::$conn->getCollection(__CLASS__)->sum($field, $where);
     }
 
     public function save()

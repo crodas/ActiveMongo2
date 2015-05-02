@@ -56,6 +56,11 @@ class UserDocument
         $this->runEvent = true; 
     }
 
+    public function something()
+    {
+        return $this->userid;
+    }
+
     /** @onHydratation */
     public static function doTest()
     {

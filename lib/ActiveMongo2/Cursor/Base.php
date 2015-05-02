@@ -74,18 +74,16 @@ trait Base
 
     public function first()
     {
-        return $this->current();
-    }
-
-    public function getNext()
-    {
-        parent::getNext();
+        $current = parent::current();
         return $this->current();
     }
 
     public function current()
     {
         $current = parent::current();
+        if (empty($current)) {
+            $current = $this->GetNext();
+        }
         $class   = $this->mapper->getObjectClass($this->col, $current);
         if ($this->col instanceof \MongoGridFs) {
             $current = new \MongoGridFsFile($this->col, $current);

@@ -138,7 +138,7 @@ class Reference implements DocumentProxy, \JsonSerializable
                 return $doc;
             }
 
-            if ($expected == '_id') {
+            if ($name == '_id' || $expected == '_id') {
                 // avoid one query!
                 return $this->ref['$id'];
             }

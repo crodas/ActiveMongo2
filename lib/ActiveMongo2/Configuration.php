@@ -94,7 +94,7 @@ class Configuration
         return $this;
     }
 
-    public function getWriteConcern($w)
+    public function getWriteConcern($w = 0)
     {
         return $w ?: $this->default['w'];
     }
