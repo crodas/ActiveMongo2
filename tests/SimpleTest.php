@@ -194,6 +194,117 @@ class SimpleTest extends \phpunit_framework_testcase
 
     }
 
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidReferenceMany()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda-s";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = null;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers[] = null;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+        $conn->delete($user);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidEmbedMany_InvalidClass()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda-s";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = null;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers_1 = [new stdclass];
+        $post->author_id = $user->userid;
+        $conn->save($post);
+        $conn->delete($user);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidEmbedMany_1()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda-s";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = null;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers_1 = true;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+        $conn->delete($user);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidEmbedMany()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda-s";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = null;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers_1[] = null;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+        $conn->delete($user);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidEmbedOne()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda-s";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = null;
+        $post->author = null;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers[] = $user;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+
+
+        $conn->delete($user);
+    }
 
     public function testReferenceSave()
     {
@@ -548,11 +659,26 @@ class SimpleTest extends \phpunit_framework_testcase
 
         $foo = new NoID;
         $foo->name = "foobar";
+        $foo->x = clone $foo;
         $conn->save($foo);
 
         $id1 = $reflection->property('_id')->get($foo);
         $id2 = $reflection->property('@Id')->get($foo);
         $this->assertEquals($id1, $id2);
+
+        $reflection->property('name')->set($foo, 'x');
+        $reflection->property('name')->set($foo, 'x');
+
+        $id1 = $reflection->property('name')->get($foo);
+        $id2 = $reflection->property('name')->get($foo);
+        $this->assertEquals($id1, $id2);
+        $this->assertEquals($id1, 'x');
+
+        $id1 = $reflection->property('x')->get($foo);
+        $id2 = $reflection->property('x')->get($foo, true);
+        $this->assertNotEquals($id1, $id2);
+        $this->assertTrue($id1 instanceof NoID);
+        $this->assertTrue(is_array($id2));
     }
 
     public function testAutocomplete()
@@ -662,6 +788,12 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($y->tags, $new->tags);
         $this->assertEquals($y->__ol_version, $new->__ol_version);
     }
+
+    public function testFindAnModifyNotFound()
+    {
+        $conn = getConnection();
+        $this->assertNull($conn->binarydoc->findAndModify(['_id' => uniqid(true)], ['$set' => ['foo' => 1]]));
+    }
     
     public function testBinary()
     {
@@ -671,53 +803,6 @@ class SimpleTest extends \phpunit_framework_testcase
         $conn->save($doc);
         $doc2 = $conn->_binary->findOne();
         $this->assertEquals($doc->content, $doc2->content);
-    }
-
-    /**
-     *  @expectedException ActiveMongo2\Exception\NotFound
-     */ 
-    public function testFindNotFound()
-    {
-        $doc = PostDocument::find(0xffffff + ceil(mt_rand()*0xfffff));
-    }
-
-    /**
-     *  @expectedException ActiveMongo2\Exception\NotFound
-     */ 
-    public function testFindArrayException()
-    {
-        $docs = PostDocument::find([2, 0xfffffff]);
-    }
-
-
-    public function testFindArray()
-    {
-        $docs = PostDocument::find([2]);
-        $this->assertTrue($docs instanceof \ActiveMongo2\Cursor\Cursor);
-    }
-
-    public function testFindAndSave()
-    {
-        $doc = PostDocument::find(2);
-        $this->assertTrue($doc instanceof PostDocument);
-        $doc->tags = ['something'];
-        $doc->save();
-        $docx = PostDocument::find(2);
-        $this->assertEquals($docx->tags, ['something']);
-    }
-
-    /**
-     *  @dependsOn testFindAndSave
-     */
-    public function testFindOrCreate()
-    {
-        $post = PostDocument::find_or_create_by(array("tags" => ['xxx', 'yyy']));
-        $this->assertEquals(null, $post->id);
-        $this->assertEquals(['xxx', 'yyy'], $post->tags);
-
-        $post = PostDocument::find_or_create_by(array("tags" => 'something'));
-        $this->assertEquals(2, $post->id);
-        $this->assertEquals(['something'], $post->tags);
     }
 
 }
