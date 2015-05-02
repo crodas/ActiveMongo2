@@ -93,6 +93,11 @@ trait Query
         return self::$conn->getCollection(__CLASS__)->getById($id);
     }
 
+    public static function sum($field, $where = array())
+    {
+        return self::$conn->getCollection(__CLASS__)->sum($field, $where);
+    }
+
     public function save()
     {
         return self::$conn->save($this);

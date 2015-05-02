@@ -44,6 +44,20 @@ class QueryTest extends phpunit_framework_testcase
         $this->assertEquals($docx->tags, ['something']);
     }
 
+    public function testFindNumeric()
+    {
+        $ids = $this->getIds();
+        $this->AssertTrue(
+            PostDocument::find((String)$ids[0]) == 
+            PostDocument::find((Int)$ids[0])
+        );
+    }
+
+    public function testSum()
+    {
+        $this->assertEquals(0, PostDocument::sum('visits'));
+    }
+
     public function testWhere()
     {
         $ids = $this->getIds();

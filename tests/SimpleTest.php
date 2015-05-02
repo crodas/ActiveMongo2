@@ -788,6 +788,12 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($y->tags, $new->tags);
         $this->assertEquals($y->__ol_version, $new->__ol_version);
     }
+
+    public function testFindAnModifyNotFound()
+    {
+        $conn = getConnection();
+        $this->assertNull($conn->binarydoc->findAndModify(['_id' => uniqid(true)], ['$set' => ['foo' => 1]]));
+    }
     
     public function testBinary()
     {
