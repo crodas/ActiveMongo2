@@ -659,11 +659,26 @@ class SimpleTest extends \phpunit_framework_testcase
 
         $foo = new NoID;
         $foo->name = "foobar";
+        $foo->x = clone $foo;
         $conn->save($foo);
 
         $id1 = $reflection->property('_id')->get($foo);
         $id2 = $reflection->property('@Id')->get($foo);
         $this->assertEquals($id1, $id2);
+
+        $reflection->property('name')->set($foo, 'x');
+        $reflection->property('name')->set($foo, 'x');
+
+        $id1 = $reflection->property('name')->get($foo);
+        $id2 = $reflection->property('name')->get($foo);
+        $this->assertEquals($id1, $id2);
+        $this->assertEquals($id1, 'x');
+
+        $id1 = $reflection->property('x')->get($foo);
+        $id2 = $reflection->property('x')->get($foo, true);
+        $this->assertNotEquals($id1, $id2);
+        $this->assertTrue($id1 instanceof NoID);
+        $this->assertTrue(is_array($id2));
     }
 
     public function testAutocomplete()
