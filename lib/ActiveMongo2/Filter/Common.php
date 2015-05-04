@@ -100,7 +100,7 @@ function _validate_geo(&$values)
         return false;
     }
     $value = array_values($values);
-    if (count($values) != 2) {
+    if (count($values) != 2 || !is_numeric($values[0]) || !is_numeric($values[1])) {
         return false;
     }
 }

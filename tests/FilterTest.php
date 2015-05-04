@@ -74,6 +74,276 @@ class FilterTest extends phpunit_framework_testcase
         $conn->save($post);
     }
 
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidGeo1()
+    {
+        $conn = getConnection();
+        $conn->getCollection('post')->drop();
+        $user = new UserDocument;
+        $user->username = "crodas";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = $user;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->geo  = 1;
+        $post->readers[] = $user;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidGeo3()
+    {
+        $conn = getConnection();
+        $conn->getCollection('post')->drop();
+        $user = new UserDocument;
+        $user->username = "crodas";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = $user;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->geo  = array(1,"cesar");
+        $post->readers[] = $user;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidGeo2()
+    {
+        $conn = getConnection();
+        $conn->getCollection('post')->drop();
+        $user = new UserDocument;
+        $user->username = "crodas";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = $user;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->geo  = array(1,2,3,5);
+        $post->readers[] = $user;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+    }
+
+    public function testGeo()
+    {
+        $conn = getConnection();
+        $conn->getCollection('post')->drop();
+        $user = new UserDocument;
+        $user->username = "crodas";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = $user;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->geo  = array(1,2);
+        $post->readers[] = $user;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+        $this->assertEquals(array(1.0, 2.0), $post->geo);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testBrokenReference()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda-s";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = $user;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers[] = $user;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+
+
+        $conn->delete($user);
+
+        $post = $conn->post->findOne(['_id' => $post->id]);
+        $post->author_ref->getObject(); // read object
+
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidReferenceMany()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda-s";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = null;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers[] = null;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+        $conn->delete($user);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidReferenceMany_InvalidArray()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda-s";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = null;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->author_refs = true;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidReferenceMany_InvalidClass()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda-s";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = null;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->author_refs = [new stdclass];
+        $post->author_id = $user->userid;
+        $conn->save($post);
+    }
+
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidEmbedMany_InvalidClass()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda-s";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = null;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers_1 = [new stdclass];
+        $post->author_id = $user->userid;
+        $conn->save($post);
+        $conn->delete($user);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidEmbedMany_1()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda-s";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = null;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers_1 = true;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+        $conn->delete($user);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidEmbedMany()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda-s";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = null;
+        $post->author = $user;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers_1[] = null;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+        $conn->delete($user);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidEmbedOne()
+    {
+        $conn = getConnection();
+        $user = new UserDocument;
+        $user->username = "croda-s";
+        $conn->save($user);
+
+        $post = new PostDocument;
+        $post->author_ref = null;
+        $post->author = null;
+        $post->collaborators[] = $user;
+        $post->title  = "foobar post";
+        $post->array  = [1];
+        $post->readers[] = $user;
+        $post->author_id = $user->userid;
+        $conn->save($post);
+
+
+        $conn->delete($user);
+    }
+
+
 
     /**
      *  @expectedException RuntimeException
