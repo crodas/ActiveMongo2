@@ -96,6 +96,13 @@ class FluentTest extends \phpunit_framework_testcase
 
         $this->assertTrue($result['updatedExisting']);
         $this->assertEquals($i, $result['n']);
+
+        $result = $conn->getcollection('user')
+            ->query()
+            ->addOr()
+                ->field('foobar')->eq(5)
+            ->execute();
+        $this->assertEquals($result->count(), 50);
     }
 
     public function testOr()
@@ -231,6 +238,8 @@ class FluentTest extends \phpunit_framework_testcase
         $this->assertTrue($user instanceof UserDocument);
         $user = $users->query()->addAnd()->field('_id')->eq(1)->first();
         $this->assertNull($user);
+        $user = $users->query()->where('_id', '==', 1)->first();
+        $this->assertNull($user);
     }
 
     /**
@@ -256,6 +265,86 @@ class FluentTest extends \phpunit_framework_testcase
         $conn  = getconnection();
         $users = $conn->getcollection('user');
         $user = $users->query()->field('foo')->set(99)->first();
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidRemove()
+    {
+        $conn  = getconnection();
+        $users = $conn->getcollection('user');
+        $users->query()
+            ->field('foo')->set(5)
+            ->remove();
+    }
+
+    public function testGetIterator()
+    {
+        $conn  = getconnection();
+        $users = $conn->getcollection('user');
+        $q = $users->query()
+            ->addOr()
+                ->field('_id')->eq(5)
+            ->addOr()
+                ->field('xxxa')->eq(99)
+            ->getIterator();
+        $this->assertTrue($q instanceof ActiveMongo2\Cursor\Cursor);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidOp4()
+    {
+        $conn  = getconnection();
+        $users = $conn->getcollection('user');
+        $total = $users->query()
+            ->where('foo', 'bar', 5);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidOp3()
+    {
+        $conn  = getconnection();
+        $users = $conn->getcollection('user');
+        $total = $users->query()
+            ->AddOr()
+                ->field('foo')->eq(5)
+                ->end()
+                ->end();
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidOp2()
+    {
+        $conn  = getconnection();
+        $users = $conn->getcollection('user');
+        $total = $users->query()->set(5);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidOp1()
+    {
+        $conn  = getconnection();
+        $users = $conn->getcollection('user');
+        $total = $users->query()->eq(5);
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testInvalidOp()
+    {
+        $conn  = getconnection();
+        $users = $conn->getcollection('user');
+        $total = $users->query()->foobar();
     }
 
     public function testRemove()
