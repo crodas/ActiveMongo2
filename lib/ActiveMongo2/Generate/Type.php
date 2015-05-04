@@ -93,7 +93,7 @@ class Type extends Base
 
         $code = substr($code, $start, $end - $start - 1);
 
-        return $end < strlen($code);
+        return $end-$start-1 <= strlen($code);
     }
 
     public function toEmbedCode($prop)
@@ -117,7 +117,7 @@ class Type extends Base
 
     public function isEmbeddable()
     {
-        return $this->annotation->getParent()->has('Embed') && $this->getEmbeddableCode($code);
+        return false;
     }
 
     public function toCode($prop, $var = '$doc')

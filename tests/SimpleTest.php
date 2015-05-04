@@ -342,7 +342,6 @@ class SimpleTest extends \phpunit_framework_testcase
 
     }
 
-
     public function testReferenceOne()
     {
         $conn = getConnection();
@@ -361,11 +360,13 @@ class SimpleTest extends \phpunit_framework_testcase
         $post->array  = [1];
         $post->readers[] = $user;
         $post->author_id = $user->userid;
+        $post->something = new Datetime;
         $conn->save($post);
 
         $post->array  = [2,3,4,5,6];
         $conn->save($post);
         $this->assertNotEquals(NULL, $post->created);
+        $this->assertTrue($post->something instanceof MongoDate);
 
         $savedPost = $conn->getCollection('post')->findOne();
         $this->assertEquals($savedPost->author->userid, $user->userid);
@@ -388,9 +389,11 @@ class SimpleTest extends \phpunit_framework_testcase
 
         $post->array[] = 9;
         $post->array[] = 10;
+        $post->something = "1987/08/25";
         $conn->save($post);
         $savedPost = $conn->getCollection('post')->findOne();
         $this->assertEquals($savedPost->array, [6,9,10]);
+        $this->assertEquals("1987-08-25", date("Y-m-d", $post->something->sec));
 
         $post->array[] = 19;
         $conn->save($post);

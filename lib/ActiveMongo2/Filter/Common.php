@@ -50,7 +50,7 @@ function is_date(&$date)
         return true;
     }
     if ($date instanceof \Datetime) {
-        $date = new \MongoDate($date->getTimestamp());
+        $date = $date->getTimestamp();
     }
     if (is_string($date)) { 
         $date = strtotime($date);

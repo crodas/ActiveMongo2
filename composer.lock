@@ -4,20 +4,20 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "1e981019b8949ef85f851a15834a0ed8",
+    "hash": "4982a554f96147a25dda7d749a98227b",
     "packages": [
         {
             "name": "crodas/class-info",
-            "version": "v0.1.16",
+            "version": "v0.1.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crodas/ClassInfo.git",
-                "reference": "13cce6f3ef526430e0bba2b119054a8af6131d95"
+                "reference": "d8e15a64b2b31b5c3ebece582018eee86e9a2638"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crodas/ClassInfo/zipball/13cce6f3ef526430e0bba2b119054a8af6131d95",
-                "reference": "13cce6f3ef526430e0bba2b119054a8af6131d95",
+                "url": "https://api.github.com/repos/crodas/ClassInfo/zipball/d8e15a64b2b31b5c3ebece582018eee86e9a2638",
+                "reference": "d8e15a64b2b31b5c3ebece582018eee86e9a2638",
                 "shasum": ""
             },
             "require": {
@@ -29,7 +29,7 @@
                     "crodas": "lib/"
                 }
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-4-Clause"
             ],
@@ -40,7 +40,7 @@
                 }
             ],
             "description": "Get classes and functions defined in a given file",
-            "time": "2015-02-12 23:49:51"
+            "time": "2015-05-02 15:25:50"
         },
         {
             "name": "crodas/cli",
