@@ -313,20 +313,12 @@ class Collections extends ArrayObject
         return $cache[$name] = $anns;
     }
 
-    protected function addDirs(Array $dirs)
-    {
-        foreach ($dirs as $dir) {
-            $dir = new NDir($dir);
-            $dir->getAnnotations($this->annotations);
-            $this->files = array_merge($this->files, $dir->getFiles());
-        }
-    }
-
     protected function readCollections()
     {
         foreach ($this->annotations->getClasses('Persist,Embeddable') as $object) {
             if (empty($this[$object->GetName()])) {
                 $this[$object->getName()] = new Collection($object, $this); 
+                $this->files[] = $object->getFile();
             }
         }
     }

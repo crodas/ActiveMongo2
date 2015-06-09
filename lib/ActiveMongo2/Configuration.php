@@ -1,7 +1,7 @@
 <?php
 /*
   +---------------------------------------------------------------------------------+
-  | Copyright (c) 2013 ActiveMongo                                                  |
+  | Copyright (c) 2015 ActiveMongo                                                  |
   +---------------------------------------------------------------------------------+
   | Redistribution and use in source and binary forms, with or without              |
   | modification, are permitted provided that the following conditions are met:     |
@@ -38,6 +38,7 @@ namespace ActiveMongo2;
 
 use Notoj\Notoj;
 use crodas\FileUtil\File;
+use crodas\Build;
 use WatchFiles\Watch;
 
 class Configuration
@@ -125,16 +126,18 @@ class Configuration
         return $this;
     }
 
+    /**
+     *  @Task(activemongo2)
+     */
+    public static function builder($output, Array $files, Array $args, $builder)
+    {
+        new Generate(array('files' => $files, 'loader' => $args['loader']), $builder);
+    }
+
     protected function generateIfNeeded()
     {
-        if ($this->devel || !is_file($this->loader)) {
-            Notoj::enableCache($this->loader . ".tmp");
-            $watcher = new Watch($this->loader . ".lock");
-            if ($watcher->hasChanged()) {
-                new Generate($this, $watcher);
-                $this->generate = true;
-            }
-        }
+        $build = new Build(__FILE__, $this->loader . '.tmp');
+        $file = $build->build('activemongo2', $this->loader, $this->path, array('loader' => $this->loader));
     }
 
     public function hasGenerated()
