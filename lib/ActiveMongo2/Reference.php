@@ -59,6 +59,12 @@ class Reference implements DocumentProxy, \JsonSerializable
         $this->mapper = $mapper;
     }
 
+    public function __toString()
+    {
+        $this->_loadDocument();
+        return $this->doc->__toString();
+    }
+
     public function getObject()
     {
         $this->_loadDocument();

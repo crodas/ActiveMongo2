@@ -57,9 +57,9 @@ namespace {
     }
 
     /** 
-     *  Template class generated from Reference/Update.tpl.php
+     *  Template class generated from Callback.tpl
      */
-    class class_f8c39509b1fb331e8b8ef22a135640af98725ce5 extends base_template_df562f12800ad133cdbc6f040ca106a099504656
+    class class_1895ec604b22a2e3f627b9d8d7ae6142d332247e extends base_template_df562f12800ad133cdbc6f040ca106a099504656
     {
 
         public function hasSection($name)
@@ -86,7 +86,7 @@ namespace {
                 return;
             }
 
-            $message = $e->getMessage() . "( IN " . 'Reference/Update.tpl.php';
+            $message = $e->getMessage() . "( IN " . 'Callback.tpl';
             if ($section) {
                 $message .= " | section: {$section}";
             }
@@ -120,209 +120,72 @@ namespace {
                 ob_start();
             }
 
-            $deferred_done = false;
-            $this->context['deferred_done'] = $deferred_done;
-            foreach($collection->getForwardReferences() as $ref) {
-
-                $this->context['ref'] = $ref;
-                echo "    // update " . ($collection->getName()) . " references in  " . ($ref['property']->getParent()->getName()) . " \n    // ";
-                echo $ref['deferred'] ? 'ues' : 'no' . "\n";
-                if ($ref['deferred']) {
-                    if (!empty($deferred_done)) {
-                        continue;
-                    }
+            if (!$self->isEmbeddable()) {
+                echo "    if (empty(self::\$loaded[";
+                var_export($self->getPath());
+                echo "])) {\n";
+                if ($self->isClass() || $self->isMethod()) {
+                    echo "            if (!class_exists(";
+                    var_export($self->getClass());
+                    echo ", false)) {\n";
                 }
-                echo "    \n    \$replicate = array();\n";
-                $deferred_done = true;
-                $this->context['deferred_done'] = $deferred_done;
-                echo "    foreach (\$args[0] as \$operation => \$values) {\n";
-                foreach($ref['update'] as $field) {
-
-                    $this->context['field'] = $field;
-                    echo "            if (!empty(\$values[";
-                    var_export($field);
-                    echo "])) {\n";
-                    if ($ref['deferred']) {
-                        echo "                    \$replicate[\$operation][";
-                        var_export($field);
-                        echo "]  = \$values[";
-                        var_export($field);
-                        echo "];\n";
+                else {
+                    echo "            if (!function_exists(";
+                    var_export($self->getFunction());
+                    echo ")) {\n";
+                }
+                echo "            require __DIR__ . ";
+                var_export($self->getPath());
+                echo ";\n        }\n        self::\$loaded[";
+                var_export($self->getPath());
+                echo "] = true;\n    }\n";
+            }
+            echo "\n\$args = empty(\$args) ? [] : \$args;\n\n";
+            if ($self->isEmbeddable()) {
+                echo "    " . ($self->toEmbedCode($var)) . "\n";
+            }
+            else if ($self->isMethod()) {
+                if ($self->isPublic()) {
+                    if ($self->isStatic()) {
+                        echo "            \$return = \\" . ($self->getClass()) . "::" . ($self->getMethod()) . "(\n";
                     }
-                    else if ($ref['multi']) {
-                        echo "                    \$replicate[\$operation][";
-                        var_export($ref['property']->getName().'.$.'.$field);
-                        echo "] = \$values[";
-                        var_export($field);
-                        echo "];\n";
+                    else if ($prop->getClass() == $self->getClass()) {
+                        echo "            \$return = \$document->" . ($self->getMethod()) . "(\n";
                     }
                     else {
-                        echo "                    \$replicate[\$operation][";
-                        var_export($ref['property']->getName().'.'.$field);
-                        echo "] = \$values[";
-                        var_export($field);
-                        echo "];\n";
+                        echo "            // Improve me (should construct once and reuse it)\n            // ";
+                        echo get_class($self) . " _ " . get_class($self->getAnnotation()) . "\n            \$return = (new \\";
+                        echo $self->getClass() . ")->" . ($self->getMethod()) . "(\n";
                     }
 
-                    echo "            }\n";
+                    echo "            " . ($var) . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
+                    var_export($args);
+                    echo ", // annotation arguments\n            \$this, // mapper instance\n            ";
+                    var_export($prop->getClass());
+                    echo "\n        );\n";
                 }
-                echo "    }\n\n";
-                if ($ref['deferred']) {
-                    echo "        if (!empty(\$replicate)) {\n            // queue the updates!\n            \$data = array(\n                'update'    => \$replicate,\n                'processed' => false,\n                'created'   => new \\DateTime,\n                'source_id' => ";
-                    var_export($collection->getName().'::');
-                    echo "  . serialize(\$args[2]),\n                'type'      => array(\n                    'source'    => ";
-                    var_export($collection->getName());
-                    echo ",\n                    'target'    => ";
-                    var_export($ref['property']->getParent()->getName());
-                    echo ",\n                ),\n            );\n            \$args[1]\n                ->getDatabase()\n                ->deferred_queue\n                ->save(\$data, array('w' => 0));\n        }\n";
-                    continue;
-                }
-                echo "\n    if (!empty(\$replicate)) {\n        // do the update\n        \$args[1]->getCollection(";
-                var_export($ref['property']->getParent()->getName());
-                echo ")\n            ->update([\n                '";
-                echo $ref['property']->getName() . ".\$id' => \$args[2]], \n                \$replicate, \n                ['w' => 0, 'multi' => true]\n        );\n    }\n";
-            }
-
-            if ($return) {
-                return ob_get_clean();
-            }
-
-        }
-    }
-
-    /** 
-     *  Template class generated from Reference/Deferred.tpl.php
-     */
-    class class_7e3d172c6b9ee7fd7d68e93c41ee0d852447ceca extends base_template_df562f12800ad133cdbc6f040ca106a099504656
-    {
-
-        public function hasSection($name)
-        {
-
-            return false;
-        }
-
-
-        public function renderSection($name, Array $args = array(), $fail_on_missing = true)
-        {
-            if (!$this->hasSection($name)) {
-                if ($fail_on_missing) {
-                    throw new \RuntimeException("Cannot find section {$name}");
-                }
-                return "";
-            }
-
-        }
-
-        public function enhanceException(Exception $e, $section = NULL)
-        {
-            if (!empty($e->enhanced)) {
-                return;
-            }
-
-            $message = $e->getMessage() . "( IN " . 'Reference/Deferred.tpl.php';
-            if ($section) {
-                $message .= " | section: {$section}";
-            }
-            $message .= ")";
-
-            $object   = new ReflectionObject($e);
-            $property = $object->getProperty('message');
-            $property->setAccessible(true);
-            $property->setValue($e, $message);
-
-            $e->enhanced = true;
-        }
-
-        public function render(Array $vars = array(), $return = false)
-        {
-            try {
-                return $this->_render($vars, $return);
-            } catch (Exception $e) {
-                if ($return) ob_get_clean();
-                $this->enhanceException($e);
-                throw $e;
-            }
-        }
-
-        public function _render(Array $vars = array(), $return = false)
-        {
-            $this->context = $vars;
-
-            extract($vars);
-            if ($return) {
-                ob_start();
-            }
-
-            foreach($collection->getBackReferences() as $ref) {
-
-                $this->context['ref'] = $ref;
-                if ($ref['deferred']) {
-                    if ($ev == "postCreate") {
-                        echo "            \$check = !empty(\$args[0][";
-                        var_export($ref['property']->getName());
-                        echo "]);\n";
-                    }
-                    else {
-                        echo "            \$check = !empty(\$args[0]['\$set'][";
-                        var_export($ref['property']->getName());
-                        echo "]);\n";
-                    }
-                    echo "        if (\$check) {\n";
-                    if ($ref['multi']) {
-                        echo "                \$data = array();\n";
-                        if ($ev == "postCreate") {
-                            echo "                    \$fields = \$args[0][";
-                            var_export($ref['property']->getName());
-                            echo "];\n";
-                        }
-                        else {
-                            echo "                    \$fields = \$args[0]['\$set'][";
-                            var_export($ref['property']->getName());
-                            echo "];\n";
-                        }
-                        echo "                foreach (\$fields as \$id => \$row) {\n                    \$data[] = array(\n";
-                        if ($ev == "postCreate") {
-                            echo "                        'source_id' => ";
-                            var_export($ref['target']->getName() . '::');
-                            echo " . serialize(\$row['\$id']),\n                        'id'        => \$args[0]['_id'],\n";
-                        }
-                        else {
-                            echo "                        'source_id' => ";
-                            var_export($ref['target']->getName() . '::');
-                            echo " . serialize(\$row['\$id']),\n                        'id'        => \$args[2],\n";
-                        }
-                        echo "                        'property'  => ";
-                        var_export($ref['property']->getName() . '.');
-                        echo " . \$id,\n                    );\n                }\n";
-                    }
-                    else {
-                        echo "                \$data = array(array(\n";
-                        if ($ev == "postCreate") {
-                            echo "                    'source_id'     => ";
-                            var_export($ref['target']->getName() . '::');
-                            echo " . serialize(\$args[0][";
-                            var_export($ref['property']->getName());
-                            echo "]['\$id']),\n                    'id'            => \$args[0]['_id'],\n";
-                        }
-                        else {
-                            echo "                    'source_id'     => ";
-                            var_export($ref['target']->getName() . '::');
-                            echo " . serialize(\$args[0]['\$set'][";
-                            var_export($ref['property']->getName());
-                            echo "]['\$id']),\n                    'id'            => \$args[2],\n";
-                        }
-                        echo "                    'property'      => ";
-                        var_export($ref['property']->getName());
-                        echo ",\n                ));\n";
-                    }
-                    echo "            foreach (\$data as \$row) {\n                \$row['collection'] = \$this->ns_by_name[";
-                    var_export($ref['property']->getParent()->getName());
-                    echo "] . ";
-                    var_export($ref['property']->getParent()->getName());
-                    echo ";\n                \$row['_id'] = array(\n                    'source' => \$row['source_id'], \n                    'target_id' => \$row['id'], \n                    'target_col' => \$row['collection'], \n                    'target_prop' => \$row['property']\n                );\n                \$col->save(\$row, array('w' => 1));\n            }\n        }\n";
+                else {
+                    echo "        \$reflection = new \\ReflectionMethod(";
+                    var_export("\\". $self->getClass());
+                    echo ", ";
+                    var_export($self->getMethod());
+                    echo ");\n        \$reflection->setAccessible(true);\n        \$return = \$reflection->invoke(\n            ";
+                    echo $var . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
+                    var_export($args);
+                    echo ", // annotation arguments\n            \$this, // mapper instance\n            ";
+                    var_export($prop->getClass());
+                    echo "\n        );\n";
                 }
             }
+            else {
+                echo "    \$return = \\" . ($self->getFunction()) . "(\n        ";
+                echo $var . ", // document variable \n        \$args,  // external arguments (defined at run time)\n        \$this->connection, // connection\n        ";
+                var_export($args);
+                echo ", // annotation arguments\n        \$this, // mapper instance\n        ";
+                var_export($prop->getClass());
+                echo "\n    );\n";
+            }
+
 
             if ($return) {
                 return ob_get_clean();
@@ -1140,9 +1003,9 @@ namespace {
     }
 
     /** 
-     *  Template class generated from Callback.tpl
+     *  Template class generated from Reference/Deferred.tpl.php
      */
-    class class_1895ec604b22a2e3f627b9d8d7ae6142d332247e extends base_template_df562f12800ad133cdbc6f040ca106a099504656
+    class class_7e3d172c6b9ee7fd7d68e93c41ee0d852447ceca extends base_template_df562f12800ad133cdbc6f040ca106a099504656
     {
 
         public function hasSection($name)
@@ -1169,7 +1032,7 @@ namespace {
                 return;
             }
 
-            $message = $e->getMessage() . "( IN " . 'Callback.tpl';
+            $message = $e->getMessage() . "( IN " . 'Reference/Deferred.tpl.php';
             if ($section) {
                 $message .= " | section: {$section}";
             }
@@ -1203,72 +1066,209 @@ namespace {
                 ob_start();
             }
 
-            if (!$self->isEmbeddable()) {
-                echo "    if (empty(self::\$loaded[";
-                var_export($self->getPath());
-                echo "])) {\n";
-                if ($self->isClass() || $self->isMethod()) {
-                    echo "            if (!class_exists(";
-                    var_export($self->getClass());
-                    echo ", false)) {\n";
-                }
-                else {
-                    echo "            if (!function_exists(";
-                    var_export($self->getFunction());
-                    echo ")) {\n";
-                }
-                echo "            require __DIR__ . ";
-                var_export($self->getPath());
-                echo ";\n        }\n        self::\$loaded[";
-                var_export($self->getPath());
-                echo "] = true;\n    }\n";
-            }
-            echo "\n\$args = empty(\$args) ? [] : \$args;\n\n";
-            if ($self->isEmbeddable()) {
-                echo "    " . ($self->toEmbedCode($var)) . "\n";
-            }
-            else if ($self->isMethod()) {
-                if ($self->isPublic()) {
-                    if ($self->isStatic()) {
-                        echo "            \$return = \\" . ($self->getClass()) . "::" . ($self->getMethod()) . "(\n";
-                    }
-                    else if ($prop->getClass() == $self->getClass()) {
-                        echo "            \$return = \$document->" . ($self->getMethod()) . "(\n";
+            foreach($collection->getBackReferences() as $ref) {
+
+                $this->context['ref'] = $ref;
+                if ($ref['deferred']) {
+                    if ($ev == "postCreate") {
+                        echo "            \$check = !empty(\$args[0][";
+                        var_export($ref['property']->getName());
+                        echo "]);\n";
                     }
                     else {
-                        echo "            // Improve me (should construct once and reuse it)\n            // ";
-                        echo get_class($self) . " _ " . get_class($self->getAnnotation()) . "\n            \$return = (new \\";
-                        echo $self->getClass() . ")->" . ($self->getMethod()) . "(\n";
+                        echo "            \$check = !empty(\$args[0]['\$set'][";
+                        var_export($ref['property']->getName());
+                        echo "]);\n";
+                    }
+                    echo "        if (\$check) {\n";
+                    if ($ref['multi']) {
+                        echo "                \$data = array();\n";
+                        if ($ev == "postCreate") {
+                            echo "                    \$fields = \$args[0][";
+                            var_export($ref['property']->getName());
+                            echo "];\n";
+                        }
+                        else {
+                            echo "                    \$fields = \$args[0]['\$set'][";
+                            var_export($ref['property']->getName());
+                            echo "];\n";
+                        }
+                        echo "                foreach (\$fields as \$id => \$row) {\n                    \$data[] = array(\n";
+                        if ($ev == "postCreate") {
+                            echo "                        'source_id' => ";
+                            var_export($ref['target']->getName() . '::');
+                            echo " . serialize(\$row['\$id']),\n                        'id'        => \$args[0]['_id'],\n";
+                        }
+                        else {
+                            echo "                        'source_id' => ";
+                            var_export($ref['target']->getName() . '::');
+                            echo " . serialize(\$row['\$id']),\n                        'id'        => \$args[2],\n";
+                        }
+                        echo "                        'property'  => ";
+                        var_export($ref['property']->getName() . '.');
+                        echo " . \$id,\n                    );\n                }\n";
+                    }
+                    else {
+                        echo "                \$data = array(array(\n";
+                        if ($ev == "postCreate") {
+                            echo "                    'source_id'     => ";
+                            var_export($ref['target']->getName() . '::');
+                            echo " . serialize(\$args[0][";
+                            var_export($ref['property']->getName());
+                            echo "]['\$id']),\n                    'id'            => \$args[0]['_id'],\n";
+                        }
+                        else {
+                            echo "                    'source_id'     => ";
+                            var_export($ref['target']->getName() . '::');
+                            echo " . serialize(\$args[0]['\$set'][";
+                            var_export($ref['property']->getName());
+                            echo "]['\$id']),\n                    'id'            => \$args[2],\n";
+                        }
+                        echo "                    'property'      => ";
+                        var_export($ref['property']->getName());
+                        echo ",\n                ));\n";
+                    }
+                    echo "            foreach (\$data as \$row) {\n                \$row['collection'] = \$this->ns_by_name[";
+                    var_export($ref['property']->getParent()->getName());
+                    echo "] . ";
+                    var_export($ref['property']->getParent()->getName());
+                    echo ";\n                \$row['_id'] = array(\n                    'source' => \$row['source_id'], \n                    'target_id' => \$row['id'], \n                    'target_col' => \$row['collection'], \n                    'target_prop' => \$row['property']\n                );\n                \$col->save(\$row, array('w' => 1));\n            }\n        }\n";
+                }
+            }
+
+            if ($return) {
+                return ob_get_clean();
+            }
+
+        }
+    }
+
+    /** 
+     *  Template class generated from Reference/Update.tpl.php
+     */
+    class class_f8c39509b1fb331e8b8ef22a135640af98725ce5 extends base_template_df562f12800ad133cdbc6f040ca106a099504656
+    {
+
+        public function hasSection($name)
+        {
+
+            return false;
+        }
+
+
+        public function renderSection($name, Array $args = array(), $fail_on_missing = true)
+        {
+            if (!$this->hasSection($name)) {
+                if ($fail_on_missing) {
+                    throw new \RuntimeException("Cannot find section {$name}");
+                }
+                return "";
+            }
+
+        }
+
+        public function enhanceException(Exception $e, $section = NULL)
+        {
+            if (!empty($e->enhanced)) {
+                return;
+            }
+
+            $message = $e->getMessage() . "( IN " . 'Reference/Update.tpl.php';
+            if ($section) {
+                $message .= " | section: {$section}";
+            }
+            $message .= ")";
+
+            $object   = new ReflectionObject($e);
+            $property = $object->getProperty('message');
+            $property->setAccessible(true);
+            $property->setValue($e, $message);
+
+            $e->enhanced = true;
+        }
+
+        public function render(Array $vars = array(), $return = false)
+        {
+            try {
+                return $this->_render($vars, $return);
+            } catch (Exception $e) {
+                if ($return) ob_get_clean();
+                $this->enhanceException($e);
+                throw $e;
+            }
+        }
+
+        public function _render(Array $vars = array(), $return = false)
+        {
+            $this->context = $vars;
+
+            extract($vars);
+            if ($return) {
+                ob_start();
+            }
+
+            $deferred_done = false;
+            $this->context['deferred_done'] = $deferred_done;
+            foreach($collection->getForwardReferences() as $ref) {
+
+                $this->context['ref'] = $ref;
+                echo "    // update " . ($collection->getName()) . " references in  " . ($ref['property']->getParent()->getName()) . " \n    // ";
+                echo $ref['deferred'] ? 'ues' : 'no' . "\n";
+                if ($ref['deferred']) {
+                    if (!empty($deferred_done)) {
+                        continue;
+                    }
+                }
+                echo "    \n    \$replicate = array();\n";
+                $deferred_done = true;
+                $this->context['deferred_done'] = $deferred_done;
+                echo "    foreach (\$args[0] as \$operation => \$values) {\n";
+                foreach($ref['update'] as $field) {
+
+                    $this->context['field'] = $field;
+                    echo "            if (!empty(\$values[";
+                    var_export($field);
+                    echo "])) {\n";
+                    if ($ref['deferred']) {
+                        echo "                    \$replicate[\$operation][";
+                        var_export($field);
+                        echo "]  = \$values[";
+                        var_export($field);
+                        echo "];\n";
+                    }
+                    else if ($ref['multi']) {
+                        echo "                    \$replicate[\$operation][";
+                        var_export($ref['property']->getName().'.$.'.$field);
+                        echo "] = \$values[";
+                        var_export($field);
+                        echo "];\n";
+                    }
+                    else {
+                        echo "                    \$replicate[\$operation][";
+                        var_export($ref['property']->getName().'.'.$field);
+                        echo "] = \$values[";
+                        var_export($field);
+                        echo "];\n";
                     }
 
-                    echo "            " . ($var) . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
-                    var_export($args);
-                    echo ", // annotation arguments\n            \$this, // mapper instance\n            ";
-                    var_export($prop->getClass());
-                    echo "\n        );\n";
+                    echo "            }\n";
                 }
-                else {
-                    echo "        \$reflection = new \\ReflectionMethod(";
-                    var_export("\\". $self->getClass());
-                    echo ", ";
-                    var_export($self->getMethod());
-                    echo ");\n        \$reflection->setAccessible(true);\n        \$return = \$reflection->invoke(\n            ";
-                    echo $var . ", // document variable \n            \$args,  // external arguments (defined at run time)\n            \$this->connection, // connection\n            ";
-                    var_export($args);
-                    echo ", // annotation arguments\n            \$this, // mapper instance\n            ";
-                    var_export($prop->getClass());
-                    echo "\n        );\n";
+                echo "    }\n\n";
+                if ($ref['deferred']) {
+                    echo "        if (!empty(\$replicate)) {\n            // queue the updates!\n            \$data = array(\n                'update'    => \$replicate,\n                'processed' => false,\n                'created'   => new \\DateTime,\n                'source_id' => ";
+                    var_export($collection->getName().'::');
+                    echo "  . serialize(\$args[2]),\n                'type'      => array(\n                    'source'    => ";
+                    var_export($collection->getName());
+                    echo ",\n                    'target'    => ";
+                    var_export($ref['property']->getParent()->getName());
+                    echo ",\n                ),\n            );\n            \$args[1]\n                ->getDatabase()\n                ->deferred_queue\n                ->save(\$data, array('w' => 0));\n        }\n";
+                    continue;
                 }
+                echo "\n    if (!empty(\$replicate)) {\n        // do the update\n        \$args[1]->getCollection(";
+                var_export($ref['property']->getParent()->getName());
+                echo ")\n            ->update([\n                '";
+                echo $ref['property']->getName() . ".\$id' => \$args[2]], \n                \$replicate, \n                ['w' => 0, 'multi' => true]\n        );\n    }\n";
             }
-            else {
-                echo "    \$return = \\" . ($self->getFunction()) . "(\n        ";
-                echo $var . ", // document variable \n        \$args,  // external arguments (defined at run time)\n        \$this->connection, // connection\n        ";
-                var_export($args);
-                echo ", // annotation arguments\n        \$this, // mapper instance\n        ";
-                var_export($prop->getClass());
-                echo "\n    );\n";
-            }
-
 
             if ($return) {
                 return ob_get_clean();
@@ -1287,10 +1287,10 @@ namespace ActiveMongo2\Template {
         public static function getAll()
         {
             return array (
-                0 => 'reference/update',
-                1 => 'reference/deferred',
-                2 => 'documents',
-                3 => 'callback',
+                0 => 'callback',
+                1 => 'documents',
+                2 => 'reference/deferred',
+                3 => 'reference/update',
             );
         }
 
@@ -1315,14 +1315,14 @@ namespace ActiveMongo2\Template {
         public static function get($name, Array $context = array())
         {
             static $classes = array (
-                'reference/update.tpl.php' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
-                'reference/update' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
-                'reference/deferred.tpl.php' => 'class_7e3d172c6b9ee7fd7d68e93c41ee0d852447ceca',
-                'reference/deferred' => 'class_7e3d172c6b9ee7fd7d68e93c41ee0d852447ceca',
-                'documents.tpl.php' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
-                'documents' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
                 'callback.tpl' => 'class_1895ec604b22a2e3f627b9d8d7ae6142d332247e',
                 'callback' => 'class_1895ec604b22a2e3f627b9d8d7ae6142d332247e',
+                'documents.tpl.php' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
+                'documents' => 'class_4c3d011cafbc519bc12f3ed430a4e169ad8b5e8b',
+                'reference/deferred.tpl.php' => 'class_7e3d172c6b9ee7fd7d68e93c41ee0d852447ceca',
+                'reference/deferred' => 'class_7e3d172c6b9ee7fd7d68e93c41ee0d852447ceca',
+                'reference/update.tpl.php' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
+                'reference/update' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
             );
             $name = strtolower($name);
             if (empty($classes[$name])) {
