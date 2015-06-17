@@ -4,16 +4,16 @@
     "require": {
         "php": ">=5.4.0",
         "crodas/service-provider": "^0.1",
-        "crodas/notoj": "^1.0.3",
+        "crodas/notoj": "^1.0.5",
         "crodas/simple-view-engine": "~0.1",
-        "crodas/watch-files": "~0.1",
         "crodas/file-util": ">=0.1.14",
         "crodas/cli": "~0.1",
-        "crodas/validator": ">=0.1.7",
-        "crodas/validator": "dev-develop"
+        "crodas/validator": "^0.1.8",
+        "crodas/class-info": ">=0.1.17",
+        "crodas/build": "^0.1.1"
     },
     "license": "BSD-4-Clause",
-    "version": "v0.3.5",
+    "version": "v0.3.6",
     "authors": [
         {
             "name": "César D. Rodas",

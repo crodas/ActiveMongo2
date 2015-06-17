@@ -37,7 +37,7 @@
 namespace ActiveMongo2;
 
 use Notoj;
-use WatchFiles\Watch;
+use crodas\Build;
 use crodas\SimpleView\FixCode;
 use crodas\FileUtil\File;
 use crodas\FileUtil\Path;
@@ -45,28 +45,21 @@ use crodas\FileUtil\Path;
 class Generate
 {
     protected $files = array();
-    protected $config;
     protected static $cdir;
 
-    protected function writeFileWatch(Watch $watcher, Generate\Collections $collections)
+    protected function writeFileWatch(Build $builder, Generate\Collections $collections)
     {
         foreach ($collections->getFiles() as $file) {
-            $watcher->watchDir(dirname($file));
-            $watcher->watchFile($file);
+            $builder->watch($file);
+            $builder->watch(dirname($file));
         }
-
-        $watcher->watchFile($this->config->getLoader());
-        $watcher->watch();
     }
 
-    public function __construct(Configuration $config, Watch $watcher)
+    public function __construct(Array $config, Build $builder)
     {
-        $this->config = $config;
+        $collections  = new Generate\Collections($config['files'], $this);
+        self::$cdir   = $config['loader'];
 
-        $collections = new Generate\Collections((array)$config->getModelPath(), $this);
-        self::$cdir  = $this->config->getLoader();
-
-        $target    = $config->getLoader();
         $namespace = "ActiveMongo2\\Namspace" . uniqid(true); 
         $rnd       = uniqid();
         $valns     = $collections->getValidatorNS();
@@ -79,11 +72,11 @@ class Generate
             ->render($args, true);
 
         if (strlen($code) >= 1024*1024) {
-            File::write($target, $code);
+            File::write($config['loader'], $code);
         } else {
-            File::write($target, FixCode::fix($code));
+            File::write($config['loader'], FixCode::fix($code));
         }
-        $this->writeFileWatch($watcher, $collections);
+        $this->writeFileWatch($builder, $collections);
     }
     
     public static function getRelativePath($dir1, $dir2=NULL)

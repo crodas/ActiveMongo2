@@ -50,7 +50,7 @@ function is_date(&$date)
         return true;
     }
     if ($date instanceof \Datetime) {
-        $date = new \MongoDate($date->getTimestamp());
+        $date = $date->getTimestamp();
     }
     if (is_string($date)) { 
         $date = strtotime($date);
@@ -100,7 +100,7 @@ function _validate_geo(&$values)
         return false;
     }
     $value = array_values($values);
-    if (count($values) != 2) {
+    if (count($values) != 2 || !is_numeric($values[0]) || !is_numeric($values[1])) {
         return false;
     }
 }

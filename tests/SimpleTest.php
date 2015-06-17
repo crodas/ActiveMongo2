@@ -166,35 +166,6 @@ class SimpleTest extends \phpunit_framework_testcase
         }
     }
 
-    /**
-     *  @expectedException RuntimeException
-     */
-    public function testBrokenReference()
-    {
-        $conn = getConnection();
-        $user = new UserDocument;
-        $user->username = "croda-s";
-        $conn->save($user);
-
-        $post = new PostDocument;
-        $post->author_ref = $user;
-        $post->author = $user;
-        $post->collaborators[] = $user;
-        $post->title  = "foobar post";
-        $post->array  = [1];
-        $post->readers[] = $user;
-        $post->author_id = $user->userid;
-        $conn->save($post);
-
-
-        $conn->delete($user);
-
-        $post = $conn->post->findOne(['_id' => $post->id]);
-        $post->author_ref->getObject(); // read object
-
-    }
-
-
     public function testReferenceSave()
     {
         $conn = getConnection();
@@ -220,10 +191,16 @@ class SimpleTest extends \phpunit_framework_testcase
         $user = $conn->getCollection('user')->findOne(['_id' => $user->userid]);
         $this->assertEquals($user->username, "david");
 
+        /* Wrap __call/__get() {{{ */
+        $this->assertEquals($post->author_ref->_id, $user->userid);
+        $this->assertEquals($post->author_ref->username(), $user->username);
+        $this->assertEquals($post->author_ref->something(), $user->userid);
+        $this->assertEquals($post->author_ref->userid(), $user->userid);
+        /* }}} */
+
         $conn->dropDatabase();
 
     }
-
 
     public function testReferenceOne()
     {
@@ -243,11 +220,13 @@ class SimpleTest extends \phpunit_framework_testcase
         $post->array  = [1];
         $post->readers[] = $user;
         $post->author_id = $user->userid;
+        $post->something = new Datetime;
         $conn->save($post);
 
         $post->array  = [2,3,4,5,6];
         $conn->save($post);
         $this->assertNotEquals(NULL, $post->created);
+        $this->assertTrue($post->something instanceof MongoDate);
 
         $savedPost = $conn->getCollection('post')->findOne();
         $this->assertEquals($savedPost->author->userid, $user->userid);
@@ -270,9 +249,11 @@ class SimpleTest extends \phpunit_framework_testcase
 
         $post->array[] = 9;
         $post->array[] = 10;
+        $post->something = "1987/08/25";
         $conn->save($post);
         $savedPost = $conn->getCollection('post')->findOne();
         $this->assertEquals($savedPost->array, [6,9,10]);
+        $this->assertEquals("1987-08-25", date("Y-m-d", $post->something->sec));
 
         $post->array[] = 19;
         $conn->save($post);
@@ -541,11 +522,26 @@ class SimpleTest extends \phpunit_framework_testcase
 
         $foo = new NoID;
         $foo->name = "foobar";
+        $foo->x = clone $foo;
         $conn->save($foo);
 
         $id1 = $reflection->property('_id')->get($foo);
         $id2 = $reflection->property('@Id')->get($foo);
         $this->assertEquals($id1, $id2);
+
+        $reflection->property('name')->set($foo, 'x');
+        $reflection->property('name')->set($foo, 'x');
+
+        $id1 = $reflection->property('name')->get($foo);
+        $id2 = $reflection->property('name')->get($foo);
+        $this->assertEquals($id1, $id2);
+        $this->assertEquals($id1, 'x');
+
+        $id1 = $reflection->property('x')->get($foo);
+        $id2 = $reflection->property('x')->get($foo, true);
+        $this->assertNotEquals($id1, $id2);
+        $this->assertTrue($id1 instanceof NoID);
+        $this->assertTrue(is_array($id2));
     }
 
     public function testAutocomplete()
@@ -655,6 +651,12 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertEquals($y->tags, $new->tags);
         $this->assertEquals($y->__ol_version, $new->__ol_version);
     }
+
+    public function testFindAnModifyNotFound()
+    {
+        $conn = getConnection();
+        $this->assertNull($conn->binarydoc->findAndModify(['_id' => uniqid(true)], ['$set' => ['foo' => 1]]));
+    }
     
     public function testBinary()
     {
@@ -664,53 +666,6 @@ class SimpleTest extends \phpunit_framework_testcase
         $conn->save($doc);
         $doc2 = $conn->_binary->findOne();
         $this->assertEquals($doc->content, $doc2->content);
-    }
-
-    /**
-     *  @expectedException ActiveMongo2\Exception\NotFound
-     */ 
-    public function testFindNotFound()
-    {
-        $doc = PostDocument::find(0xffffff + ceil(mt_rand()*0xfffff));
-    }
-
-    /**
-     *  @expectedException ActiveMongo2\Exception\NotFound
-     */ 
-    public function testFindArrayException()
-    {
-        $docs = PostDocument::find([2, 0xfffffff]);
-    }
-
-
-    public function testFindArray()
-    {
-        $docs = PostDocument::find([2]);
-        $this->assertTrue($docs instanceof \ActiveMongo2\Cursor\Cursor);
-    }
-
-    public function testFindAndSave()
-    {
-        $doc = PostDocument::find(2);
-        $this->assertTrue($doc instanceof PostDocument);
-        $doc->tags = ['something'];
-        $doc->save();
-        $docx = PostDocument::find(2);
-        $this->assertEquals($docx->tags, ['something']);
-    }
-
-    /**
-     *  @dependsOn testFindAndSave
-     */
-    public function testFindOrCreate()
-    {
-        $post = PostDocument::find_or_create_by(array("tags" => ['xxx', 'yyy']));
-        $this->assertEquals(null, $post->id);
-        $this->assertEquals(['xxx', 'yyy'], $post->tags);
-
-        $post = PostDocument::find_or_create_by(array("tags" => 'something'));
-        $this->assertEquals(2, $post->id);
-        $this->assertEquals(['something'], $post->tags);
     }
 
 }

@@ -117,14 +117,15 @@ function _validate_reference_one(&$value, Array $rargs, $conn, $args, $mapper)
     }
 
     $document = $value;
-    $info     = $mapper->mapClass($document);
-    if (!$info['is_gridfs']) {
-        $conn->save($document);
-    }
 
     $check = !empty($args) ? current($args) : null;
     if ($check && !$document instanceof $check && !$conn->getCollection(current($args))->is($document)) {
-        throw new \RuntimeException("Invalid value");
+        return false;
+    }
+
+    $info     = $mapper->mapClass($document);
+    if (!$info['is_gridfs']) {
+        $conn->save($document);
     }
     
     $value = $mapper->getReference($document, empty($args[1]) ? [] : array_flip($args[1]));

@@ -19,7 +19,7 @@ class GridFsTest extends \phpunit_framework_testcase
     /**
      *  @expectedException RuntimeException
      */
-    public function testUpload()
+    public function testUploadException()
     {
         $conn = getConnection(true);
         $file = new Files;
@@ -27,6 +27,26 @@ class GridFsTest extends \phpunit_framework_testcase
         $file->namexxx = "foobar";
         $conn->file($file)->storeUpload("name");
     }
+
+    /*
+    public function testUpload()
+    {
+        $tmp = '/tmp/' . uniqid(true);
+        copy(__FILE__, $tmp);
+        $_FILES['name'] = array(
+            'name' => uniqid(true),
+            'tmp_name' => $tmp,
+            'type' => 'text/plain',
+            'size' => filesize($tmp),
+            'error' => UPLOAD_ERR_OK,
+        );
+        $conn = getConnection(true);
+        $file = new Files;
+        $file->id = "/foobar";
+        $file->namexxx = "foobar";
+        $conn->file($file)->storeUpload("name");
+    }
+    */
 
     public function testBytes()
     {
@@ -64,6 +84,15 @@ class GridFsTest extends \phpunit_framework_testcase
         $conn->file($user->object)->storeFile(__FILE__);
     }
 
+    /** @expectedException RuntimeException */
+    public function testFileNoFile()
+    {
+        $conn = getConnection(true);
+        $file = new Files;
+        $file->id = "/foobarxxx";
+        $file->namexxx = "foobar";
+        $conn->file($file)->storeFile('/tmp/' . uniqid(true));
+    }
 
     /** @expectedException RuntimeException */
     public function testFileNoUpdate()

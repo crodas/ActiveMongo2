@@ -59,6 +59,12 @@ class Reference implements DocumentProxy, \JsonSerializable
         $this->mapper = $mapper;
     }
 
+    public function __toString()
+    {
+        $this->_loadDocument();
+        return $this->doc->__toString();
+    }
+
     public function getObject()
     {
         $this->_loadDocument();
@@ -138,7 +144,7 @@ class Reference implements DocumentProxy, \JsonSerializable
                 return $doc;
             }
 
-            if ($expected == '_id') {
+            if ($name == '_id' || $expected == '_id') {
                 // avoid one query!
                 return $this->ref['$id'];
             }

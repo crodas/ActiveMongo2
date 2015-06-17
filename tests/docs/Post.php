@@ -44,6 +44,15 @@ class PostDocument extends Middle
     /** @Int */
     public $author_id;
 
+    /** @Float */
+    public $float;
+
+    /** @Numeric */
+    public $number;
+
+    /** @bool */
+    public $boolean;
+
     /** @AutoincrementBy(author_id) */
     public $post_by_user_id;
 
@@ -61,6 +70,9 @@ class PostDocument extends Middle
 
     /** @Array */
     public $tags;
+
+    /** @Date */
+    public $something;
 
     /** @Date */
     public $created;

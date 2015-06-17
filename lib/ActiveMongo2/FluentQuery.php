@@ -147,7 +147,7 @@ class FluentQuery implements \IteratorAggregate
     public function end()
     {
         if (empty($this->parent)) {
-            throw new \Exception("You cannot call to end()");
+            throw new \RuntimeException("You cannot call to end()");
         }
         return $this->parent->finalizeChild($this);
     }
@@ -155,8 +155,10 @@ class FluentQuery implements \IteratorAggregate
     public function where($name, $op, $value)
     {
         $this->field($name);
+        if (empty($this->map[$op])) {
+            throw new \RuntimeException("{$op} is not a valid operation, we support " . implode(', ', array_keys($this->map)));
+        }
         $this->genericQuery($this->map[$op], $value);
-        if ($name == 'password') throw new \RuntimeException;
         return $this;
     }
 
@@ -176,6 +178,9 @@ class FluentQuery implements \IteratorAggregate
         return $this->update;
     }
 
+    /**
+     *  @Embed
+     */
     protected function assertField()
     {
         if (empty($this->field)) {
@@ -196,10 +201,7 @@ class FluentQuery implements \IteratorAggregate
 
     protected function genericQuery($op, $value)
     {
-        if (empty($this->field)) {
-            throw new \RuntimeException("You need to call ->field first");
-        }
-
+        $this->assertField();
         if ($op == '$eq') {
             $this->query[$this->field] = $value;
             return $this;
@@ -239,7 +241,7 @@ class FluentQuery implements \IteratorAggregate
             return $this->end()->remove($justOne);
         }
         if (!empty($this->update)) {
-            throw new \Exception("Invalid call to remove(), it was expecting update (`execute()`)");
+            throw new \RuntimeException("Invalid call to remove(), it was expecting update (`execute()`)");
         }
         return $this->col->remove($this->query, compact('justOne'));
     }
