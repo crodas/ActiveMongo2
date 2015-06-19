@@ -42,6 +42,11 @@ trait Query
 
     public static function find_or_create_by(Array $object)
     {
+        return self::findOrCreateBy($object);
+    }
+
+    public static function findOrCreateBy(Array $object)
+    {
         $col = self::$conn->getCollection(__CLASS__);
         $doc = $col->findOne($object);
         if (empty($doc)) {
@@ -71,9 +76,14 @@ trait Query
         return $rows;
     }
 
-    public static function find_by(Array $filter)
+    public static function findOne(Array $filter)
     {
         return self::$conn->getCollection(__CLASS__)->findOne($filter);
+    }
+
+    public static function find(Array $filter)
+    {
+        return self::$conn->getCollection(__CLASS__)->find($filter);
     }
 
     public static function where(Array $filter)
@@ -81,7 +91,12 @@ trait Query
         return self::$conn->getCollection(__CLASS__)->find($filter);
     }
 
-    public static function find($id)
+    public static function byId($id)
+    {
+        return self::findById($id);
+    }
+
+    public static function findById($id)
     {
         if (is_array($id)) {
             $cursor = self::$conn->getCollection(__CLASS__)->find(['_id' => ['$in' => $id]]);

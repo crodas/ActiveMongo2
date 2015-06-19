@@ -10,7 +10,7 @@ class QueryTest extends phpunit_framework_testcase
      */ 
     public function testFindNotFound()
     {
-        $doc = PostDocument::find(0xffffff + ceil(mt_rand()*0xfffff));
+        $doc = PostDocument::findById(0xffffff + ceil(mt_rand()*0xfffff));
     }
 
     /**
@@ -18,7 +18,7 @@ class QueryTest extends phpunit_framework_testcase
      */ 
     public function testFindArrayException()
     {
-        $docs = PostDocument::find([2, 0xfffffff]);
+        $docs = PostDocument::findById([2, 0xfffffff]);
     }
 
     public function getIds()
@@ -36,11 +36,11 @@ class QueryTest extends phpunit_framework_testcase
     public function testFindAndSave()
     {
         $ids = $this->getIds();
-        $doc = PostDocument::find($ids[0]);
+        $doc = PostDocument::findById($ids[0]);
         $this->assertTrue($doc instanceof PostDocument);
         $doc->tags = ['something'];
         $doc->save();
-        $docx = PostDocument::find($ids[0]);
+        $docx = PostDocument::byId($ids[0]);
         $this->assertEquals($docx->tags, ['something']);
     }
 
@@ -48,8 +48,8 @@ class QueryTest extends phpunit_framework_testcase
     {
         $ids = $this->getIds();
         $this->AssertTrue(
-            PostDocument::find((String)$ids[0]) == 
-            PostDocument::find((Int)$ids[0])
+            PostDocument::byId((String)$ids[0]) == 
+            PostDocument::byId((Int)$ids[0])
         );
     }
 
@@ -63,7 +63,7 @@ class QueryTest extends phpunit_framework_testcase
         $ids = $this->getIds();
         $this->AssertTrue(
             PostDocument::where(['_id' => $ids[0]])->first() ==
-            PostDocument::find($ids[0])
+            PostDocument::byId($ids[0])
         );
     }
 
@@ -71,8 +71,8 @@ class QueryTest extends phpunit_framework_testcase
     {
         $ids = $this->getIds();
         $this->AssertTrue(
-            PostDocument::find_by(['_id' => $ids[0]]) ==
-            PostDocument::find($ids[0])
+            PostDocument::findOne(['_id' => $ids[0]]) ==
+            PostDocument::byId($ids[0])
         );
     }
 
