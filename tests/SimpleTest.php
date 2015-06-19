@@ -71,12 +71,14 @@ class SimpleTest extends \phpunit_framework_testcase
         $userCol = $conn->getCollection('user');
         $cursor = $userCol->find();
         $pages = $cursor->paginate(1, 20);
-        $this->assertEquals(min($pages), 1);
-        $this->assertEquals(max($pages), 50);
+        $this->assertEquals($pages['current'], 1);
+        $this->assertEquals(min($pages['pages']), 1);
+        $this->assertEquals(max($pages['pages']), 50);
 
         $pages = $cursor->paginate(15, 20);
-        $this->assertEquals(min($pages), 13);
-        $this->assertEquals(max($pages), 50);
+        $this->assertEquals($pages['current'], 15);
+        $this->assertEquals(min($pages['pages']), 13);
+        $this->assertEquals(max($pages['pages']), 50);
 
         $info = $cursor->info();
         $this->assertEquals(280, $info['skip']);
@@ -84,8 +86,9 @@ class SimpleTest extends \phpunit_framework_testcase
 
         $_REQUEST['page'] = 20;
         $pages = $cursor->paginate('page', 20);
-        $this->assertEquals(min($pages), 18);
-        $this->assertEquals(max($pages), 50);
+        $this->assertEquals($pages['current'], 20);
+        $this->assertEquals(min($pages['pages']), 18);
+        $this->assertEquals(max($pages['pages']), 50);
 
         $info = $cursor->info();
         $this->assertEquals(380, $info['skip']);
