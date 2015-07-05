@@ -165,7 +165,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertTrue($col->findOne() instanceof UserDocument);
         $this->assertEquals($col->findOne(array('foo' => 'bar')), NULL);
 
-        $res = $col->aggregate(['$project' => ['username' => 1, 'addresses' => 1]], ['$unwind' => '$addresses']);
+        $res = $col->aggregate([['$project' => ['username' => 1, 'addresses' => 1]], ['$unwind' => '$addresses']]);
         $this->assertEquals(count($res), 2);
         $this->assertEquals($res[0]->userid, $res[1]->userid);
 
