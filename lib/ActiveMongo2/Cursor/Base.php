@@ -69,7 +69,7 @@ trait Base
             array_slice($pages, -2)
         );
 
-        return array_unique($pages);
+        return array('pages' => array_unique($pages), 'current' => $page);
     }
 
     public function first()
