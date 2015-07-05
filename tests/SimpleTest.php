@@ -147,8 +147,19 @@ class SimpleTest extends \phpunit_framework_testcase
 
         $col = getConnection()->getCollection('user');
         foreach ($col->find() as $doc) {
+            $post = new PostDocument;
+            $post->author_ref = $user;
+            $post->author = $user;
+            $post->collaborators[] = $user;
+            $post->title  = "foobar post";
+            $post->array  = [1];
+            $post->readers[] = $user;
+            $post->author_id = $user->userid;
+            $conn->save($post);
             $this->assertTrue($doc instanceof UserDocument);
+            $this->assertTrue($post instanceof PostDocument);
         }
+
         $this->assertTrue(is_array($col->find()->toArray()));
         $this->assertTrue(count($col->find()->toArray()) > 0);
         $this->assertTrue($col->findOne() instanceof UserDocument);
@@ -157,6 +168,11 @@ class SimpleTest extends \phpunit_framework_testcase
         $res = $col->aggregate(['$project' => ['username' => 1, 'addresses' => 1]], ['$unwind' => '$addresses']);
         $this->assertEquals(count($res), 2);
         $this->assertEquals($res[0]->userid, $res[1]->userid);
+
+        $res = getConnection()->getCollection('post')
+            ->aggregate(['$project' => ['titulo' => 1]]);
+        $this->assertEquals(count($res), 1);
+        $this->assertEquals($res[0], array('_id' => 1, 'titulo' => 'foobar post'));
     }
 
     public function testPluginAutoincrement()

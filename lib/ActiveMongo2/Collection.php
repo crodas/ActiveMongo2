@@ -153,14 +153,23 @@ class Collection implements IteratorAggregate
 
     public function aggregate()
     {
-        $document = call_user_func_array([$this->zcol, 'aggregate'], func_get_args());
+        $aggregate = func_get_args(); 
+        if (count($aggregate) == 1 && is_array($aggregate[0])) {
+            $aggregat = $aggregate[0];
+        }
+
+        $document  = $this->zcol->aggregate($aggregate);
         if (empty($document['ok'])) {
             throw new \RuntimeException($document['errmsg']);
         }
 
         $results = [];
         foreach ($document['result'] as $res) {
-            $results[] = $this->registerDocument($res);
+            try {
+                $results[] = $this->registerDocument($res);
+            } catch (\RuntimeException $e) {
+                return $document['result'];
+            }
         }
 
         return $results;
