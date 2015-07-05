@@ -155,7 +155,7 @@ class Collection implements IteratorAggregate
     {
         $aggregate = func_get_args(); 
         if (count($aggregate) == 1 && is_array($aggregate[0])) {
-            $aggregat = $aggregate[0];
+            $aggregate = $aggregate[0];
         }
 
         $document  = $this->zcol->aggregate($aggregate);
