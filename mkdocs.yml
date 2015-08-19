@@ -1,0 +1,5 @@
+site_name: ActiveMongo2
+repo_url: https://github.com/crodas/ActiveMongo2
+site_description: ActiveMongo2 is a very simple, efficient and developer friendly PHP abstraction for MongoDB.
+pages:
+ - Index: index.md
