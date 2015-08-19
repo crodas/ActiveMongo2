@@ -105,13 +105,13 @@ class Slugable
     protected static function checkSlug($conn, $obj, $cname, $slug)
     {
         $col  = $conn->getCollection($obj);
-        do {
+        while ($col->count(array($cname => $slug)) > 0) {
             if (is_callable(array($obj, 'slugDupls'))) {
                 $slug = $this->slugDups($cname, $slug);
             } else {
                 $slug .= '-' . uniqid(true);
             }
-        } while ($col->count(array($cname => $slug)) > 0);
+        }
 
         return $slug;
     }
