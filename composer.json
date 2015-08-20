@@ -11,7 +11,7 @@
         "crodas/validator": "^0.1.8",
         "crodas/class-info": "^0.1.17",
         "crodas/build": "^0.1.1",
-        "keyvanakbary/slugifier": "^4.0"
+        "keyvanakbary/slugifier": "^3.0"
     },
     "license": "BSD-4-Clause",
     "version": "v0.3.8",
