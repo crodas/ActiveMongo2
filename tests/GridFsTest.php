@@ -92,7 +92,7 @@ class GridFsTest extends \phpunit_framework_testcase
         );
 
         $raw = $conn->getDatabase();
-        $tbl = (!empty($_SERVER['NAMESPACE']) ? $_SERVER['NAMESPACE'] . "." : "") . "fs.chunks";
+        $tbl = (!empty($_SERVER['NAMESPACE']) ? $_SERVER['NAMESPACE'] : "") . "fs.chunks";
         $this->assertEquals(1, $raw->selectCollection($tbl)->count(array('files_id' => '/foobar_raw_yy')));
 
         $conn->delete($file);
