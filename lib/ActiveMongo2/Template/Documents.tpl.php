@@ -1051,7 +1051,7 @@ class Mapper
 
 
         @foreach ($collections->getEvents() as $ev)
-            @if ($collection->hasEvent($ev) || ($ev == 'postDelete' && $collection->is('gridfs')))
+            @if ($collection->hasEvent($ev))
     /**
      *  Code for {{$ev}} events for objects {{$collection->getClass()}}
      */
@@ -1064,13 +1064,6 @@ class Mapper
             @if ($collection->getParent() && $collection->getParent()->hasEvent($ev))
                 @set($method, "event_" . $ev . "_" . sha1($collection->getParent()->getClass()))
                 $this->{{$method}}($document, $args);
-            @end
-
-            @if ($ev == 'postDelete' && $collection->is('GridFs'))
-                // A gridfs file has been remove, let's go an remove all 
-                // the orphan chunks as well
-                list($col,) = $this->getCollectionObject($class);
-                $col->chunks->remove(array('files_id' => $args[0]['_id']));
             @end
 
             @foreach ($collection->getMethodsByAnnotation($ev) as $method)

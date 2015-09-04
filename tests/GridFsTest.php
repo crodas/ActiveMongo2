@@ -91,14 +91,13 @@ class GridFsTest extends \phpunit_framework_testcase
             fread($file->file, 10*1024)
         );
 
-        sleep(1);
         $raw = $conn->getDatabase();
-        $this->assertEquals(1, $raw->selectCollection('fs.chunks')->count(array('files_id' => '/foobar_raw_yy')));
+        $tbl = (!empty($_SERVER['NAMESPACE']) ? $_SERVER['NAMESPACE'] . "." : "") . "fs.chunks";
+        $this->assertEquals(1, $raw->selectCollection($tbl)->count(array('files_id' => '/foobar_raw_yy')));
 
         $conn->delete($file);
-        sleep(1);
 
-        $this->assertEquals(1, $raw->selectCollection('fs.chunks')->count(array('files_id' => '/foobar_raw_yy')));
+        $this->assertEquals(1, $raw->selectCollection($tbl)->count(array('files_id' => '/foobar_raw_yy')));
     }
 
     public function testStoreFile()
