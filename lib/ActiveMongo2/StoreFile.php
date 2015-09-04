@@ -56,11 +56,17 @@ class StoreFile extends Connection
         $this->mapper   = $mapper;
     }
 
+    protected function deleteBeforeWriting()
+    {
+        $this->gridfs->remove(array('_id' => $this->metadata['_id']));
+    }
+
     public function storeFile($name)
     {
         if (!is_file($name)) {
             throw new \RuntimeException("Cannot find file {$name}");
         }
+        $this->deleteBeforeWriting();
         $this->gridfs->storeFile($name, $this->metadata);
         $doc = $this->gridfs->findOne($this->metadata);
         $this->mapper->populate($this->object, $doc);
@@ -68,6 +74,7 @@ class StoreFile extends Connection
 
     public function storeBytes($bytes)
     {
+        $this->deleteBeforeWriting();
         $this->gridfs->storeBytes($bytes, $this->metadata);
         $doc = $this->gridfs->findOne($this->metadata);
         $this->mapper->populate($this->object, $doc);
@@ -78,6 +85,7 @@ class StoreFile extends Connection
         if (empty($_FILES[$name])) {
             throw new \RuntimeException("Cannot find \$_FILE[{$name}]");
         }
+        $this->deleteBeforeWriting();
         $this->gridfs->storeUpload($name, $this->metadata);
         $doc = $this->gridfs->findOne($this->metadata);
         $this->mapper->populate($this->object, $doc);

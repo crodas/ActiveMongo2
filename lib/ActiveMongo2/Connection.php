@@ -193,11 +193,6 @@ class Connection
             throw new \RuntimeException("Cannot update a reference");
         }
         $document = $this->mapper->validate($obj);
-        $oldDoc   = $this->mapper->getRawDocument($obj, false);
-
-        if (!empty($oldDoc)) {
-            throw new \RuntimeException("Update on @GridFS is not yet implemented");
-        }
 
         $this->mapper->trigger(true, 'preCreate', $obj, array(&$document, $this));
         $document['_id'] = empty($document['_id']) ?  new MongoId : $document['_id'];
