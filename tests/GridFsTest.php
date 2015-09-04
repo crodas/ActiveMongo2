@@ -78,6 +78,27 @@ class GridFsTest extends \phpunit_framework_testcase
         );
     }
 
+    public function testBytesDelete()
+    {
+        $conn = getConnection(true);
+        $file = new Files;
+        $file->id = "/foobar_raw_yy";
+        $file->namexxx = "foobar";
+        $conn->file($file)->storeFile(__FILE__);
+
+        $this->assertEquals(
+            file_get_contents(__FILE__),
+            fread($file->file, 10*1024)
+        );
+
+        $raw = $conn->getDatabase();
+        $this->assertEquals($raw->selectCollection('fs.chunks')->count(array('files_id' => '/foobar_raw_yy')), 1);
+
+        $conn->delete($file);
+
+        $this->assertEquals($raw->selectCollection('fs.chunks')->count(array('files_id' => '/foobar_raw_yy')), 0);
+    }
+
     public function testStoreFile()
     {
         $conn = getConnection(true);
