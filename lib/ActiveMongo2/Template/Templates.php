@@ -951,7 +951,7 @@ namespace {
                 foreach($collections->getEvents() as $ev) {
 
                     $this->context['ev'] = $ev;
-                    if ($collection->hasEvent($ev)) {
+                    if ($collection->hasEvent($ev) || ($ev == 'postDelete' && $collection->is('gridfs'))) {
                         echo "    /**\n     *  Code for ";
                         echo $ev . " events for objects " . ($collection->getClass()) . "\n     */\n        protected function event_";
                         echo $ev . "_" . (sha1($collection->getClass())) . "(\$document, Array \$args)\n        {\n            \$class = \$this->get_class(\$document);\n            if (\$class != ";
@@ -961,6 +961,10 @@ namespace {
                             $method = "event_" . $ev . "_" . sha1($collection->getParent()->getClass());
                             $this->context['method'] = $method;
                             echo "                \$this->" . ($method) . "(\$document, \$args);\n";
+                        }
+                        echo "\n";
+                        if ($ev == 'postDelete' && $collection->is('GridFs')) {
+                            echo "                // A gridfs file has been remove, let's go an remove all \n                // the orphan chunks as well\n                list(\$col,) = \$this->getCollectionObject(\$class);\n                \$col->chunks->remove(array('files_id' => \$args[0]['_id']));\n";
                         }
                         echo "\n";
                         foreach($collection->getMethodsByAnnotation($ev) as $method) {
