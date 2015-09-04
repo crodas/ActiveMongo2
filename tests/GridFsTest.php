@@ -96,6 +96,7 @@ class GridFsTest extends \phpunit_framework_testcase
         $this->assertEquals(1, $raw->selectCollection('fs.chunks')->count(array('files_id' => '/foobar_raw_yy')));
 
         $conn->delete($file);
+        sleep(1);
 
         $this->assertEquals(1, $raw->selectCollection('fs.chunks')->count(array('files_id' => '/foobar_raw_yy')));
     }
