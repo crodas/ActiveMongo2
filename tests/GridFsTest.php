@@ -97,7 +97,7 @@ class GridFsTest extends \phpunit_framework_testcase
 
         $conn->delete($file);
 
-        $this->assertEquals(1, $raw->selectCollection($tbl)->count(array('files_id' => '/foobar_raw_yy')));
+        $this->assertEquals(0, $raw->selectCollection($tbl)->count(array('files_id' => '/foobar_raw_yy')));
     }
 
     public function testStoreFile()
