@@ -799,6 +799,9 @@ class Mapper
             if (empty($data['metadata'])) {
                 $data['metadata'] = [];
             }
+            @foreach (array("length", "chunkSize", "md5", "uploadDate") as $key)
+                $data['metadata'][{{@$key}}] = $data[{{@$key}}];
+            @end
         @else
 
             if (!is_array($data)) {

@@ -90,7 +90,7 @@ class GridFsTest extends \phpunit_framework_testcase
             file_get_contents(__FILE__),
             fread($file->file, 10*1024)
         );
-
+        
         $raw = $conn->getDatabase();
         $tbl = (!empty($_SERVER['NAMESPACE']) ? $_SERVER['NAMESPACE'] : "") . "fs.chunks";
         $this->assertEquals(1, $raw->selectCollection($tbl)->count(array('files_id' => '/foobar_raw_yy')));
@@ -196,6 +196,8 @@ class GridFsTest extends \phpunit_framework_testcase
         foreach ($col->find() as $file) {
             $this->assertTrue($file instanceof Files);
             $this->assertEquals($file->namexxx, "foobar");
+            $this->assertNotNull($file->uploadDate);
+            $this->assertTrue($file->length > 0);
         }
         $this->assertTrue(is_resource($file->file));
     }

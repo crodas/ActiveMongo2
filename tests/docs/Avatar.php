@@ -17,6 +17,12 @@ class Files
     /** @Stream */
     public $file;
 
+    /** @Date */
+    public $uploadDate;
+
+    /** @Int */
+    public $length;
+
     /** @String (@xss) */
     public $type;
 }

@@ -719,6 +719,15 @@ namespace {
                 echo "\n";
                 if ($collection->is('GridFs')) {
                     echo "            if (!\$data instanceof \\MongoGridFsFile) {\n                throw new \\RuntimeException(\"Internal error, trying to populate a GridFSFile with an array\");\n            }\n            \$data_file = \$data;\n            \$data      = \$data->file;\n            if (empty(\$data['metadata'])) {\n                \$data['metadata'] = [];\n            }\n";
+                    foreach(array("length", "chunkSize", "md5", "uploadDate") as $key) {
+
+                        $this->context['key'] = $key;
+                        echo "                \$data['metadata'][";
+                        var_export($key);
+                        echo "] = \$data[";
+                        var_export($key);
+                        echo "];\n";
+                    }
                 }
                 else {
                     echo "\n            if (!is_array(\$data)) {\n                throw new \\RuntimeException(\"Internal error, trying to populate a document with a wrong data\");\n            }\n";
@@ -951,7 +960,7 @@ namespace {
                 foreach($collections->getEvents() as $ev) {
 
                     $this->context['ev'] = $ev;
-                    if ($collection->hasEvent($ev) || ($ev == 'postDelete' && $collection->is('gridfs'))) {
+                    if ($collection->hasEvent($ev)) {
                         echo "    /**\n     *  Code for ";
                         echo $ev . " events for objects " . ($collection->getClass()) . "\n     */\n        protected function event_";
                         echo $ev . "_" . (sha1($collection->getClass())) . "(\$document, Array \$args)\n        {\n            \$class = \$this->get_class(\$document);\n            if (\$class != ";
@@ -961,10 +970,6 @@ namespace {
                             $method = "event_" . $ev . "_" . sha1($collection->getParent()->getClass());
                             $this->context['method'] = $method;
                             echo "                \$this->" . ($method) . "(\$document, \$args);\n";
-                        }
-                        echo "\n";
-                        if ($ev == 'postDelete' && $collection->is('GridFs')) {
-                            echo "                // A gridfs file has been remove, let's go an remove all \n                // the orphan chunks as well\n                list(\$col,) = \$this->getCollectionObject(\$class);\n                \$col->chunks->remove(array('files_id' => \$args[0]['_id']));\n";
                         }
                         echo "\n";
                         foreach($collection->getMethodsByAnnotation($ev) as $method) {
