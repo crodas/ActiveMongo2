@@ -57,6 +57,49 @@ class GridFsTest extends \phpunit_framework_testcase
         $conn->file($file)->storeBytes(__FILE__);
     }
 
+    public function testBytesUpdate()
+    {
+        $conn = getConnection(true);
+        $file = new Files;
+        $file->id = "/foobar_raw_xx";
+        $file->namexxx = "foobar";
+        $conn->file($file)->storeFile(__FILE__);
+
+        $this->assertEquals(
+            file_get_contents(__FILE__),
+            fread($file->file, 10*1024)
+        );
+
+        $conn->file($file)->storeFile($f = __DIR__ . '/bootstrap.php');
+
+        $this->assertEquals(
+            file_get_contents($f),
+            fread($file->file, 10*1024)
+        );
+    }
+
+    public function testBytesDelete()
+    {
+        $conn = getConnection(true);
+        $file = new Files;
+        $file->id = "/foobar_raw_yy";
+        $file->namexxx = "foobar";
+        $conn->file($file)->storeFile(__FILE__);
+
+        $this->assertEquals(
+            file_get_contents(__FILE__),
+            fread($file->file, 10*1024)
+        );
+        
+        $raw = $conn->getDatabase();
+        $tbl = (!empty($_SERVER['NAMESPACE']) ? $_SERVER['NAMESPACE'] : "") . "fs.chunks";
+        $this->assertEquals(1, $raw->selectCollection($tbl)->count(array('files_id' => '/foobar_raw_yy')));
+
+        $conn->delete($file);
+
+        $this->assertEquals(0, $raw->selectCollection($tbl)->count(array('files_id' => '/foobar_raw_yy')));
+    }
+
     public function testStoreFile()
     {
         $conn = getConnection(true);
@@ -64,24 +107,6 @@ class GridFsTest extends \phpunit_framework_testcase
         $file->id = "/foobar";
         $file->namexxx = "foobar";
         $conn->file($file)->storeFile(__FILE__);
-    }
-
-    /** @expectedException RuntimeException */
-    public function testFileNoUpdateReference()
-    {
-        $conn = getConnection(true);
-        $file = new Files;
-        $file->id = "/foobarxxx";
-        $file->namexxx = "foobar";
-        $conn->file($file)->storeFile(__FILE__);
-
-
-        $user = new UserDocument;
-        $user->username = "crodas-avatar";
-        $user->object = $file;
-        $conn->save($user);
-
-        $conn->file($user->object)->storeFile(__FILE__);
     }
 
     /** @expectedException RuntimeException */
@@ -93,19 +118,6 @@ class GridFsTest extends \phpunit_framework_testcase
         $file->namexxx = "foobar";
         $conn->file($file)->storeFile('/tmp/' . uniqid(true));
     }
-
-    /** @expectedException RuntimeException */
-    public function testFileNoUpdate()
-    {
-        $conn = getConnection(true);
-        $file = new Files;
-        $file->id = "/foobarx";
-        $file->namexxx = "foobar";
-        $conn->file($file)->storeFile(__FILE__);
-
-        $conn->file($file)->storeFile(__FILE__);
-    }
-
 
     /** @expectedException RuntimeException */
     public function testFileStoreFailed()
@@ -184,6 +196,8 @@ class GridFsTest extends \phpunit_framework_testcase
         foreach ($col->find() as $file) {
             $this->assertTrue($file instanceof Files);
             $this->assertEquals($file->namexxx, "foobar");
+            $this->assertNotNull($file->uploadDate);
+            $this->assertTrue($file->length > 0);
         }
         $this->assertTrue(is_resource($file->file));
     }

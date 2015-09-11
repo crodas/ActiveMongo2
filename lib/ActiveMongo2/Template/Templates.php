@@ -719,6 +719,15 @@ namespace {
                 echo "\n";
                 if ($collection->is('GridFs')) {
                     echo "            if (!\$data instanceof \\MongoGridFsFile) {\n                throw new \\RuntimeException(\"Internal error, trying to populate a GridFSFile with an array\");\n            }\n            \$data_file = \$data;\n            \$data      = \$data->file;\n            if (empty(\$data['metadata'])) {\n                \$data['metadata'] = [];\n            }\n";
+                    foreach(array("length", "chunkSize", "md5", "uploadDate") as $key) {
+
+                        $this->context['key'] = $key;
+                        echo "                \$data['metadata'][";
+                        var_export($key);
+                        echo "] = \$data[";
+                        var_export($key);
+                        echo "];\n";
+                    }
                 }
                 else {
                     echo "\n            if (!is_array(\$data)) {\n                throw new \\RuntimeException(\"Internal error, trying to populate a document with a wrong data\");\n            }\n";

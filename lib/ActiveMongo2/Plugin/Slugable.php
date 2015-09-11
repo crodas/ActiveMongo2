@@ -37,34 +37,18 @@
 
 namespace ActiveMongo2\Plugin;
 
+use slugifier as s;
+
 /**
  *  @Plugin(Sluggable)
+ *  @Plugin(Slugable)
  *  @Last
  */
-class Sluggable
+class Slugable
 {
-    protected static function cleanText($text)
+    public static function slugify($text)
     {
-        // replace non letter or digits by -
-        $text = preg_replace('~[^\\pL\d]+~u', '-', $text);
-
-        // trim
-        $text = trim($text, '-');
-
-        // transliterate
-        if (function_exists('iconv')) {
-            $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
-        }
-
-        // lowercase
-        $text = strtolower($text);
-
-        // remove unwanted characters
-        return preg_replace('~[^-\w]+~', '', $text);
-    }
-    public static function sluggify($text)
-    {
-        $text = self::cleanText($text);
+        $text = s\slugify($text);
         if (empty($text)) {
             return 'n-a';
         }
@@ -75,7 +59,7 @@ class Sluggable
     protected static function check($args)
     {
         if (count($args) != 2) {
-            throw new \RuntimeException("@Sluggable expects two arguments");
+            throw new \RuntimeException("@Slugable expects two arguments");
         }
     }
 
@@ -97,8 +81,8 @@ class Sluggable
 
         if (empty($obj->$target)) {
             // Rarely use case
-            // @Sluggable has been added and old documents are being update
-            $slug = self::sluggify($source);
+            // @Slugable has been added and old documents are being update
+            $slug = self::slugify($source);
             $document['$set'][$target] = self::checkSlug($conn, $obj, $target, $slug);
         }
 
@@ -121,8 +105,12 @@ class Sluggable
     protected static function checkSlug($conn, $obj, $cname, $slug)
     {
         $col  = $conn->getCollection($obj);
-        while ( $col->count(array($cname => $slug)) != 0) {
-            $slug .= '-' . uniqid(true);
+        while ($col->count(array($cname => $slug)) > 0) {
+            if (is_callable(array($obj, 'slugDupls'))) {
+                $slug = $this->slugDups($cname, $slug);
+            } else {
+                $slug .= '-' . uniqid(true);
+            }
         }
 
         return $slug;
@@ -137,9 +125,9 @@ class Sluggable
 
         $document = &$event_args[0];
         if (!empty($document[$args[1]])) {
-            $slug = self::sluggify($document[$args[1]]);
+            $slug = self::slugify($document[$args[1]]);
         } else{
-            $slug = self::sluggify(self::text($document, $args[0]) ?: 'n-a');
+            $slug = self::slugify(self::text($document, $args[0]) ?: 'n-a');
         }
 
         $document[$args[1]] = self::checkSlug($conn, $obj, $args[1], $slug);
