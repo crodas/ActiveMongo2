@@ -682,9 +682,14 @@ class SimpleTest extends \phpunit_framework_testcase
         $conn = getConnection();
         $doc  = new BinaryDoc;
         $doc->content = file_get_contents(__FILE__);
+        $doc->base64  = base64_encode("cesar");
         $conn->save($doc);
         $doc2 = $conn->_binary->findOne();
         $this->assertEquals($doc->content, $doc2->content);
+        $this->assertEquals($doc->base64, base64_encode("cesar"));
+        $object = $conn->_binary->rawCollection()->findOne();
+        $this->assertTrue($object['content'] instanceof MongoBinData);
+        $this->assertTrue($object['base64'] instanceof MongoBinData);
     }
 
 }

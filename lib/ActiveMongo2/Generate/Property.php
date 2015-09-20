@@ -54,10 +54,11 @@ class Property extends Base
         if ($annotation->GetName() == 'datatype') {
             return;
         }
+        $type = current($annotation->GetArgs());
         if ($this->type === null) {
-            $this->type = current($annotation->GetArgs());
-        } else {
-            throw new \Exception("{$this->getPHPName()} has two data tyeps {$type} and {$this->type}");
+            $this->type = $type;
+        } else if  ($this->type !== $type) {
+            throw new \Exception("{$this->getPHPName()} has two data types {$type} and {$this->type}");
         }
     }
 
