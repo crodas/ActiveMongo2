@@ -55,7 +55,7 @@ function _hydratate_base64(&$value)
  */
 function _validate_base64(&$value)
 {
-    $value = new MongoBinData(base64_decode($value), 2);
+    $value = new MongoBinData(base64_decode($value), MongoBinData::GENERIC);
     return true;
 }
 
