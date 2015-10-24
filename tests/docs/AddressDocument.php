@@ -2,7 +2,7 @@
 
 namespace ActiveMongo2\Tests\Document;
 
-/** @Embeddable("Address") */
+/** @Embeddable("AddRess") */
 class AddressDocument
 {
     /** @String */
