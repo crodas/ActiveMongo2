@@ -37,6 +37,9 @@ class UserDocument
     /** @EmbedMany(class="Address") */
     public $addresses;
 
+    /** @EmbedMany(class="Address") @UniqueBy("city") */
+    public $uaddresses;
+
     // guess the type at run time
     /** @Embed */
     public $something;

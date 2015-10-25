@@ -51,10 +51,13 @@ class Property extends Base
 
     protected function getTypeFromAnnotation($annotation)
     {
-        if ($annotation->GetName() == 'datatype') {
-            return;
+        $annotations = $annotation->getParent();
+        if ($annotations->has('datatype')) {
+            $type = $annotations->getOne('datatype')->getArg();
         }
-        $type = current($annotation->GetArgs());
+        if (empty($type)) {
+            $type = current($annotation->GetArgs());
+        }
         if ($this->type === null) {
             $this->type = $type;
         } else if  ($this->type !== $type) {
