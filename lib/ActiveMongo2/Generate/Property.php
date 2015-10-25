@@ -121,6 +121,9 @@ class Property extends Base
                 $type->name = $name;
             }
         }
+        uasort($types, function($a, $b) {
+            return $a->getWeight() - $b->getWeight();
+        });
         return $this->callbackCache[$filter] = $types;
     }
 

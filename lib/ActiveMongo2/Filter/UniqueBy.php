@@ -39,6 +39,7 @@ namespace ActiveMongo2\Filter;
 /**
  *  @Validate UniqueBy
  *  @DataType Array
+ *  @Last
  */
 function filter_by_filter(&$values, Array $args, $connection, Array $annotation)
 {
