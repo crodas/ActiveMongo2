@@ -36,26 +36,23 @@
 */
 namespace ActiveMongo2\Filter;
 
-use MongoBinData;
-
 /**
- *  @Hydratate BinBase64
+ *  @Validate UniqueBy
+ *  @DataType Array
+ *  @Last
  */
-function _hydratate_base64(&$value)
+function filter_by_filter(&$values, Array $args, $connection, Array $annotation)
 {
-    if ($value instanceof MongoBinData) {
-        $value = $value->bin;
+    $property = current($annotation);
+    if (!empty($property)) {
+        $unique = array();
+        foreach ($values as $id => $obj) {
+            if (!empty($obj[$property])) {
+                $unique[$obj[$property]] = $obj;
+            } else {
+                $unique[] = $obj;
+            }
+        }
+        $values = array_values($unique);
     }
-    $value = base64_encode($value);
-    return true;
 }
-
-/**
- *  @Validate BinBase64
- */
-function _validate_base64(&$value)
-{
-    $value = new MongoBinData(base64_decode($value), 0x00);
-    return true;
-}
-

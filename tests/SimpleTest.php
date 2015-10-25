@@ -320,6 +320,9 @@ class SimpleTest extends \phpunit_framework_testcase
         $addr = new AddressDocument;
         $addr->city = "Asuncion";
 
+        $addr1 = new AddressDocument;
+        $addr1->city = "Luque";
+
         $conn = getConnection();
         $user = new UserDocument;
         $user->username = "foobar";
@@ -331,6 +334,11 @@ class SimpleTest extends \phpunit_framework_testcase
         $user->addresses[] = $addr;
         $user->addresses[] = $addr;
 
+        $user->uaddresses[] = $addr;
+        $user->uaddresses[] = $addr;
+        $user->uaddresses[] = $addr1;
+        $user->uaddresses[] = $addr1;
+
         $conn->save($user);
         $user->visits += 10;
         $conn->save($user);
@@ -340,6 +348,7 @@ class SimpleTest extends \phpunit_framework_testcase
         $user2->visits += 10;
         $user2->address->city = "Luque";
         $user2->addresses[2]->city = "CDE";
+        $this->assertEquals(2, count($user2->uaddresses));
         $conn->save($user);
 
         $user->visits  += 10;

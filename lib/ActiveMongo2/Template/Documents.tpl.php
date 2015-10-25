@@ -129,6 +129,7 @@ class Mapper
 
     public function mapCollection($col)
     {
+        $col = strtolower($col);
         if (empty($this->mapper[$col])) {
             throw new \RuntimeException("Cannot map {$col} collection to its class");
         }

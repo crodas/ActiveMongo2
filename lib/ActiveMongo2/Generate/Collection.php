@@ -314,8 +314,9 @@ class Collection extends Base
             return NULL;
         } 
         
-        return $this->getNameFromParent()
+        $name = $this->getNameFromParent()
             ?: $this->getNameFromAnnotation($args, [0, 'collection']);
+        return strtolower($name);
     }
 
     public function getAnnotationByName($name)

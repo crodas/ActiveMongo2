@@ -60,6 +60,18 @@ class Type extends Base
     {
         return $this->getFunction();
     }
+    
+    public function getWeight()
+    {
+        $annotations = $this->annotation->getParent();
+        if ($annotations->has('last')) {
+            return 100;
+        } 
+        if ($annotations->has('first')) {
+            return -100;
+        }
+        return 0;
+    }
 
     protected function getFunctionBodyStart(&$name)
     {
