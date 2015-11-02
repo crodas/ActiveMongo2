@@ -816,8 +816,8 @@ namespace {
                     else {
                         echo "                \$property = new \\ReflectionProperty(\$object, ";
                         var_export($prop->getPHPName());
-                        echo ");\n                \$property->setAccessible(true);\n                ";
-                        echo $prop->getPHPVariable() . " = \$property->getValue(\$object);\n";
+                        echo ");\n                \$property->setAccessible(true);\n                \$value = \$property->getValue(\$object);\n                if (\$value !== NULL) {\n                    ";
+                        echo $prop->getPHPVariable() . " = \$value;\n                }\n";
                     }
 
                 }

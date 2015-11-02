@@ -920,7 +920,10 @@ class Mapper
             @else
                 $property = new \ReflectionProperty($object, {{ @$prop->getPHPName() }});
                 $property->setAccessible(true);
-                {{$prop->getPHPVariable()}} = $property->getValue($object);
+                $value = $property->getValue($object);
+                if ($value !== NULL) {
+                    {{$prop->getPHPVariable()}} = $value;
+                }
             @end
         @end
 
