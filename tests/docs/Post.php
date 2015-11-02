@@ -29,6 +29,9 @@ class PostDocument extends Middle
     /** @FileUpload(Path => ../tmp-files, Validate => text) */
     public $www_file;
 
+    /** @Reference(ActiveMongo2\Tests\Document\PostDocument) */
+    protected $xxxx;
+
     /** @Array @Limit(-3) */
     public $array = array();
 
