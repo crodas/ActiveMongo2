@@ -445,6 +445,19 @@ class SimpleTest extends \phpunit_framework_testcase
             ->getById(0xffffff);
     }
 
+    public function testGetById_WithMongoIdString()
+    {
+        $conn = getConnection();
+        $x = new BinaryDoc; 
+        $x->content = "hi there";
+        $conn->save($x);
+        $this->assertTrue($x->id instanceof MongoId);
+        $y = $conn->_binary->getById((string)$x->id);
+        $this->assertEquals($x, $y);
+        $conn->delete($x);
+    }
+
+
     /** @dependsOn testArray1 */
     public function testGetById()
     {
@@ -514,7 +527,6 @@ class SimpleTest extends \phpunit_framework_testcase
         $user->username = "crodas";
 
         $conn->save($user);
-
 
         $post = new PostDocument;
         $post->author_ref = $user;

@@ -5,6 +5,9 @@
  */ 
 class BinaryDoc
 {
+    /** @Id */
+    public $id;
+
     /** @Binary */
     public $content;
 
