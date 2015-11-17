@@ -36,6 +36,7 @@
 */
 namespace ActiveMongo2;
 
+use MongoId;
 use MongoCollection;
 use IteratorAggregate;
 
@@ -197,6 +198,9 @@ class Collection implements IteratorAggregate
     {
         if (is_string($id) && is_numeric($id)) {
             return ['$in' => [$id, $id+0]];
+        }
+        if (is_string($id) && preg_match("/^[a-f0-9]{24}$/i", $id)) {
+            return ['$in' => [$id, new MongoId($id)]];
         }
 
         return $id;

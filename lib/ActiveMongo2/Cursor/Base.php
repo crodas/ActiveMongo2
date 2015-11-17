@@ -63,7 +63,7 @@ trait Base
         $this->skip(($page-1)*$perPage)
             ->limit($perPage);
 
-        $pages = range(1, ceil($total/$perPage));
+        $pages = range(1, max(1, ceil($total/$perPage)));
         $pages = array_merge(
             array_slice($pages, max(0,$page-3), 10),
             array_slice($pages, -2)

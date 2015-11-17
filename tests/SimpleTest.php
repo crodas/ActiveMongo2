@@ -63,6 +63,10 @@ class SimpleTest extends \phpunit_framework_testcase
     public function testPagination()
     {
         $conn = getConnection();
+        $userCol = $conn->getCollection('user');
+        $cursor = $userCol->find();
+        $pages = $cursor->paginate(1, 20);
+        $this->assertEquals(['current' => 1, 'pages' => [1]], $pages);
         for ($i=0; $i < 1000; $i++) {
             $user = new UserDocument;
             $user->username = "crodas-" . rand(0, 0xfffff);
@@ -445,6 +449,19 @@ class SimpleTest extends \phpunit_framework_testcase
             ->getById(0xffffff);
     }
 
+    public function testGetById_WithMongoIdString()
+    {
+        $conn = getConnection();
+        $x = new BinaryDoc; 
+        $x->content = "hi there";
+        $conn->save($x);
+        $this->assertTrue($x->id instanceof MongoId);
+        $y = $conn->_binary->getById((string)$x->id);
+        $this->assertEquals($x, $y);
+        $conn->delete($x);
+    }
+
+
     /** @dependsOn testArray1 */
     public function testGetById()
     {
@@ -514,7 +531,6 @@ class SimpleTest extends \phpunit_framework_testcase
         $user->username = "crodas";
 
         $conn->save($user);
-
 
         $post = new PostDocument;
         $post->author_ref = $user;
