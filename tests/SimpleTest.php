@@ -63,6 +63,10 @@ class SimpleTest extends \phpunit_framework_testcase
     public function testPagination()
     {
         $conn = getConnection();
+        $userCol = $conn->getCollection('user');
+        $cursor = $userCol->find();
+        $pages = $cursor->paginate(1, 20);
+        $this->assertEquals(['current' => 1, 'pages' => [1]], $pages);
         for ($i=0; $i < 1000; $i++) {
             $user = new UserDocument;
             $user->username = "crodas-" . rand(0, 0xfffff);
