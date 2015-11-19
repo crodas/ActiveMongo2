@@ -40,8 +40,6 @@ use MongoClient;
 
 class Client extends Connection
 {
-    protected $config;
-
     public function __construct(MongoClient $mongo, $dbName, $directory)
     {
         $config = new Configuration;
@@ -50,12 +48,6 @@ class Client extends Connection
             $config->development();
         }
 
-        $this->config = $config;
-        parent::__construct($this->config, $mongo, $dbName);
-    }
-
-    public function getConfig()
-    {
-        return $this->config;
+        parent::__construct($config, $mongo, $dbName);
     }
 }

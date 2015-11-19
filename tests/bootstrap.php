@@ -21,10 +21,6 @@ function getConnection($cache = false)
         if (!$first) print "Using namespace {$_SERVER['NAMESPACE']}\n";
         $conf->SetNamespace($_SERVER["NAMESPACE"]);
     }
-    if ($cache) {
-        $conf->setCacheStorage(new \ActiveMongo2\Cache\Storage\Memory);
-    }
-
     if (!$first) {
         $mongo = new MongoClient;
         $mongo->selectDB('activemongo2_tests')->drop();
@@ -38,6 +34,11 @@ function getConnection($cache = false)
         $zconn = new \ActiveMongo2\Connection($conf, new MongoClient, 'activemongo2_tests');
     }
     $zconn->AddConnection('foobar', new MongoClient, 'activemongo2_tests_foobar', 'zzzz');
+
+    if ($cache) {
+        $conf->setCacheStorage(new \ActiveMongo2\Cache\Storage\Memory);
+    }
+
 
     return $zconn;
 }
