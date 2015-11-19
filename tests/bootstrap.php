@@ -31,9 +31,13 @@ function getConnection($cache = false)
         $mongo->selectDB('activemongo2_tests_foobar')->drop();
     }
 
-    $zconn = new \ActiveMongo2\Connection($conf, new MongoClient, 'activemongo2_tests');
-    $zconn->AddConnection('foobar', new MongoClient, 'activemongo2_tests_foobar', 'zzzz');
     $first = true;
+    if (empty($_SERVER["NAMESPACE"])) {
+        $zconn = new \ActiveMongo2\Client(new MongoClient, 'activemongo2_tests', __DIR__ . '/docs');
+    } else {
+        $zconn = new \ActiveMongo2\Connection($conf, new MongoClient, 'activemongo2_tests');
+    }
+    $zconn->AddConnection('foobar', new MongoClient, 'activemongo2_tests_foobar', 'zzzz');
 
     return $zconn;
 }
