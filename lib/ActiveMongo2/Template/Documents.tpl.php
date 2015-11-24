@@ -1065,12 +1065,17 @@ class Mapper
         protected function event_{{$ev}}_{{sha1($collection->getClass())}}($document, Array $args)
         {
             $class = $this->get_class($document);
+            @if (!$collection->isTrait())
             if ($class != {{$collection->getClassCode()}} && !is_subclass_of($class, {{$collection->getClassCode()}})) {
                 throw new \Exception("Class invalid class name ($class) expecting  "  . {{$collection->getClassCode()}});
             }
-            @if ($collection->getParent() && $collection->getParent()->hasEvent($ev))
-                @set($method, "event_" . $ev . "_" . sha1($collection->getParent()->getClass()))
+            @end
+
+            @foreach ($collection->getParentAndTraits() as $parent)
+                @if ($parent->hasEvent($ev))
+                @set($method, "event_" . $ev . "_" . sha1($parent->getClass()))
                 $this->{{$method}}($document, $args);
+                @end
             @end
 
             @foreach ($collection->getMethodsByAnnotation($ev) as $method)

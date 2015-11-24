@@ -963,13 +963,20 @@ namespace {
                     if ($collection->hasEvent($ev)) {
                         echo "    /**\n     *  Code for ";
                         echo $ev . " events for objects " . ($collection->getClass()) . "\n     */\n        protected function event_";
-                        echo $ev . "_" . (sha1($collection->getClass())) . "(\$document, Array \$args)\n        {\n            \$class = \$this->get_class(\$document);\n            if (\$class != ";
-                        echo $collection->getClassCode() . " && !is_subclass_of(\$class, " . ($collection->getClassCode()) . ")) {\n                throw new \\Exception(\"Class invalid class name (\$class) expecting  \"  . ";
-                        echo $collection->getClassCode() . ");\n            }\n";
-                        if ($collection->getParent() && $collection->getParent()->hasEvent($ev)) {
-                            $method = "event_" . $ev . "_" . sha1($collection->getParent()->getClass());
-                            $this->context['method'] = $method;
-                            echo "                \$this->" . ($method) . "(\$document, \$args);\n";
+                        echo $ev . "_" . (sha1($collection->getClass())) . "(\$document, Array \$args)\n        {\n            \$class = \$this->get_class(\$document);\n";
+                        if (!$collection->isTrait()) {
+                            echo "            if (\$class != " . ($collection->getClassCode()) . " && !is_subclass_of(\$class, " . ($collection->getClassCode()) . ")) {\n                throw new \\Exception(\"Class invalid class name (\$class) expecting  \"  . ";
+                            echo $collection->getClassCode() . ");\n            }\n";
+                        }
+                        echo "\n";
+                        foreach($collection->getParentAndTraits() as $parent) {
+
+                            $this->context['parent'] = $parent;
+                            if ($parent->hasEvent($ev)) {
+                                $method = "event_" . $ev . "_" . sha1($parent->getClass());
+                                $this->context['method'] = $method;
+                                echo "                \$this->" . ($method) . "(\$document, \$args);\n";
+                            }
                         }
                         echo "\n";
                         foreach($collection->getMethodsByAnnotation($ev) as $method) {
