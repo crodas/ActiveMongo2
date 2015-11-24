@@ -1,11 +1,13 @@
 @if (!$self->isEmbeddable())
     if (empty(self::$loaded[{{@$self->getPath()}}])) {
-        @if ($self->isClass() || $self->isMethod())
-            if (!class_exists({{@$self->getClass()}}, false)) {
+        @if ($self->isClass())
+            if (!{{$self->getAnnotation()->getObject()->getType()}}_exists({{@$self->getClass()}}, false)) {
+        @elif ($self->isMethod())
+            if (!{{$self->getAnnotation()->getObject()->getClass()->getObject()->getType()}}_exists({{@$self->getClass()}}, false)) {
         @else
             if (!function_exists({{@$self->getFunction()}})) {
         @end
-            require __DIR__ . {{@$self->getPath()}};
+            require {{@$self->getPath()}};
         }
         self::$loaded[{{@$self->getPath()}}] = true;
     }

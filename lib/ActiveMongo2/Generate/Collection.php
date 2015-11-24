@@ -207,6 +207,7 @@ class Collection extends Base
     {
         return [
             'class' => $this->getClass(),
+            'verify'  => $this->annotation->getObject()->getType() . '_exists',
             'dir'   => dirname($this->getPath()),
             'file'  => $this->getPath(),
             'name'  => $this->getName(),

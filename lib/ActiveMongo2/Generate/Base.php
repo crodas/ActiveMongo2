@@ -141,6 +141,6 @@ abstract class Base
 
     public function getPath()
     {
-        return Generate::getRelativePath($this->annotation->getFile());
+        return $this->annotation->getFile();
     }
 }
