@@ -57,7 +57,7 @@ class Mapper
             return $dir;
         }
         $info = $this->mapClass($object);
-        return __DIR__ . $info['dir'] . "/" . $dir;
+        return $info['dir'] . "/" . $dir;
     }
 
     protected function array_diff(Array $arr1, Array $arr2)
@@ -87,7 +87,7 @@ class Mapper
         $class = strtolower($class);
         if (!empty($this->class_files[$class])) {
             self::$loaded[$this->class_files[$class]] = true;
-            require __DIR__ . $this->class_files[$class];
+            require $this->class_files[$class];
 
             return true;
         }
@@ -103,8 +103,8 @@ class Mapper
         }
 
         if (empty(self::$loaded[$data['file']])) {
-            if (!class_exists($data['class'], false)) {
-                require __DIR__ .  $data['file'];
+            if (!$data['verify']($data['class'], false)) {
+                require $data['file'];
             }
             self::$loaded[$data['file']] = true;
         }
@@ -137,8 +137,8 @@ class Mapper
         $data = $this->mapper[$col];
 
         if (empty(self::$loaded[$data['file']])) {
-            if (!class_exists($data['class'], false)) {
-                require __DIR__ .  $data['file'];
+            if (!$data['verify']($data['class'], false)) {
+                require $data['file'];
             }
             self::$loaded[$data['file']] = true;
         }
@@ -204,8 +204,8 @@ class Mapper
         $data = $this->class_mapper[$class];
 
         if (empty(self::$loaded[$data['file']])) {
-            if (!class_exists($data['class'], false)) {
-                require __DIR__ . $data['file'];
+            if (!$data['verify']($data['class'], false)) {
+                require $data['file'];
             }
             self::$loaded[$data['file']] = true;
         }

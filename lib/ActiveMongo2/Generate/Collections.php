@@ -83,10 +83,7 @@ class Collections extends ArrayObject
     {
         $classes = array();
         foreach ($this as $key => $value) {
-            $name = $value->GetName();
-            if ($name) {
-                $classes[strtolower($value->getClass())] = $value->getPath();
-            }
+            $classes[strtolower($value->getClass())] = $value->getPath();
         } 
         return $classes;
     }
