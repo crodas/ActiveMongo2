@@ -159,7 +159,12 @@ class Collection extends Base
             }
             $parent = $parent->getParent();
         }
-
+       
+        foreach ($this->annotation->getTraits() as $trait) {
+            if (empty($this->collections[$trait->getName()])) {
+                $this->collections[$trait->getName()] = new self($trait, $this->collections);
+            }
+        }
     }
 
     public function __construct(zClass $annotation, Collections $collections)
@@ -222,6 +227,11 @@ class Collection extends Base
             $prop = new Property($this, \Notoj\Object\Base::create($property, NULL));
         }
         return $prop;
+    }
+
+    public function isTrait()
+    {
+        return $this->annotation->getObject()->getType() === 'trait';
     }
 
     public function getClass()
@@ -327,6 +337,21 @@ class Collection extends Base
     public function getCollections()
     {
         return $this->collections;
+    }
+
+    public function getParentAndTraits()
+    {
+        $parents = array();
+        $parent  = $this->annotation->getParent();
+        if (!empty($parent)) {
+            $parents[] = $this->collections[$parent->GetName()];
+        }
+
+        foreach ($this->annotation->getTraits() as $trait) {
+            $parents[] = $this->collections[$trait->GetName()];
+        }
+
+        return $parents;
     }
 
     public function getParent()

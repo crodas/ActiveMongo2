@@ -159,7 +159,9 @@ class SimpleTest extends \phpunit_framework_testcase
             $post->array  = [1];
             $post->readers[] = $user;
             $post->author_id = $user->userid;
+            $GLOBALS['traited'] = false;
             $conn->save($post);
+            $this->assertTrue($GLOBALS['traited']);
             $this->assertTrue($doc instanceof UserDocument);
             $this->assertTrue($post instanceof PostDocument);
         }

@@ -25,9 +25,10 @@ function getConnection($cache = false)
         $mongo = new MongoClient;
         $mongo->selectDB('activemongo2_tests')->drop();
         $mongo->selectDB('activemongo2_tests_foobar')->drop();
+        $config = new ActiveMongo2\Configuration;
+        unlink($config->getLoader());
     }
 
-    $first = true;
     if (empty($_SERVER["NAMESPACE"])) {
         $zconn = new \ActiveMongo2\Client(new MongoClient, 'activemongo2_tests', __DIR__ . '/docs');
     } else {
@@ -39,6 +40,7 @@ function getConnection($cache = false)
         $conf->setCacheStorage(new \ActiveMongo2\Cache\Storage\Memory);
     }
 
+    $first = true;
 
     return $zconn;
 }

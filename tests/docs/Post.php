@@ -2,6 +2,14 @@
 
 namespace ActiveMongo2\Tests\Document;
 
+trait foobartrait
+{
+    /** @presave */
+    public function dosomethignelse() {
+        $GLOBALS['traited'] = true;
+    }
+}
+
 class Middle extends BaseDocument
 {
     /**
@@ -19,6 +27,7 @@ class Middle extends BaseDocument
 class PostDocument extends Middle
 {
     use \ActiveMongo2\Query;
+    use foobartrait;
 
     /** @Universal @Index(desc) */
     public $global_id;
