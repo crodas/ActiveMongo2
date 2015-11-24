@@ -4,7 +4,7 @@ namespace ActiveMongo2\Tests\Document;
 
 trait foobartrait
 {
-    /** @presave */
+    /** @postsave */
     public function dosomethignelse() {
         $GLOBALS['traited'] = true;
     }

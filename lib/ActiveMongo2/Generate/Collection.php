@@ -98,10 +98,14 @@ class Collection extends Base
 
     public function hasEvent($ev)
     {
-        $hasEvent = count($this->getMethodsByAnnotation($ev)) > 0 || in_array($ev, ['postCreate', 'postUpdate'])
-            || ($this->getParent() && $this->getParent()->hasEvent($ev));
+        $hasEvent = count($this->getMethodsByAnnotation($ev)) > 0 || in_array($ev, ['postCreate', 'postUpdate']);
 
         if (!$hasEvent) {
+            foreach ($this->getParentAndTraits() as $parent) {
+                if ($parent->hasEvent($ev)) {
+                    return true;
+                } 
+            }
             foreach ($this->getPlugins($ev) as $plugin) {
                 return true;
             }
