@@ -56,6 +56,17 @@ class Type extends Base
         return $this->annotation->getObject()->getName();
     }
 
+    public function isLast()
+    {
+        return $this->annotation->getParent()->has('last');
+    }
+
+    public function isAlwaysCheck()
+    {
+        return $this->annotation->getParent()->has('alwayscheck');
+    }
+
+
     public function getMethod()
     {
         return $this->getFunction();

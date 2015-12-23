@@ -43,6 +43,7 @@ use ActiveMongo2\DocumentProxy;
 /** 
  * @DefaultValue(AutoincrementBy) 
  * @DataType Int
+ * @AwaysCheck
  */
 function __autoincrement_field(Array $docs, Array $rargs, $conn, Array $args)
 {

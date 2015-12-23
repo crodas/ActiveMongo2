@@ -9,6 +9,7 @@ class CacheReferenceTest extends \phpunit_framework_testcase
         $conn = getConnection(true);
         $user = new UserDocument;
         $user->username = "crodas:" . uniqid();
+        $user->pass = "foobar";
         $conn->save($user);
 
         $post = new PostDocument;

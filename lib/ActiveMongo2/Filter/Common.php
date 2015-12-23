@@ -165,6 +165,7 @@ function _validate_float(&$value)
 /**
  *  @Validate(Password)
  *  @DataType Password
+ *  @Last
  *  @Embed
  */
 function _validate_password(&$value, $args)
