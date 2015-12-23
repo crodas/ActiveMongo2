@@ -7,7 +7,7 @@ namespace ActiveMongo2\Tests\Document;
  * @Unupdatable("email")
  * @Universal(auto_increment=true,set_id=true)
  * @RefCache(username, email, visits)
- *  @Connection("foobar")
+ * @Connection("foobar")
  * @Elastica
  */
 class UserDocument
@@ -31,7 +31,7 @@ class UserDocument
     /** @Embed(class="Address") */
     public $address;
 
-    /** @Password("$username") */
+    /** @Password("$username") @MaxLength([16], "{$value} is an invalid password") */
     public $pass;
 
     /** @EmbedMany(class="Address") */

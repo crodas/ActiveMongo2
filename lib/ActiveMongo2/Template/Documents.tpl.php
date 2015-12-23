@@ -301,12 +301,13 @@ class Mapper
 
     public function validate($object)
     {
+        $old   = $this->getRawDocument($object);
         $class = strtolower($this->get_class($object));
         if (empty($this->class_mapper[$class])) {
             throw new \RuntimeException("Cannot map class {$class} to its document");
         }
 
-        return $this->{"validate_" . sha1($class)}($object);
+        return $this->{"validate_" . sha1($class)}($object, $old);
     }
 
     public function set_property($object, $name, $value)
@@ -991,11 +992,11 @@ class Mapper
     /**
      *  Validate {{$collection->getClass()}} object
      */
-    protected function validate_{{sha1($collection->getClass())}}(\{{$collection->getClass()}} $object)
+    protected function validate_{{sha1($collection->getClass())}}(\{{$collection->getClass()}} $object, Array $old)
     {
         @if ($collection->getParent())
             $doc = array_merge(
-                $this->validate_{{sha1($collection->getParent())}}($object),
+                $this->validate_{{sha1($collection->getParent())}}($object, $old),
                 $this->get_array_{{sha1($collection->getClass())}}($object, false)
             );
         @else 
@@ -1008,14 +1009,18 @@ class Mapper
                 throw new \RuntimeException("{{$prop.''}} cannot be empty");
             }
             @end
-            if (!empty({{$prop->getPHPVariable()}})) {
-            @foreach ($prop->getCallback('Validate') as $val)
-                {{$val->toCode($prop, $prop->getPHPVariable())}}
-                if ($return === FALSE) {
-                    throw new \RuntimeException("Validation failed for {{$prop.''}}");
-                }
-            @end
-
+            if (!empty({{$prop->getPHPVariable()}}) &&
+                   (empty({{$prop->getPHPVariable('$old')}}) ||
+                    {{$prop->getPHPVariable()}} !== {{$prop->getPHPVariable('$old')}} )) {
+                                                                                            
+                @foreach ($prop->getCallback('Validate') as $val)
+                    @if (!$val->isLast())
+                    {{$val->toCode($prop, $prop->getPHPVariable())}}
+                    if ($return === FALSE) {
+                        throw new \RuntimeException("Validation failed for {{$prop.''}}");
+                    }
+                    @end
+                @end
 
                 @if ($prop->getAnnotation()->has('Date'))
                     $_date = \date_create('@' . {{$prop->getPHPVariable()}}->sec);
@@ -1026,6 +1031,25 @@ class Mapper
                     if (v\validate_{{sha1($collection->getClass() . "::" . $prop->getPHPName())}}({{$prop->getPHPVariable()}}) === false) {
                         throw new \RuntimeException("Validation failed for {{$prop.''}}");
                     }
+                @end
+
+                @foreach ($prop->getCallback('Validate') as $val)
+                    @if ($val->isLast())
+                    {{$val->toCode($prop, $prop->getPHPVariable())}}
+                    if ($return === FALSE) {
+                        throw new \RuntimeException("Validation failed for {{$prop.''}}");
+                    }
+                    @end
+                @end
+            } else if (!empty({{$prop->getPHPVariable()}})) {
+                // always check
+                @foreach ($prop->getCallback('Validate') as $val)
+                    @if ($val->isAlwaysCheck())
+                    {{$val->toCode($prop, $prop->getPHPVariable())}}
+                    if ($return === FALSE) {
+                        throw new \RuntimeException("Validation failed for {{$prop.''}}");
+                    }
+                    @end
                 @end
             }
         @end
