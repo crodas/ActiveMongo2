@@ -353,5 +353,6 @@ class Collections extends ArrayObject
         $validator = new Validate('', '');
         $validator->setCollections($this);
         $this->validator = $validator->generateValidators();
+        $this->validator->setNamespace('Activemongo2\Generated\Validator' . uniqid(true));
     }
 }
