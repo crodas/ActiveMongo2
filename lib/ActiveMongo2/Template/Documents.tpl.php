@@ -2,7 +2,6 @@
 
 namespace {{trim($namespace, '\\')}};
 
-use {{$valns}} as v;
 use MongoClient;
 use ActiveMongo2\Connection;
 use Notoj\Annotation\Annotation;
@@ -1024,11 +1023,11 @@ class Mapper
 
                 @if ($prop->getAnnotation()->has('Date'))
                     $_date = \date_create('@' . {{$prop->getPHPVariable()}}->sec);
-                    if (v\validate_{{sha1($collection->getClass() . "::" . $prop->getPHPName())}}($_date) === false) {
+                    if ({{$validator->functionName($collection->getClass(), $prop->getPHPName())}}($_date) === false) {
                         throw new \RuntimeException("Validation failed for {{$prop.''}}");
                     }
-                @elif (!$prop->isCustom() && $validator->hasRules($collection->getClass() . "::" . $prop->getPHPName()))
-                    if (v\validate_{{sha1($collection->getClass() . "::" . $prop->getPHPName())}}({{$prop->getPHPVariable()}}) === false) {
+                @elif (!$prop->isCustom() && $validator->hasRules($collection->getClass(), $prop->getPHPName()))
+                    if ({{$validator->functionName($collection->getClass(),  $prop->getPHPName())}}({{$prop->getPHPVariable()}}) === false) {
                         throw new \RuntimeException("Validation failed for {{$prop.''}}");
                     }
                 @end
@@ -1157,7 +1156,7 @@ class ActiveMongo2Mapped
     }
 }
 
-{{ substr($validator->getCode(), 5) }}
+@include('validator')
 
 return array(
     "ns" => {{@trim($namespace, '\\')}},

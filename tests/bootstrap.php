@@ -1,5 +1,7 @@
 <?php
 
+use crodas\FileUtil\File;
+
 require __DIR__ . "/../vendor/autoload.php";
 
 @mkdir(__DIR__ . "/tmp");
@@ -7,6 +9,10 @@ foreach (glob(__DIR__ . "/tmp/*") as $delete) {
     echo "delete: $delete\n";
     unlink($delete);
 }
+
+File::overrideFilepathGenerator(function($prefix) {
+    return __DIR__ . '/tmp/';
+});
 
 function getConnection($cache = false)
 {

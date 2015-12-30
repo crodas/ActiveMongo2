@@ -141,6 +141,9 @@ class Collections extends ArrayObject
         if ($prop[1]->getAnnotation()->has('Geo')) {
             $order = '2dsphere';
         }
+        if ($prop[1]->getAnnotation()->has('fulltext')) {
+            $order = 'text';
+        }
 
         return $order;
     }
@@ -149,19 +152,23 @@ class Collections extends ArrayObject
     {
         $indexes = array();
         foreach ($this as $col) {
-            foreach ($col->getAnnotation()->get('Index,Unique', 'Property') as $prop) {
+            foreach ($col->getAnnotation()->get('Index,Unique,Fulltext', 'Property') as $prop) {
                 $index = array(
                     'field' => array(),
                     'col' => $col,
                     'extra' => array()
                 );
                 $args = $prop->getArgs();
+                $isFullText = $col->getAnnotation()->has('Fulltext');
                 foreach ($args as $name => $order) {
                     if (is_numeric($name)) {
                         $name  = $order;
                         $order = 1;
                     }
                     $index['field'][$name] = is_numeric($order) ? $order+0 : $order;
+                    if ($isFullText) {
+                        $index['field'][$name] = 'text';
+                    }
                 }
                 if ($col->getAnnotation()->has('Unique')) {
                     $index['extra'] = array("unique" => true);
@@ -178,7 +185,7 @@ class Collections extends ArrayObject
     {
         $indexes = $this->getIndexesFromCollections();
 
-        foreach ($this->getAllPropertiesWithAnnotation('Unique,Index') as $prop) {
+        foreach ($this->getAllPropertiesWithAnnotation('Unique,Index,Fulltext') as $prop) {
             $order = $this->getIndexOrder($prop);
             $index = array();
             $name  = $prop[1]->getParent()->getName() . "_" . $prop[1]->getName() . '_' .  $order;
@@ -192,7 +199,7 @@ class Collections extends ArrayObject
             }
 
             if (empty($indexes[$name])) {
-    $indexes[$name] = $index;
+                $indexes[$name] = $index;
             }
             
             $indexes[$name]['extra'] = array_merge($indexes[$name]['extra'], $index['extra']);
@@ -346,5 +353,6 @@ class Collections extends ArrayObject
         $validator = new Validate('', '');
         $validator->setCollections($this);
         $this->validator = $validator->generateValidators();
+        $this->validator->setNamespace('Activemongo2\Generated\Validator' . uniqid(true));
     }
 }

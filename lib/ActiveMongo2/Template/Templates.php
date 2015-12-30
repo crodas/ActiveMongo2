@@ -265,8 +265,7 @@ namespace {
             }
 
             echo "<?php\n\nnamespace ";
-            echo trim($namespace, '\\') . ";\n\nuse ";
-            echo $valns . " as v;\nuse MongoClient;\nuse ActiveMongo2\\Connection;\nuse Notoj\\Annotation\\Annotation;\nuse Notoj\\Annotation\\Annotations;\nuse Notoj;\n\n";
+            echo trim($namespace, '\\') . ";\n\nuse MongoClient;\nuse ActiveMongo2\\Connection;\nuse Notoj\\Annotation\\Annotation;\nuse Notoj\\Annotation\\Annotations;\nuse Notoj;\n\n";
             foreach($collections->byName() as $name => $class) {
 
                 $this->context['name'] = $name;
@@ -925,12 +924,12 @@ namespace {
                     }
                     echo "\n";
                     if ($prop->getAnnotation()->has('Date')) {
-                        echo "                    \$_date = \\date_create('" . "@" . "' . " . ($prop->getPHPVariable()) . "->sec);\n                    if (v\\validate_";
-                        echo sha1($collection->getClass() . "::" . $prop->getPHPName()) . "(\$_date) === false) {\n                        throw new \\RuntimeException(\"Validation failed for ";
+                        echo "                    \$_date = \\date_create('" . "@" . "' . " . ($prop->getPHPVariable()) . "->sec);\n                    if (";
+                        echo $validator->functionName($collection->getClass(), $prop->getPHPName()) . "(\$_date) === false) {\n                        throw new \\RuntimeException(\"Validation failed for ";
                         echo $prop.'' . "\");\n                    }\n";
                     }
-                    else if (!$prop->isCustom() && $validator->hasRules($collection->getClass() . "::" . $prop->getPHPName())) {
-                        echo "                    if (v\\validate_" . (sha1($collection->getClass() . "::" . $prop->getPHPName())) . "(" . ($prop->getPHPVariable()) . ") === false) {\n                        throw new \\RuntimeException(\"Validation failed for ";
+                    else if (!$prop->isCustom() && $validator->hasRules($collection->getClass(), $prop->getPHPName())) {
+                        echo "                    if (" . ($validator->functionName($collection->getClass(),  $prop->getPHPName())) . "(" . ($prop->getPHPVariable()) . ") === false) {\n                        throw new \\RuntimeException(\"Validation failed for ";
                         echo $prop.'' . "\");\n                    }\n";
                     }
 
@@ -1033,7 +1032,8 @@ namespace {
             }
             echo "}\n\nclass ActiveMongo2Mapped\n{\n    protected \$class;\n    protected \$data;\n\n    public function __construct(\$name, Array \$data)\n    {\n        \$this->class = \$name;\n        \$this->data  = \$data;\n    }\n\n    public function getClass()\n    {\n        return \$this->class;\n    }\n\n    public function getOriginal()\n    {\n        return \$this->data;\n    }\n\n    public function ";
             echo $instance . "_setOriginal(Array \$data)\n    {\n        \$this->data = \$data;\n    }\n}\n\n";
-            echo substr($validator->getCode(), 5) . "\n\nreturn array(\n    \"ns\" => ";
+            ActiveMongo2\Template\Templates::exec('validator', $this->context);
+            echo "\nreturn array(\n    \"ns\" => ";
             var_export(trim($namespace, '\\'));
             echo ",\n    \"validator\" => ";
             var_export($valns);
@@ -1321,6 +1321,93 @@ namespace {
         }
     }
 
+    /** 
+     *  Template class generated from Validator.tpl.php
+     */
+    class class_dcd0611a518789012418c0e75ffd0c19086462d0 extends base_template_df562f12800ad133cdbc6f040ca106a099504656
+    {
+
+        public function hasSection($name)
+        {
+
+            return false;
+        }
+
+
+        public function renderSection($name, Array $args = array(), $fail_on_missing = true)
+        {
+            if (!$this->hasSection($name)) {
+                if ($fail_on_missing) {
+                    throw new \RuntimeException("Cannot find section {$name}");
+                }
+                return "";
+            }
+
+        }
+
+        public function enhanceException(Exception $e, $section = NULL)
+        {
+            if (!empty($e->enhanced)) {
+                return;
+            }
+
+            $message = $e->getMessage() . "( IN " . 'Validator.tpl.php';
+            if ($section) {
+                $message .= " | section: {$section}";
+            }
+            $message .= ")";
+
+            $object   = new ReflectionObject($e);
+            $property = $object->getProperty('message');
+            $property->setAccessible(true);
+            $property->setValue($e, $message);
+
+            $e->enhanced = true;
+        }
+
+        public function render(Array $vars = array(), $return = false)
+        {
+            try {
+                return $this->_render($vars, $return);
+            } catch (Exception $e) {
+                if ($return) ob_get_clean();
+                $this->enhanceException($e);
+                throw $e;
+            }
+        }
+
+        public function _render(Array $vars = array(), $return = false)
+        {
+            $this->context = $vars;
+
+            extract($vars);
+            if ($return) {
+                ob_start();
+            }
+
+            $val = $validator->getVariables();
+            $this->context['val'] = $val;
+            $var = $val['var'];
+            $this->context['var'] = $var;
+            echo "\n";
+            foreach($val['functions'] as $name => $body) {
+
+                $this->context['name'] = $name;
+                $this->context['body'] = $body;
+                echo "function " . ($name) . " (" . ($var) . ")\n{\n    \$is_scalar = is_scalar(";
+                echo $var . ");\n    ";
+                echo $body->toCode($var) . "\n    return ";
+                echo $body->result . ";\n}\n\n";
+            }
+            echo "\n";
+
+            if ($return) {
+                return ob_get_clean();
+            }
+
+        }
+    }
+
 }
 
 namespace ActiveMongo2\Template {
@@ -1335,6 +1422,7 @@ namespace ActiveMongo2\Template {
                 1 => 'documents',
                 2 => 'reference/deferred',
                 3 => 'reference/update',
+                4 => 'validator',
             );
         }
 
@@ -1367,6 +1455,8 @@ namespace ActiveMongo2\Template {
                 'reference/deferred' => 'class_7e3d172c6b9ee7fd7d68e93c41ee0d852447ceca',
                 'reference/update.tpl.php' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
                 'reference/update' => 'class_f8c39509b1fb331e8b8ef22a135640af98725ce5',
+                'validator.tpl.php' => 'class_dcd0611a518789012418c0e75ffd0c19086462d0',
+                'validator' => 'class_dcd0611a518789012418c0e75ffd0c19086462d0',
             );
             $name = strtolower($name);
             if (empty($classes[$name])) {
