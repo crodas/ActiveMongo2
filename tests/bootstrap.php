@@ -43,7 +43,7 @@ function getConnection($cache = false)
     $zconn->AddConnection('foobar', new MongoClient, 'activemongo2_tests_foobar', 'zzzz');
 
     if ($cache) {
-        $conf->setCacheStorage(new \ActiveMongo2\Cache\Storage\Memory);
+        $zconn->setCacheStorage(new \ActiveMongo2\Cache\Storage\Memory);
     }
 
     $first = true;
