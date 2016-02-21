@@ -188,12 +188,47 @@ class Collection implements IteratorAggregate
         return $this->registerDocument($response);
     }
 
+    /**
+     *  Search in the database with the $query criteria and return the required $fields.
+     *
+     *  @param $query MongoDB's query syntax
+     *  @param $fields Fields to return
+     *
+     *  @return ActiveMongo2\Cursor\Cursor
+     */
     public function find($query = array(), $fields = array())
     {
         $this->mapper->onQuery($this->zclass, $query);
         return new Cursor\Cursor($query, $fields, $this->zconn, $this, $this->zcol, $this->mapper);
     }
 
+    /**
+     *  Get() is similar to find() but it throws an exception if query has
+     *  zero matches.
+     *
+     *  @param $query MongoDB's query syntax
+     *  @param $fields Fields to return
+     *
+     *  @return ActiveMongo2\Cursor\Cursor
+     */
+    public function get($query = array(), $fields = array())
+    {
+        $this->mapper->onQuery($this->zclass, $query);
+        $cursor = new Cursor\Cursor($query, $fields, $this->zconn, $this, $this->zcol, $this->mapper);
+        
+        if ($cursor->count() === 0) {
+            throw new Exception\NotFound;
+        }
+
+        return $cursor;
+    }
+
+    /**
+     *  Make sure the parameter looks like a document Id.
+     *
+     *  @param mixed $id
+     *  @return _id
+     */
     protected function getIdQuery($id)
     {
         if (is_string($id) && is_numeric($id)) {
@@ -206,6 +241,13 @@ class Collection implements IteratorAggregate
         return $id;
     }
 
+    /**
+     *  Search the document with {_id: $id} and returns the value. It will thrown a NotFound Exception
+     *  if the search has no records.
+     *
+     *  @param mixed $id    Document Id
+     *  @return object
+     */
     public function getById($id)
     {
         $cache = $this->cache->get([$this->zcol, $id]);

@@ -76,27 +76,27 @@ trait Query
         return $rows;
     }
 
-    public static function findOne(Array $filter)
+    public static function findOne(Array $filter = array(), Array $fields = array())
     {
-        return static::$conn->getCollection(__CLASS__)->findOne($filter);
+        return static::$conn->getCollection(__CLASS__)->findOne($filter, $fields);
     }
 
-    public static function find(Array $filter)
+    public static function find(Array $filter = array(), Array $fields = array())
     {
         return static::$conn->getCollection(__CLASS__)->find($filter);
     }
 
-    public static function where(Array $filter)
+    public static function where(Array $filter = array(), Array $fields = array())
     {
         return static::$conn->getCollection(__CLASS__)->find($filter);
     }
 
     public static function byId($id)
     {
-        return static::findById($id);
+        return static::getById($id);
     }
 
-    public static function findById($id)
+    public static function getById($id)
     {
         if (is_array($id)) {
             $cursor = static::$conn->getCollection(__CLASS__)->find(['_id' => ['$in' => $id]]);

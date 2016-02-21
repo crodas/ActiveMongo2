@@ -441,6 +441,18 @@ class SimpleTest extends \phpunit_framework_testcase
 
     /** 
      * @dependsOn testArray1 
+     * @expectedException ActiveMongo2\Exception\NotFound
+     */
+    public function testGetNotFound()
+    {
+        $conn = getConnection();
+        $doc = $conn->getCollection('post')
+            ->get(['_id' => 0xffffff]);
+    }
+
+
+    /** 
+     * @dependsOn testArray1 
      * @expectedException RuntimeException
      * @expectedExceptionMessage Cannot
      */

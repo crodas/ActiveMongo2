@@ -10,7 +10,7 @@ class QueryTest extends phpunit_framework_testcase
      */ 
     public function testFindNotFound()
     {
-        $doc = PostDocument::findById(0xffffff + ceil(mt_rand()*0xfffff));
+        $doc = PostDocument::getById(0xffffff + ceil(mt_rand()*0xfffff));
     }
 
     /**
@@ -18,7 +18,7 @@ class QueryTest extends phpunit_framework_testcase
      */ 
     public function testFindArrayException()
     {
-        $docs = PostDocument::findById([2, 0xfffffff]);
+        $docs = PostDocument::getById([2, 0xfffffff]);
     }
 
     public function getIds()
@@ -36,7 +36,7 @@ class QueryTest extends phpunit_framework_testcase
     public function testFindAndSave()
     {
         $ids = $this->getIds();
-        $doc = PostDocument::findById($ids[0]);
+        $doc = PostDocument::getById($ids[0]);
         $this->assertTrue($doc instanceof PostDocument);
         $doc->tags = ['something'];
         $doc->save();
