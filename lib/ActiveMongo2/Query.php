@@ -76,19 +76,30 @@ trait Query
         return $rows;
     }
 
-    public static function findOne(Array $filter = array(), Array $fields = array())
+
+    public static function getOne(Array $filter = [], Array $fields = [])
+    {
+        return static::$conn->getCollection(__CLASS__)->getOne($filter, $fields);
+    }
+
+    public static function get(Array $filter = [], Array $fields = [])
+    {
+        return static::$conn->getCollection(__CLASS__)->get($filter, $fields);
+    }
+
+    public static function findOne(Array $filter = [], Array $fields = [])
     {
         return static::$conn->getCollection(__CLASS__)->findOne($filter, $fields);
     }
 
-    public static function find(Array $filter = array(), Array $fields = array())
+    public static function find(Array $filter = [], Array $fields = [])
     {
-        return static::$conn->getCollection(__CLASS__)->find($filter);
+        return static::$conn->getCollection(__CLASS__)->find($filter, $fields);
     }
 
-    public static function where(Array $filter = array(), Array $fields = array())
+    public static function where(Array $filter = [], Array $fields = [])
     {
-        return static::$conn->getCollection(__CLASS__)->find($filter);
+        return static::$conn->getCollection(__CLASS__)->find($filter, $fields);
     }
 
     public static function byId($id)
@@ -108,7 +119,7 @@ trait Query
         return static::$conn->getCollection(__CLASS__)->getById($id);
     }
 
-    public static function sum($field, $where = array())
+    public static function sum($field, $where = [])
     {
         return static::$conn->getCollection(__CLASS__)->sum($field, $where);
     }

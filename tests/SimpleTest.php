@@ -191,6 +191,16 @@ class SimpleTest extends \phpunit_framework_testcase
         }
     }
 
+    public function testDoubleReference()
+    {
+        $x = new Foo;
+        $x->x = 1;
+        $x->bar = new Foo;
+        $x->save();
+
+        $this->assertTrue(getconnection()->getCollection('Foo')->is($x->bar));
+    }
+
     public function testReferenceSave()
     {
         $conn = getConnection();

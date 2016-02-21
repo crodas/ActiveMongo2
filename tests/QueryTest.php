@@ -16,6 +16,35 @@ class QueryTest extends phpunit_framework_testcase
     /**
      *  @expectedException ActiveMongo2\Exception\NotFound
      */ 
+    public function testGetoneNotFound()
+    {
+        $doc = PostDocument::getOne(['_id' => 0xffffff + ceil(mt_rand()*0xfffff)]);
+    }
+
+    public function testGetNoArgument()
+    {
+        $doc = PostDocument::get();
+        $this->assertTrue($doc instanceof ActiveMongo2\Cursor\Cursor);
+    }
+
+
+    public function testGetOneNoArgument()
+    {
+        $doc = PostDocument::getOne();
+        $this->assertTrue($doc instanceof PostDocument);
+    }
+
+    /**
+     *  @expectedException ActiveMongo2\Exception\NotFound
+     */ 
+    public function testGetNotFound()
+    {
+        $doc = PostDocument::get(['_id' => 0xffffff + ceil(mt_rand()*0xfffff)]);
+    }
+
+    /**
+     *  @expectedException ActiveMongo2\Exception\NotFound
+     */ 
     public function testFindArrayException()
     {
         $docs = PostDocument::getById([2, 0xfffffff]);
