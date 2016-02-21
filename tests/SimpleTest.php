@@ -191,6 +191,32 @@ class SimpleTest extends \phpunit_framework_testcase
         }
     }
 
+    public function testDoubleReference()
+    {
+        $x = new Foo;
+        $x->x = 1;
+        $x->bar = new Foo;
+        $x->save();
+
+        $this->assertTrue(getconnection()->getCollection('Foo')->is($x->bar));
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testConnectionException()
+    {
+        getConnection()->getConnection(uniqid(true));
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testGetDatabaseException()
+    {
+        getConnection()->getDatabase(uniqid(true));
+    }
+
     public function testReferenceSave()
     {
         $conn = getConnection();
@@ -438,6 +464,18 @@ class SimpleTest extends \phpunit_framework_testcase
         $zpost = $conn->getCollection('post')->findOne(['_id' => $post->id]);
         $this->assertEquals($zpost->tags, array_values($post->tags));
     }
+
+    /** 
+     * @dependsOn testArray1 
+     * @expectedException ActiveMongo2\Exception\NotFound
+     */
+    public function testGetNotFound()
+    {
+        $conn = getConnection();
+        $doc = $conn->getCollection('post')
+            ->get(['_id' => 0xffffff]);
+    }
+
 
     /** 
      * @dependsOn testArray1 

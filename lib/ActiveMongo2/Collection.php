@@ -106,7 +106,7 @@ class Collection implements IteratorAggregate
     }
 
 
-    public function update($filter, $update, $opts = array())
+    public function update($filter, $update, $opts = [])
     {
         $this->mapper->onQuery($this->zclass, $filter);
         $this->analizeUpdate($update);
@@ -115,7 +115,7 @@ class Collection implements IteratorAggregate
         return $this->zcol->update($filter, $update, $opts);
     }
 
-    public function remove($filter, $opts = array())
+    public function remove($filter, $opts = [])
     {
         $opts = array_merge(self::$defaultOpts, $opts);
         $opts['w'] = $this->config->getWriteConcern($opts['w']);
@@ -123,7 +123,7 @@ class Collection implements IteratorAggregate
         return $this->zcol->remove($filter, $opts);
     }
 
-    public function sum($key, $filter = array())
+    public function sum($key, $filter = [])
     {
         $this->mapper->onQuery($this->zclass, $filter);
         $object = $this->zcol->aggregate([
@@ -141,7 +141,7 @@ class Collection implements IteratorAggregate
         return $object['result'][0]['sum'];
     }
 
-    public function count($filter = array(), $skip = 0, $limit = 0)
+    public function count($filter = [], $skip = 0, $limit = 0)
     {
         $this->mapper->onQuery($this->zclass, $filter);
         return $this->zcol->count($filter, $skip, $limit);
@@ -188,12 +188,47 @@ class Collection implements IteratorAggregate
         return $this->registerDocument($response);
     }
 
-    public function find($query = array(), $fields = array())
+    /**
+     *  Search in the database with the $query criteria and return the required $fields.
+     *
+     *  @param $query MongoDB's query syntax
+     *  @param $fields Fields to return
+     *
+     *  @return ActiveMongo2\Cursor\Cursor
+     */
+    public function find($query = [], $fields = [])
     {
         $this->mapper->onQuery($this->zclass, $query);
         return new Cursor\Cursor($query, $fields, $this->zconn, $this, $this->zcol, $this->mapper);
     }
 
+    /**
+     *  Get() is similar to find() but it throws an exception if query has
+     *  zero matches.
+     *
+     *  @param $query MongoDB's query syntax
+     *  @param $fields Fields to return
+     *
+     *  @return ActiveMongo2\Cursor\Cursor
+     */
+    public function get($query = [], $fields = [])
+    {
+        $this->mapper->onQuery($this->zclass, $query);
+        $cursor = new Cursor\Cursor($query, $fields, $this->zconn, $this, $this->zcol, $this->mapper);
+        
+        if ($cursor->count() === 0) {
+            throw new Exception\NotFound;
+        }
+
+        return $cursor;
+    }
+
+    /**
+     *  Make sure the parameter looks like a document Id.
+     *
+     *  @param mixed $id
+     *  @return _id
+     */
     protected function getIdQuery($id)
     {
         if (is_string($id) && is_numeric($id)) {
@@ -206,6 +241,13 @@ class Collection implements IteratorAggregate
         return $id;
     }
 
+    /**
+     *  Search the document with {_id: $id} and returns the value. It will thrown a NotFound Exception
+     *  if the search has no records.
+     *
+     *  @param mixed $id    Document Id
+     *  @return object
+     */
     public function getById($id)
     {
         $cache = $this->cache->get([$this->zcol, $id]);
@@ -245,7 +287,34 @@ class Collection implements IteratorAggregate
         return new Cursor\Cache($object, $this->zconn, $this, $this->zcol, $this->mapper);
     }
 
-    public function findOne($query = array(), $fields = array())
+    /**
+     *  Similar to `findOne` but it will thrown an exception if the query has no result.
+     *
+     *  @param $query MongoDB's query syntax
+     *  @param $fields Fields to return
+     *
+     *  @return document
+     */
+    public function getOne($query = [], $fields = [])
+    {
+        $this->mapper->onQuery($this->zclass, $query);
+        $doc = $this->zcol->findOne($query, $fields);
+        if (empty($doc)) {
+            throw new Exception\NotFound;
+        }
+
+        return $this->registerDocument($doc);
+    }
+
+    /**
+     *  Similar to `find` but it returns the first document or null instead of a Cursor
+     *
+     *  @param $query MongoDB's query syntax
+     *  @param $fields Fields to return
+     *
+     *  @return document
+     */
+    public function findOne($query = [], $fields = [])
     {
         $this->mapper->onQuery($this->zclass, $query);
         $doc = $this->zcol->findOne($query, $fields);

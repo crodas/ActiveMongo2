@@ -10,7 +10,36 @@ class QueryTest extends phpunit_framework_testcase
      */ 
     public function testFindNotFound()
     {
-        $doc = PostDocument::findById(0xffffff + ceil(mt_rand()*0xfffff));
+        $doc = PostDocument::getById(0xffffff + ceil(mt_rand()*0xfffff));
+    }
+
+    /**
+     *  @expectedException ActiveMongo2\Exception\NotFound
+     */ 
+    public function testGetoneNotFound()
+    {
+        $doc = PostDocument::getOne(['_id' => 0xffffff + ceil(mt_rand()*0xfffff)]);
+    }
+
+    public function testGetNoArgument()
+    {
+        $doc = PostDocument::get();
+        $this->assertTrue($doc instanceof ActiveMongo2\Cursor\Cursor);
+    }
+
+
+    public function testGetOneNoArgument()
+    {
+        $doc = PostDocument::getOne();
+        $this->assertTrue($doc instanceof PostDocument);
+    }
+
+    /**
+     *  @expectedException ActiveMongo2\Exception\NotFound
+     */ 
+    public function testGetNotFound()
+    {
+        $doc = PostDocument::get(['_id' => 0xffffff + ceil(mt_rand()*0xfffff)]);
     }
 
     /**
@@ -18,7 +47,7 @@ class QueryTest extends phpunit_framework_testcase
      */ 
     public function testFindArrayException()
     {
-        $docs = PostDocument::findById([2, 0xfffffff]);
+        $docs = PostDocument::getById([2, 0xfffffff]);
     }
 
     public function getIds()
@@ -36,7 +65,7 @@ class QueryTest extends phpunit_framework_testcase
     public function testFindAndSave()
     {
         $ids = $this->getIds();
-        $doc = PostDocument::findById($ids[0]);
+        $doc = PostDocument::getById($ids[0]);
         $this->assertTrue($doc instanceof PostDocument);
         $doc->tags = ['something'];
         $doc->save();

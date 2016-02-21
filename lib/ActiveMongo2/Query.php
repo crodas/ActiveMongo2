@@ -42,15 +42,15 @@ trait Query
 
     public static function find_or_create_by(Array $object)
     {
-        return self::findOrCreateBy($object);
+        return static::findOrCreateBy($object);
     }
 
     public static function findOrCreateBy(Array $object)
     {
-        $col = self::$conn->getCollection(__CLASS__);
+        $col = static::$conn->getCollection(__CLASS__);
         $doc = $col->findOne($object);
         if (empty($doc)) {
-            $doc = new self;
+            $doc = new static;
             $col->populateFromArray($doc, $object);
         }
 
@@ -59,14 +59,14 @@ trait Query
 
     public static function setConnection(Connection $conn)
     {
-        self::$conn = $conn;
+        static::$conn = $conn;
     }
 
     public static function pluck()
     {
         $fields = func_Get_args();
         $rows   = [];
-        foreach (self::$conn->getCollection(__CLASS__)->rawCollection()->find([], $fields) as $row) {
+        foreach (static::$conn->getCollection(__CLASS__)->rawCollection()->find([], $fields) as $row) {
             if (count($fields) == 1) {
                 $rows[] = $row[$fields[0]];
             } else {
@@ -76,45 +76,56 @@ trait Query
         return $rows;
     }
 
-    public static function findOne(Array $filter)
+
+    public static function getOne(Array $filter = [], Array $fields = [])
     {
-        return self::$conn->getCollection(__CLASS__)->findOne($filter);
+        return static::$conn->getCollection(__CLASS__)->getOne($filter, $fields);
     }
 
-    public static function find(Array $filter)
+    public static function get(Array $filter = [], Array $fields = [])
     {
-        return self::$conn->getCollection(__CLASS__)->find($filter);
+        return static::$conn->getCollection(__CLASS__)->get($filter, $fields);
     }
 
-    public static function where(Array $filter)
+    public static function findOne(Array $filter = [], Array $fields = [])
     {
-        return self::$conn->getCollection(__CLASS__)->find($filter);
+        return static::$conn->getCollection(__CLASS__)->findOne($filter, $fields);
+    }
+
+    public static function find(Array $filter = [], Array $fields = [])
+    {
+        return static::$conn->getCollection(__CLASS__)->find($filter, $fields);
+    }
+
+    public static function where(Array $filter = [], Array $fields = [])
+    {
+        return static::$conn->getCollection(__CLASS__)->find($filter, $fields);
     }
 
     public static function byId($id)
     {
-        return self::findById($id);
+        return static::getById($id);
     }
 
-    public static function findById($id)
+    public static function getById($id)
     {
         if (is_array($id)) {
-            $cursor = self::$conn->getCollection(__CLASS__)->find(['_id' => ['$in' => $id]]);
+            $cursor = static::$conn->getCollection(__CLASS__)->find(['_id' => ['$in' => $id]]);
             if ($cursor->count() != count($id)) {
                 throw new Exception\NotFound("Cannot find all elements");
             }
             return $cursor;
         }
-        return self::$conn->getCollection(__CLASS__)->getById($id);
+        return static::$conn->getCollection(__CLASS__)->getById($id);
     }
 
-    public static function sum($field, $where = array())
+    public static function sum($field, $where = [])
     {
-        return self::$conn->getCollection(__CLASS__)->sum($field, $where);
+        return static::$conn->getCollection(__CLASS__)->sum($field, $where);
     }
 
     public function save()
     {
-        return self::$conn->save($this);
+        return static::$conn->save($this);
     }
 }
