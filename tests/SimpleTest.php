@@ -201,6 +201,22 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertTrue(getconnection()->getCollection('Foo')->is($x->bar));
     }
 
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testConnectionException()
+    {
+        getConnection()->getConnection(uniqid(true));
+    }
+
+    /**
+     *  @expectedException RuntimeException
+     */
+    public function testGetDatabaseException()
+    {
+        getConnection()->getDatabase(uniqid(true));
+    }
+
     public function testReferenceSave()
     {
         $conn = getConnection();
