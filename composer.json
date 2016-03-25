@@ -3,14 +3,15 @@
     "description": "Mongo abstraction",
     "require": {
         "php": ">=5.4.0",
-        "crodas/service-provider": "^0.1",
         "crodas/notoj": ">=1.0.5",
-        "crodas/simple-view-engine": "^0.1",
         "crodas/file-util": ">=0.1.14",
         "crodas/cli": "^0.1",
         "crodas/validator": ">=0.2.1",
         "crodas/build": "^0.2",
         "keyvanakbary/slugifier": "^3.0"
+    },
+    "require-dev": {
+        "crodas/simple-view-engine": "^0.1"
     },
     "license": "BSD-4-Clause",
     "version": "v0.7.1",
