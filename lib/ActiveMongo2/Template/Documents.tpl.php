@@ -470,7 +470,7 @@ class Mapper
             $db = $this->connections[$conn];
 
         try {
-            $col = $db->createCollection($this->ns_by_name[{{@$col->getName()}}] . {{@$col->getName()}}); 
+            $col = $db->createCollection($this->ns_by_name[{{@$col->getName()}}] . {{@$col->getName()}}, []); 
 
             @if ($is_new)
             $return = $col->createIndex(
