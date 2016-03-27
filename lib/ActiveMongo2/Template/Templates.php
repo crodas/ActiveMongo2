@@ -398,7 +398,7 @@ namespace {
                 var_export($col->getName());
                 echo "] . ";
                 var_export($col->getName());
-                echo "); \n\n";
+                echo ", []); \n\n";
                 if ($is_new) {
                     echo "            \$return = \$col->createIndex(\n                ";
                     echo crodas\FileUtil\dump_array($index['field']);
