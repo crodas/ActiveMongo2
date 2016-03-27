@@ -394,11 +394,15 @@ namespace {
                 echo "\n            \$conn = \$this->class_connections[";
                 var_export($col->getClass());
                 echo "];\n            if (empty(\$this->connections[\$conn])) {\n                goto skip_";
-                echo $next . ";\n            }\n            \$db = \$this->connections[\$conn];\n\n        try {\n            \$col = \$db->createCollection(\$this->ns_by_name[";
+                echo $next . ";\n            }\n            \$db = \$this->connections[\$conn];\n\n        try {\n            \$db->createCollection(\$this->ns_by_name[";
                 var_export($col->getName());
                 echo "] . ";
                 var_export($col->getName());
-                echo ", []); \n\n";
+                echo ", []); \n            \$col = \$db->selectCollection(\$this->ns_by_name[";
+                var_export($col->getName());
+                echo "] . ";
+                var_export($col->getName());
+                echo ");\n\n";
                 if ($is_new) {
                     echo "            \$return = \$col->createIndex(\n                ";
                     echo crodas\FileUtil\dump_array($index['field']);
