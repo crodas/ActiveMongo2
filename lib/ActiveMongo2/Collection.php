@@ -144,7 +144,7 @@ class Collection implements IteratorAggregate
     public function count($filter = [], $skip = 0, $limit = 0)
     {
         $this->mapper->onQuery($this->zclass, $filter);
-        return $this->zcol->count($filter, $skip, $limit);
+        return $this->zcol->count($filter, compact('skip', 'limit'));
     }
 
     public function drop()
