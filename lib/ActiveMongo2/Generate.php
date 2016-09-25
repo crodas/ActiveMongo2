@@ -71,7 +71,7 @@ class Generate
         $code = Template\Templates::get('documents')
             ->render($args, true);
 
-        if (strlen($code) >= 1024*1024) {
+        if (strlen($code) >= 1024*1024 || !class_exists('crodas\SimpleView\FixCode')) {
             File::write($config['loader'], $code);
         } else {
             File::write($config['loader'], FixCode::fix($code));

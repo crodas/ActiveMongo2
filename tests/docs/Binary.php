@@ -5,6 +5,8 @@
  */ 
 class BinaryDoc
 {
+    use ActiveMongo2\Query;
+
     /** @Id */
     public $id;
 
