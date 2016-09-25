@@ -433,7 +433,7 @@ namespace {
                 echo "        }\n        skip_";
                 echo $next . ":\n";
             }
-            echo "    }\n\n";
+            echo "    }\n\n    protected function compareObjects(\$a, \$b)\n    {\n        if (\$a === \$b) {\n            return true;\n        }\n\n        if (is_array(\$a) && is_array(\$b)) {\n            \$keysA = array_keys(\$a);\n            \$keysB = array_keys(\$b);\n            if (\$keysA !== \$keysB) {\n                return false;\n            }\n            foreach (\$keysA as \$key) {\n                if (!\$this->compareObjects(\$a[\$key], \$b[\$key])) {\n                    return false;\n                }\n            }\n            return true;\n        }\n\n        if (!is_object(\$a) || !is_object(\$b)) {\n            return false;\n        }\n\n        \$class = get_class(\$b);\n        if (!(\$a instanceof \$class)) {\n            return false;\n        }\n\n        if (\$a instanceof \\MongoBinData || \$a instanceof \\MongoId) {\n            return \$a->__toString() === \$a->__toString();\n        }\n\n        if (\$a instanceof \\MongoDate) {\n            return \$a->sec === \$b->sec && \$b->usec === \$b->usec;\n        }\n\n\n        var_dump(\$a, \$b);exit;\n    }\n\n\n";
             foreach($collections as $collection) {
 
                 $this->context['collection'] = $collection;
@@ -580,10 +580,10 @@ namespace {
                     var_export($prop.'');
                     echo ", \$old)) {\n                    \$change['\$set'][";
                     var_export($prop.'');
-                    echo "] = " . ($prop->getPHPVariable('$current')) . ";\n                    \$has_changed = true;\n                } else if (";
-                    echo $prop->getPHPVariable('$current') . " !== \$old[";
+                    echo "] = " . ($prop->getPHPVariable('$current')) . ";\n                    \$has_changed = true;\n                } else if (!\$this->compareObjects(";
+                    echo $prop->getPHPVariable('$current') . ", \$old[";
                     var_export($prop.'');
-                    echo "]) {\n                    \$has_changed = true;\n";
+                    echo "])) {\n                    \$has_changed = true;\n\n";
                     if ($prop->getAnnotation()->has('Inc')) {
                         echo "                        if (empty(\$old[";
                         var_export($prop.'');

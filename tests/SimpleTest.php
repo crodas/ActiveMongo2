@@ -757,4 +757,35 @@ class SimpleTest extends \phpunit_framework_testcase
         $this->assertTrue($object['base64'] instanceof MongoBinData);
     }
 
+    public function testReferenceUpdateBug()
+    {
+        $conn = getConnection();
+        $doc = new BinaryDoc;
+        $doc->content = file_get_contents(__FILE__);
+        $doc->base64  = base64_encode("cesar");
+        $conn->save($doc);
+
+
+        $ref = new ReferenceHub;
+        $ref->ref = $doc;
+
+        $y = $GLOBALS['x_updates'];
+        $conn->save($ref);
+
+        $this->assertEquals($y+1, $GLOBALS['x_updates']);
+
+        $ref->ref = BinaryDoc::findOne(['_id' => $doc->id]);
+        $conn->save($ref);
+        $this->assertEquals($y+1, $GLOBALS['x_updates']);
+
+        $doc = new BinaryDoc;
+        $doc->content = file_get_contents(__FILE__);
+        $doc->base64  = base64_encode("cesar");
+        $conn->save($doc);
+
+        $ref->ref = BinaryDoc::findOne(['_id' => $doc->id]);
+        $conn->save($ref);
+        $this->assertEquals($y+2, $GLOBALS['x_updates']);
+    }
+
 }
