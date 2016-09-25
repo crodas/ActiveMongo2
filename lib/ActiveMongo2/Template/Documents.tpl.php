@@ -503,6 +503,48 @@ class Mapper
         @end
     }
 
+    protected function compareObjects($a, $b)
+    {
+        if ($a === $b) {
+            return true;
+        }
+
+        if (is_array($a) && is_array($b)) {
+            $keysA = array_keys($a);
+            $keysB = array_keys($b);
+            if ($keysA !== $keysB) {
+                return false;
+            }
+            foreach ($keysA as $key) {
+                if (!$this->compareObjects($a[$key], $b[$key])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        if (!is_object($a) || !is_object($b)) {
+            return false;
+        }
+
+        $class = get_class($b);
+        if (!($a instanceof $class)) {
+            return false;
+        }
+
+        if ($a instanceof \MongoBinData || $a instanceof \MongoId) {
+            return $a->__toString() === $a->__toString();
+        }
+
+        if ($a instanceof \MongoDate) {
+            return $a->sec === $b->sec && $b->usec === $b->usec;
+        }
+
+
+        return false;
+    }
+
+
     @foreach ($collections as $collection)
 
     /**
@@ -650,8 +692,9 @@ class Mapper
                 } else if (!array_key_exists({{@$prop.''}}, $old)) {
                     $change['$set'][{{@$prop.''}}] = {{$prop->getPHPVariable('$current')}};
                     $has_changed = true;
-                } else if ({{$prop->getPHPVariable('$current')}} !== $old[{{@$prop.''}}]) {
+                } else if (!$this->compareObjects({{$prop->getPHPVariable('$current')}}, $old[{{@$prop.''}}])) {
                     $has_changed = true;
+
                     @if ($prop->getAnnotation()->has('Inc'))
                         if (empty($old[{{@$prop.''}}])) {
                             $prev = 0;
